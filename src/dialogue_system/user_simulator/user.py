@@ -131,6 +131,12 @@ class User(object):
         self.constraint_check = dialogue_configuration.CONSTRAINT_CHECK_FAILURE
 
     def _assemble_user_action(self):
+        """
+        Assembling the user action according to the current status.
+
+        Returns:
+            A dict, containing the information of this turn and the user's current state.
+        """
         user_action = {
             "turn":self.state["turn"],
             "action":self.state["action"],
@@ -143,6 +149,20 @@ class User(object):
         return user_action
 
     def next(self, agent_action, turn):
+        """
+        Responding to the agent. Call different responding functions for different action types.
+
+        Args:
+            agent_action: a dict, the action of agent, see the definition of agent action in the Agents.
+            turn: int, indicating the current turn of this dialgue session.
+
+        Returns:
+            A tuple:
+                user_action: a dict, the user action returned by the _assemble_action funciton.
+                reward: float, the immediate reward for this turn.
+                episode_over: bool, indicating whether the current session is terminated or not.
+                dialogue_status: string, indicating the dialogue status after this turn.
+        """
         agent_act_type = agent_action["action"]
         self.state["turn"] = turn
         if self.state["turn"] == (self.max_turn - 2):
@@ -472,7 +492,7 @@ class User(object):
         elif self.dialogue_status == dialogue_configuration.DIALOGUE_STATUS_SUCCESS:
             success_reward = self.parameter.get("reward_for_success")
             # success_reward = dialogue_configuration.REWARD_FOR_DIALOGUE_STATUS_SUCCESS
-            if self.parameter.get("minus_left_slots") == 1:
+            if self.parameter.get("minus_left_slots") == True:
                 return success_reward - len(self.state["rest_slots"])
             else:
                 return success_reward

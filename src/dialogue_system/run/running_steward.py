@@ -173,5 +173,12 @@ class RunningSteward(object):
             #     break
 
     def __dump_performance__(self,epoch_index):
+        """
+        Saving the performance of model.
+
+        Args:
+            epoch_index: int, indicating the current epoch.
+
+        """
         file_name = self.parameter["run_info"] + "_" + str(epoch_index) + ".p"
         pickle.dump(file=open(self.parameter.get("performance_save_path") + file_name, "wb"), obj=self.learning_curve)

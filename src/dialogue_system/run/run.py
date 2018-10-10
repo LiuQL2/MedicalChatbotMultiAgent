@@ -111,16 +111,16 @@ parser.add_argument("--device_for_tf", dest="device_for_tf", type=str, default="
 
 # TODO: simulation configuration
 parser.add_argument("--simulate_epoch_number", dest="simulate_epoch_number", type=int, default=1500, help="The number of simulate epoch.")
-parser.add_argument("--epoch_size", dest="epoch_size", type=int, default=50, help="The number of simulated sessions in each simulated epoch.")
-parser.add_argument("--evaluate_epoch_number", dest="evaluate_epoch_number", type=int, default=2000, help="the size of each simulate epoch when evaluation.")
-parser.add_argument("--experience_replay_pool_size", dest="experience_replay_pool_size", type=int, default=20000, help="the size of experience replay.")
-parser.add_argument("--hidden_size_dqn", dest="hidden_size_dqn", type=int, default=300, help="the hidden_size of DQN.")
+parser.add_argument("--epoch_size", dest="epoch_size", type=int, default=100, help="The number of simulated sessions in each simulated epoch.")
+parser.add_argument("--evaluate_epoch_number", dest="evaluate_epoch_number", type=int, default=500, help="the size of each simulate epoch when evaluation.")
+parser.add_argument("--experience_replay_pool_size", dest="experience_replay_pool_size", type=int, default=10000, help="the size of experience replay.")
+parser.add_argument("--hidden_size_dqn", dest="hidden_size_dqn", type=int, default=500, help="the hidden_size of DQN.")
 parser.add_argument("--warm_start", dest="warm_start",type=bool, default=True, help="Filling the replay buffer with the experiences of rule-based agents. {True, False}")
-parser.add_argument("--warm_start_epoch_number", dest="warm_start_epoch_number", type=int, default=20, help="the number of epoch of warm starting.")
+parser.add_argument("--warm_start_epoch_number", dest="warm_start_epoch_number", type=int, default=30, help="the number of epoch of warm starting.")
 parser.add_argument("--batch_size", dest="batch_size", type=int, default=30, help="the batch size when training.")
 parser.add_argument("--log_dir", dest="log_dir", type=str, default="./../../../log/", help="directory where event file of training will be written, ending with /")
 parser.add_argument("--epsilon", dest="epsilon", type=float, default=0.1, help="The greedy probability of DQN")
-parser.add_argument("--gamma", dest="gamma", type=float, default=1.0, help="The discount factor of immediate reward in RL.")
+parser.add_argument("--gamma", dest="gamma", type=float, default=0.9, help="The discount factor of immediate reward in RL.")
 parser.add_argument("--train_mode", dest="train_mode", type=bool, default=True, help="Runing this code in training mode? [True, False]")
 
 # TODO: Save model, performance and dialogue content ? And what is the path if yes?
