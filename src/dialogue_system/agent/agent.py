@@ -60,7 +60,6 @@ class Agent(object):
         Detail codes will be implemented in different sub-class of this class.
         :param state: a vector, the representation of current dialogue state.
         :param turn: int, the time step of current dialogue session.
-        :param train_mode: int, 1:for training, 0:for evaluation
         :return: a tuple consists of the selected agent action and action index.
         """
         return self.agent_action

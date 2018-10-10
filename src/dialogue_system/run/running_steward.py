@@ -38,12 +38,12 @@ class RunningSteward(object):
 
         self.best_result = {"success_rate":0.0, "average_reward": 0.0, "average_turn": 0,"average_wrong_disease":10}
 
-    def simulate(self, agent, epoch_number, train_mode=0):
+    def simulate(self, agent, epoch_number, train_mode=False):
         """
         Simulating between agent and user simulator.
         :param agent: the agent used to simulate, an instance of class Agent.
         :param epoch_number: the epoch number of simulation.
-        :param train_mode: int, 1: the purpose of simulation is to train the model, 0: just for simulation and the
+        :param train_mode: bool, True: the purpose of simulation is to train the model, False: just for simulation and the
                            parameters of the model will not be updated.
         :return: nothing to return.
         """
@@ -52,12 +52,12 @@ class RunningSteward(object):
         # self.dialogue_manager.state_tracker.user.set_max_turn(max_turn=self.parameter.get('max_turn'))
         for index in range(0, epoch_number,1):
             # Training AgentDQN with experience replay
-            if train_mode == 1 and isinstance(self.dialogue_manager.state_tracker.agent, AgentDQN):
+            if train_mode == True and isinstance(self.dialogue_manager.state_tracker.agent, AgentDQN):
                 self.dialogue_manager.train()
                 # Simulating and filling experience replay pool.
                 self.simulation_epoch(epoch_size=self.epoch_size,train_mode=train_mode)
             # Training AgentActorCritic with sampling one trajectory.
-            elif train_mode == 1 and isinstance(self.dialogue_manager.state_tracker.agent, AgentActorCritic):
+            elif train_mode == True and isinstance(self.dialogue_manager.state_tracker.agent, AgentActorCritic):
                 # Sample one trajectory for training.
                 # for _i in range(self.epoch_size):
                     self.simulation_epoch(epoch_size=self.epoch_size,train_mode=train_mode)
@@ -67,10 +67,10 @@ class RunningSteward(object):
             result = self.evaluate_model(index)
             if result["success_rate"] >= self.best_result["success_rate"] and \
                     result["success_rate"] > dialogue_configuration.SUCCESS_RATE_THRESHOLD and \
-                    result["average_wrong_disease"] <= self.best_result["average_wrong_disease"] and train_mode==1:
+                    result["average_wrong_disease"] <= self.best_result["average_wrong_disease"] and train_mode==True:
                 self.dialogue_manager.experience_replay_pool = deque(maxlen=self.parameter.get("experience_replay_pool_size"))
                 self.simulation_epoch(epoch_size=self.epoch_size,train_mode=train_mode)
-                if save_model == 1:
+                if save_model == True:
                     self.dialogue_manager.state_tracker.agent.save_model(model_performance=result, episodes_index = index, checkpoint_path=self.checkpoint_path)
                     print("The model was saved.")
                 else:
@@ -149,8 +149,8 @@ class RunningSteward(object):
         self.learning_curve[index]["average_turn"] = average_turn
         self.learning_curve[index]["average_wrong_disease"]=average_wrong_disease
         if index % 10 ==0:
-            self.__print_run_info__()
-        if index % 100 == 99 and save_performance == 1:
+            print('[INFO]', self.parameter["run_info"])
+        if index % 100 == 99 and save_performance == True:
             self.__dump_performance__(epoch_index=index)
         print("%3d simulation SR %s, ABSR %s, ave reward %s, ave turns %s, ave wrong disease %s" % (index,res['success_rate'], res["ab_success_rate"],res['average_reward'], res['average_turn'], res["average_wrong_disease"]))
         return res
@@ -166,61 +166,12 @@ class RunningSteward(object):
         self.dialogue_manager.set_agent(agent=agent)
         # self.dialogue_manager.state_tracker.user.set_max_turn(max_turn = 2*len(self.slot_set))
         for index in range(0,epoch_number,1):
-            res = self.simulation_epoch(epoch_size=self.epoch_size,train_mode=1)
+            res = self.simulation_epoch(epoch_size=self.epoch_size,train_mode=True)
             print("%3d simulation SR %s, ABSR %s,ave reward %s, ave turns %s, ave wrong disease %s" % (
             index, res['success_rate'], res["ab_success_rate"], res['average_reward'], res['average_turn'], res["average_wrong_disease"]))
             # if len(self.dialogue_manager.experience_replay_pool)==self.parameter.get("experience_replay_pool_size"):
             #     break
 
     def __dump_performance__(self,epoch_index):
-        agent_id = self.parameter.get("agent_id")
-        dqn_id = self.parameter.get("dqn_id")
-        disease_number = self.parameter.get("disease_number")
-        lr = self.parameter.get("dqn_learning_rate")
-        reward_for_success = self.parameter.get("reward_for_success")
-        reward_for_fail = self.parameter.get("reward_for_fail")
-        reward_for_not_come_yet = self.parameter.get("reward_for_not_come_yet")
-        reward_for_inform_right_symptom = self.parameter.get("reward_for_inform_right_symptom")
-
-        max_turn = self.parameter.get("max_turn")
-        minus_left_slots = self.parameter.get("minus_left_slots")
-        gamma = self.parameter.get("gamma")
-        epsilon = self.parameter.get("epsilon")
-        run_id = self.parameter.get('run_id')
-
-        if agent_id == 1:
-            file_name = "learning_rate_d" + str(disease_number) + "_e" + "_agent" + str(agent_id) + \
-                        "_dqn" + str(dqn_id) + "_T" + str(max_turn) + "_lr" + str(lr) + "_RFS" + str(reward_for_success) +\
-                          "_RFF" + str(reward_for_fail) + "_RFNCY" + str(reward_for_not_come_yet) + "_RFIRS" + str(reward_for_inform_right_symptom) +\
-                          "_mls" + str(minus_left_slots) + "_gamma" + str(gamma) + "_epsilon" + str(epsilon) + "_RID" + str(run_id) + "_" + str(epoch_index) + ".p"
-        else:
-            file_name = "learning_rate_d" + str(disease_number) + "_e" + "_agent" + str(agent_id) + \
-                        "_T" + str(max_turn) + "_lr" + str(lr) + "_RFS" + str(reward_for_success) +\
-                          "_RFF" + str(reward_for_fail) + "_RFNCY" + str(reward_for_not_come_yet) + "_RFIRS" + str(reward_for_inform_right_symptom) +\
-                          "_mls" + str(minus_left_slots) + "_gamma" + str(gamma) + "_epsilon" + str(epsilon)  + "_RID" + str(run_id) + "_" + str(epoch_index) + ".p"
-
+        file_name = self.parameter["run_info"] + "_" + str(epoch_index) + ".p"
         pickle.dump(file=open(self.parameter.get("performance_save_path") + file_name, "wb"), obj=self.learning_curve)
-
-    def __print_run_info__(self):
-        # print(json.dumps(self.parameter, indent=2))
-        agent_id = self.parameter.get("agent_id")
-        dqn_id = self.parameter.get("dqn_id")
-        disease_number = self.parameter.get("disease_number")
-        lr = self.parameter.get("dqn_learning_rate")
-        reward_for_success = self.parameter.get("reward_for_success")
-        reward_for_fail = self.parameter.get("reward_for_fail")
-        reward_for_not_come_yet = self.parameter.get("reward_for_not_come_yet")
-        reward_for_inform_right_symptom = self.parameter.get("reward_for_inform_right_symptom")
-
-        max_turn = self.parameter.get("max_turn")
-        minus_left_slots = self.parameter.get("minus_left_slots")
-        gamma = self.parameter.get("gamma")
-        epsilon = self.parameter.get("epsilon")
-        data_set_name = self.parameter.get("goal_set").split("/")[-2]
-        run_id = self.parameter.get('run_id')
-        info = "learning_rate_d" + str(disease_number) + "_agent" + str(agent_id) + \
-               "_dqn" + str(dqn_id) + "_T" + str(max_turn) + "_lr" + str(lr) + "_RFS" + str(reward_for_success) +\
-                          "_RFF" + str(reward_for_fail) + "_RFNCY" + str(reward_for_not_come_yet) + "_RFIRS" + str(reward_for_inform_right_symptom) +\
-                          "_mls" + str(minus_left_slots) + "_gamma" + str(gamma) + "_epsilon" + str(epsilon)  + "_RID" + str(run_id) + "_data" + str(data_set_name)
-
-        print("[INFO]:", info)

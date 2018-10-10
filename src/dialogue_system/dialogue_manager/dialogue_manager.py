@@ -34,7 +34,7 @@ class DialogueManager(object):
         """
         The next two turn of this dialogue session. The agent will take action first and then followed by user simulator.
         :param save_record: bool, save record?
-        :param train_mode: int, 1: the purpose of simulation is to train the model, 0: just for simulation and the
+        :param train_mode: bool, True: the purpose of simulation is to train the model, False: just for simulation and the
                            parameters of the model will not be updated.
         :return: immediate reward for taking this agent action.
         """
@@ -77,7 +77,7 @@ class DialogueManager(object):
             pass
 
         # Output the dialogue.
-        if episode_over == True and self.save_dialogue == 1 and train_mode == 0:
+        if episode_over == True and self.save_dialogue == True and train_mode == False:
             state = self.state_tracker.get_state()
             goal = self.state_tracker.user.get_goal()
             self.__output_dialogue(state=state, goal=goal)
@@ -88,7 +88,7 @@ class DialogueManager(object):
 
         return reward, episode_over,dialogue_status
 
-    def initialize(self,train_mode=1, epoch_index=None):
+    def initialize(self,train_mode=True, epoch_index=None):
         self.trajectory = []
         self.state_tracker.initialize()
         self.inform_wrong_disease_count = 0
@@ -140,7 +140,6 @@ class DialogueManager(object):
             stop = max(len(self.trajectory_pool),index + batch_size)
             batch_trajectory = trajectory_pool[index:stop]
             self.state_tracker.agent.train(trajectories=batch_trajectory)
-
 
     def __output_dialogue(self,state, goal):
         history = state["history"]

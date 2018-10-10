@@ -71,7 +71,7 @@ class DQN0(object):
         self.session = tf.Session(graph=self.graph,config=config)
         self.session.run(self.initializer)
 
-        if self.parameter.get("train_mode") != 1:
+        if self.parameter.get("train_mode") != True:
             self.restore_model(self.parameter.get("saved_model"))
 
     def singleBatch(self, batch, params):
@@ -210,7 +210,7 @@ class DQN1(object):
         self.session = tf.Session(graph=self.graph,config=config)
         self.session.run(self.initializer)
 
-        if self.parameter.get("train_mode") != 1:
+        if self.parameter.get("train_mode") != True:
             self.restore_model(self.parameter.get("saved_model"))
 
 
@@ -382,7 +382,7 @@ class DQN2(object):
         self.session = tf.Session(graph=self.graph, config=config)
         self.session.run(self.initializer)
 
-        if self.parameter.get("train_mode") != 1:
+        if self.parameter.get("train_mode") != True:
             self.restore_model(self.parameter.get("saved_model"))
 
 

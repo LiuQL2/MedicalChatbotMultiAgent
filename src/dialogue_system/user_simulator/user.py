@@ -62,7 +62,7 @@ class User(object):
         self.allow_wrong_disease = parameter.get("allow_wrong_disease")
         self._init()
 
-    def initialize(self, train_mode=1, epoch_index=None):
+    def initialize(self, train_mode=True, epoch_index=None):
         self._init(train_mode=train_mode,epoch_index=epoch_index)
 
         # Initialize rest slot for this user.
@@ -105,7 +105,7 @@ class User(object):
         user_action = self._assemble_user_action()
         return user_action
 
-    def _init(self,train_mode=1,epoch_index=None):
+    def _init(self,train_mode=True,epoch_index=None):
         """
         used for initializing an instance or an episode.
         :return: Nothing
@@ -120,7 +120,7 @@ class User(object):
             "implicit_inform_slots":{}, # For slots that belong to goal["implicit_inform_slots"]
             "rest_slots":{} # For slots that have not been informed.
         }
-        if train_mode == 1:
+        if train_mode == True:
             self.goal = random.choice(self.goal_set["train"])
         else:
             self.goal = random.choice(self.goal_set["test"])
