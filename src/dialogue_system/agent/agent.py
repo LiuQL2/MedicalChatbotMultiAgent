@@ -22,7 +22,7 @@ class Agent(object):
         self.action_set = action_set
         self.slot_set = slot_set
         # self.disease_symptom = disease_symptom
-        self.disease_symptom = self.disease_symptom_clip(disease_symptom, parameter)
+        self.disease_symptom = self.disease_symptom_clip(disease_symptom, 2.5, parameter)
         self.parameter = parameter
         self.candidate_disease_list = []
         self.candidate_symptom_list = []
@@ -270,12 +270,26 @@ class Agent(object):
 
         return feasible_actions
 
-    def disease_symptom_clip(self, disease_symptom, parameter):
+    @staticmethod
+    def disease_symptom_clip(disease_symptom, denominator, parameter):
+        """
+        Keep the top min(symptom_num, max_turn//denominator) for each disease, and the related symptoms are sorted
+        descendent according to their frequencies.
+
+        Args:
+            disease_symptom: a dict, key is the names of diseases, and the corresponding value is a dict too which
+                contains the index of this disease and the related symptoms.
+            denominator: int, the number of symptoms for each diseases is  max_turn // denominator.
+            parameter: the super-parameter.
+
+        Returns:
+             and dict, whose keys are the names of diseases, and the values are dicts too with two keys: {'index', symptom}
+        """
         max_turn = parameter.get('max_turn')
         temp_disease_symptom = copy.deepcopy(disease_symptom)
         for key, value in disease_symptom.items():
             symptom_list = sorted(value['symptom'].items(),key = lambda x:x[1],reverse = True)
             symptom_list = [v[0] for v in symptom_list]
-            symptom_list = symptom_list[0:min(len(symptom_list), int(max_turn / 2.5))]
+            symptom_list = symptom_list[0:min(len(symptom_list), int(max_turn / float(denominator)))]
             temp_disease_symptom[key]['symptom'] = symptom_list
         return temp_disease_symptom

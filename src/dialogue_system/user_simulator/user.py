@@ -51,15 +51,15 @@ import sys,os
 sys.path.append(os.getcwd().replace("src/dialogue_system",""))
 
 from src.dialogue_system import dialogue_configuration
+from src.dialogue_system.agent.agent import Agent
 
 
 class User(object):
-    def __init__(self, goal_set, action_set, parameter):
+    def __init__(self, goal_set, disease_symptom, parameter):
         self.goal_set, self.disease_sample_count = self.__prepare_goal_set__(goal_set,parameter)
-        self.action_set = action_set
         self.max_turn = parameter["max_turn"]
         self.parameter = parameter
-        self.allow_wrong_disease = parameter.get("allow_wrong_disease")
+        self.disease_symptom = Agent.disease_symptom_clip(disease_symptom=disease_symptom,denominator=20,parameter=parameter)
         self._init()
 
     def initialize(self, train_mode=True, epoch_index=None):
@@ -163,6 +163,7 @@ class User(object):
                 episode_over: bool, indicating whether the current session is terminated or not.
                 dialogue_status: string, indicating the dialogue status after this turn.
         """
+        # Exceed the limited maximum dialogue turn. This session terminated as failure.
         agent_act_type = agent_action["action"]
         self.state["turn"] = turn
         if self.state["turn"] == (self.max_turn - 2):
@@ -172,7 +173,10 @@ class User(object):
         else:
             pass
 
+        # Within the maximum dialogue turn and the session does not terminate.
         if self.episode_over is not True:
+            # Updating the history of state with the mentioned slots in the user's action in this turn.
+            # TODO: the request_slots in state should be considered?
             self.state["history"].update(self.state["inform_slots"])
             self.state["history"].update(self.state["explicit_inform_slots"])
             self.state["history"].update(self.state["implicit_inform_slots"])
@@ -200,13 +204,15 @@ class User(object):
                 self._response_inform(agent_action=agent_action)
             elif agent_act_type == "request":
                 self._response_request(agent_action=agent_action)
-            user_action = self._assemble_user_action()
-            reward = self._reward_function()
-            return user_action, reward, self.episode_over, self.dialogue_status
-        else:
-            user_action = self._assemble_user_action()
-            reward = self._reward_function()
-            return user_action, reward, self.episode_over, self.dialogue_status
+        else:# this session is terminated, return the results directly.
+            pass
+
+        # Check the related symptoms if the dialogue status is success.
+        if self.dialogue_status == dialogue_configuration.DIALOGUE_STATUS_SUCCESS and self.parameter.get("check_related_symptoms")==True:
+            self.check_disease_related_symptoms()
+        user_action = self._assemble_user_action()
+        reward = self._reward_function()
+        return user_action, reward, self.episode_over, self.dialogue_status
 
     def _response_closing(self, agent_action):
         self.state["action"] = dialogue_configuration.THANKS
@@ -350,7 +356,7 @@ class User(object):
         # The agent informed wrong disease and the dialogue will go on if not reach the max_turn.
         elif "disease" in agent_action["inform_slots"].keys() and agent_action["inform_slots"]["disease"] != self.goal["disease_tag"]:
             # The user denys the informed disease, and the dialogue will going on.
-            if self.allow_wrong_disease == 1:
+            if self.parameter["allow_wrong_disease"] == True:
                 self.state["action"] = "deny"
                 self.state["inform_slots"]["disease"] = agent_action["inform_slots"]["disease"]
                 self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_INFORM_WRONG_DISEASE
@@ -462,8 +468,11 @@ class User(object):
 
     def _check_slots(self):
         """
-        Check whether all the explicit slots, implicit slots and request slots are informed.
-        :return:
+        TODO: the same as the next function?
+        Check whether all the explicit slots, implicit slots and request slots are correctly informed.
+
+        Returns:
+            bool, True:
         """
         informed_slots = list(self.state["history"].keys())
         all_slots = copy.deepcopy(self.goal["goal"]["request_slots"])
@@ -477,8 +486,10 @@ class User(object):
 
     def _informed_all_slots_or_not_(self):
         """
-        If all the inform_slots and request_slots are informed.
-        :return:
+        Whether all the inform_slots and request_slots in the user goal are informed.
+
+        Returns:
+            bool, True: all the slots have been mentioned, False: not all slots have been mentioned.
         """
         if len(self.state["rest_slots"].keys()) > 0:
             return False
@@ -486,24 +497,26 @@ class User(object):
             return False
 
     def _reward_function(self):
+        """
+        Return a reward for this turn according to the dialoge status.
+
+        Returns:
+            A float, the immediate reward for this turn.
+        """
         if self.dialogue_status == dialogue_configuration.DIALOGUE_STATUS_NOT_COME_YET:
             return self.parameter.get("reward_for_not_come_yet")
-            # return dialogue_configuration.REWARD_FOR_NOT_COME_YET
         elif self.dialogue_status == dialogue_configuration.DIALOGUE_STATUS_SUCCESS:
             success_reward = self.parameter.get("reward_for_success")
-            # success_reward = dialogue_configuration.REWARD_FOR_DIALOGUE_STATUS_SUCCESS
             if self.parameter.get("minus_left_slots") == True:
                 return success_reward - len(self.state["rest_slots"])
             else:
                 return success_reward
         elif self.dialogue_status == dialogue_configuration.DIALOGUE_STATUS_FAILED:
             return self.parameter.get("reward_for_fail")
-            # return dialogue_configuration.REWARD_FOR_DIALOGUE_STATUS_FAILED
         elif self.dialogue_status == dialogue_configuration.DIALOGUE_STATUS_INFORM_WRONG_DISEASE:
             return dialogue_configuration.REWARD_FOR_INFORM_WRONG_DISEASE
         elif self.dialogue_status == dialogue_configuration.DIALOGUE_STATUS_INFORM_RIGHT_SYMPTOM:
             return self.parameter.get("reward_for_inform_right_symptom")
-            # return dialogue_configuration.REWARD_FOR_INFORM_RIGHT_RIGHT_SYMPTOM
 
     def get_goal(self):
         return self.goal
@@ -530,3 +543,26 @@ class User(object):
 
     def set_max_turn(self, max_turn):
         self.max_turn = max_turn
+
+    def check_disease_related_symptoms(self):
+        """
+        This function will be called only if dialogue status is successful to check whether the symptoms that related to the
+        predicted disease have been all mentioned so far. If yes, the dialogue status still be success, otherwise, it
+        will be changed into fail.
+
+        Raise:
+            Raise key error if the 'disease' not in the key of state['history'], i.e., the agent has not informed the
+            right disease yet.
+        """
+        all_mentioned_slots = self.state["history"].keys()
+        if "disease" not in all_mentioned_slots:
+            raise KeyError("'disease' not in the keys of state['history']")
+        disease_pred = self.state["history"]["disease"]
+        # Get the related symptoms.
+        related_symptoms = self.disease_symptom[disease_pred]["symptom"]
+        # print("mentioned slots", all_mentioned_slots)
+        # print("related slots", related_symptoms)
+        for slot in related_symptoms:
+            if slot not in all_mentioned_slots:
+                self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_FAILED
+                break

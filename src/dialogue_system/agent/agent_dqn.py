@@ -29,14 +29,18 @@ class AgentDQN(Agent):
         elif dqn_id == 3:
             from src.dialogue_system.policy_learning import DQN3 as DQN
 
+        if parameter["is_pytorch"] == True:
+            from src.dialogue_system.policy_learning.dqn_torch import DQN
+
+
         self.dqn = DQN(input_size=input_size, hidden_size=hidden_size,output_size=output_size, parameter=parameter)
 
     def next(self, state, turn,greedy_strategy):
-        # TODO (Qianlong): take action condition on current state.
+        # TODO (Qianlong): take action based on current state.
         self.agent_action["turn"] = turn
         state_rep = self.state_to_representation_last(state=state) # sequence representation.
 
-        if greedy_strategy == 1:
+        if greedy_strategy == True:
             greedy = random.random()
             if greedy < self.parameter.get("epsilon"):
                 action_index = random.randint(0, len(self.action_sapce) - 1)

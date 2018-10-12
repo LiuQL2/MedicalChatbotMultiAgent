@@ -26,21 +26,22 @@ class RunningSteward(object):
         self.epoch_size = parameter.get("epoch_size",100)
         self.parameter = parameter
         self.checkpoint_path = checkpoint_path
-        self.slot_set = pickle.load(file=open(parameter["slot_set"], "rb"))
-        self.action_set = pickle.load(file=open(parameter["action_set"], "rb"))
-        self.goal_set = pickle.load(file=open(parameter["goal_set"], "rb"))
-        self.disease_symptom = pickle.load(file=open(parameter["disease_symptom"], "rb"))
         self.learning_curve = {}
 
-        user = User(goal_set=self.goal_set, action_set=self.action_set, parameter=parameter)
-        agent = AgentRule(action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, parameter=parameter)
+        slot_set = pickle.load(file=open(parameter["slot_set"], "rb"))
+        action_set = pickle.load(file=open(parameter["action_set"], "rb"))
+        goal_set = pickle.load(file=open(parameter["goal_set"], "rb"))
+        disease_symptom = pickle.load(file=open(parameter["disease_symptom"], "rb"))
+
+        user = User(goal_set=goal_set, disease_syptom=disease_symptom,parameter=parameter)
+        agent = AgentRule(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=parameter)
         self.dialogue_manager = DialogueManager(user=user, agent=agent, parameter=parameter)
 
         self.best_result = {"success_rate":0.0, "average_reward": 0.0, "average_turn": 0,"average_wrong_disease":10}
 
     def simulate(self, agent, epoch_number, train_mode=False):
         """
-        Simulating between agent and user simulator.
+        Simulating the dialogue session between agent and user simulator.
         :param agent: the agent used to simulate, an instance of class Agent.
         :param epoch_number: the epoch number of simulation.
         :param train_mode: bool, True: the purpose of simulation is to train the model, False: just for simulation and the
@@ -77,7 +78,7 @@ class RunningSteward(object):
                     pass
                 self.best_result = copy.deepcopy(result)
 
-    def simulation_epoch(self, epoch_size,train_mode):
+    def simulation_epoch(self, epoch_size, train_mode):
         """
         Simulating one epoch when training model.
         :param epoch_size: the size of each epoch, i.e., the number of dialogue sessions of each epoch.
@@ -92,7 +93,7 @@ class RunningSteward(object):
             self.dialogue_manager.initialize(train_mode=self.parameter.get("train_mode"))
             episode_over = False
             while episode_over == False:
-                reward, episode_over, dialogue_status = self.dialogue_manager.next(save_record=True,train_mode=train_mode,greedy_strategy=1)
+                reward, episode_over, dialogue_status = self.dialogue_manager.next(save_record=True,train_mode=train_mode,greedy_strategy=True)
                 total_reward += reward
             total_truns += self.dialogue_manager.state_tracker.turn
             inform_wrong_disease_count += self.dialogue_manager.inform_wrong_disease_count
@@ -129,7 +130,7 @@ class RunningSteward(object):
             self.dialogue_manager.initialize(train_mode=train_mode, epoch_index=epoch_index)
             episode_over = False
             while episode_over == False:
-                reward, episode_over, dialogue_status = self.dialogue_manager.next(save_record=False,train_mode=train_mode,greedy_strategy=0)
+                reward, episode_over, dialogue_status = self.dialogue_manager.next(save_record=False,train_mode=train_mode,greedy_strategy=False)
                 total_reward += reward
             total_truns += self.dialogue_manager.state_tracker.turn
             inform_wrong_disease_count += self.dialogue_manager.inform_wrong_disease_count
@@ -152,7 +153,7 @@ class RunningSteward(object):
             print('[INFO]', self.parameter["run_info"])
         if index % 100 == 99 and save_performance == True:
             self.__dump_performance__(epoch_index=index)
-        print("%3d simulation SR %s, ABSR %s, ave reward %s, ave turns %s, ave wrong disease %s" % (index,res['success_rate'], res["ab_success_rate"],res['average_reward'], res['average_turn'], res["average_wrong_disease"]))
+        print("%3d simulation SR [%s], ABSR [%s], ave reward %s, ave turns %s, ave wrong disease %s" % (index,res['success_rate'], res["ab_success_rate"],res['average_reward'], res['average_turn'], res["average_wrong_disease"]))
         return res
 
     def warm_start(self, agent, epoch_number):
@@ -164,7 +165,6 @@ class RunningSteward(object):
         :return: nothing to return.
         """
         self.dialogue_manager.set_agent(agent=agent)
-        # self.dialogue_manager.state_tracker.user.set_max_turn(max_turn = 2*len(self.slot_set))
         for index in range(0,epoch_number,1):
             res = self.simulation_epoch(epoch_size=self.epoch_size,train_mode=True)
             print("%3d simulation SR %s, ABSR %s,ave reward %s, ave turns %s, ave wrong disease %s" % (
@@ -178,7 +178,6 @@ class RunningSteward(object):
 
         Args:
             epoch_index: int, indicating the current epoch.
-
         """
         file_name = self.parameter["run_info"] + "_" + str(epoch_index) + ".p"
         pickle.dump(file=open(self.parameter.get("performance_save_path") + file_name, "wb"), obj=self.learning_curve)

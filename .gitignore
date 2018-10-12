@@ -2,6 +2,7 @@
 resources/*
 others/
 src/dialogue_system/data/*
+src/dialogue_system/model/*
 log/train/*
 **/*.logs
 **/*.log
