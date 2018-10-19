@@ -180,4 +180,7 @@ class RunningSteward(object):
             epoch_index: int, indicating the current epoch.
         """
         file_name = self.parameter["run_info"] + "_" + str(epoch_index) + ".p"
-        pickle.dump(file=open(self.parameter.get("performance_save_path") + file_name, "wb"), obj=self.learning_curve)
+        performance_save_path = self.parameter["performance_save_path"]
+        if os.path.isdir(performance_save_path) == False:
+            os.mkdir(performance_save_path)
+        pickle.dump(file=open(os.path.join(performance_save_path,file_name), "wb"), obj=self.learning_curve)

@@ -84,9 +84,10 @@ class DQN(object):
         state_action_values = self.current_net(state_batch).gather(1, action_batch)
 
         # Compute V(s_{t+1}) for all next states.
-        next_state_values = torch.zeros(batch_size).to(device=self.device)
-        if non_final_next_states.size()[0] > 0: # All current states in this batch are the terminal states of their corresonpding sessions.
-            next_state_values[non_final_mask==0] = self.target_net(non_final_next_states).max(1)[0].detach()
+        if self.parameter.get("dqn_type") == "DQN":
+            next_state_values = self.next_state_values_DQN(batch_size=batch_size, non_final_mask=non_final_mask, non_final_next_states=non_final_next_states)
+        elif self.parameter.get("dqn_type") == "DoubleDQN":
+            next_state_values = self.next_state_values_double_DQN(batch_size=batch_size, non_final_mask=non_final_mask, non_final_next_states=non_final_next_states)
         # Compute the expected Q values
         expected_state_action_values = (next_state_values * gamma) + reward_batch
 
@@ -101,6 +102,44 @@ class DQN(object):
         self.optimizer.step()
         return {"loss":loss.item()}
 
+    def next_state_values_DQN(self, batch_size, non_final_mask, non_final_next_states ):
+        """
+        Computate the values of all next states with DQN.
+        `http://web.stanford.edu/class/psych209/Readings/MnihEtAlHassibis15NatureControlDeepRL.pdf`
+
+        Args:
+            batch_size (int): the size of given batch.
+            non_final_mask (Tensor): shape: 1-D, [batch_size], 0: non-terminal state, 0: terminal state
+            non_final_next_states (Tensor): 2-D, shape: [num_of_non_terminal_states, state_dim]
+
+        Returns:
+            A 1-D Tensor, shape:[batch_size]
+        """
+        # Compute V(s_{t+1}) for all next states.
+        next_state_values = torch.zeros(batch_size).to(device=self.device)
+        if non_final_next_states.size()[0] > 0: # All current states in this batch are the terminal states of their corresonpding sessions.
+            next_state_values[non_final_mask==0] = self.target_net(non_final_next_states).max(1)[0].detach()
+        return next_state_values
+
+    def next_state_values_double_DQN(self,batch_size, non_final_mask, non_final_next_states):
+        """
+        Computate the values of all next states with Double DQN.
+        `http://www.aaai.org/ocs/index.php/AAAI/AAAI16/paper/download/12389/11847`
+
+        Args:
+            batch_size (int): the size of given batch.
+            non_final_mask (Tensor): shape: 1-D, [batch_size], 0: non-terminal state, 0: terminal state
+            non_final_next_states (Tensor): 2-D, shape: [num_of_non_terminal_states, state_dim]
+
+        Returns:
+            A 1-D Tensor, shape:[batch_size]
+        """
+        next_state_values = torch.zeros(batch_size).to(device=self.device)
+        if non_final_next_states.size()[0] > 0:
+            next_action_batch_current = self.current_net(non_final_next_states).max(1)[1].view(-1,1).detach()
+            next_state_values[non_final_mask==0] = self.target_net(non_final_next_states).gather(1, next_action_batch_current).detach().view(-1)
+        return next_state_values
+
     def predict(self, Xs, **kwargs):
         Xs = torch.Tensor(Xs).to(device=self.device)
         Ys = self.current_net(Xs)
@@ -113,7 +152,7 @@ class DQN(object):
         max_index = np.argmax(Ys.detach().cpu().numpy(), axis=1)
         return Ys, max_index[0]
 
-    def save_model(self, model_performance,episodes_index, checkpoint_path = None):
+    def save_model(self, model_performance,episodes_index, checkpoint_path):
         """
         Saving the trained model.
 
@@ -121,9 +160,7 @@ class DQN(object):
             model_performance (dict): the test result of the model, which contains different metrics.
             episodes_index (int): the current step of training. And this will be appended to the model name at the end.
             checkpoint_path (str): the directory that the model is going to save to. Default None.
-
         """
-        if checkpoint_path == None: checkpoint_path = self.parameter.get("checkpoint_path")
         if os.path.isdir(checkpoint_path) == False:
             os.mkdir(checkpoint_path)
         agent_id = self.parameter.get("agent_id")

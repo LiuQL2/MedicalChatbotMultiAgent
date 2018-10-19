@@ -554,6 +554,8 @@ class User(object):
             Raise key error if the 'disease' not in the key of state['history'], i.e., the agent has not informed the
             right disease yet.
         """
+        '''
+        # inform all related symptoms.
         all_mentioned_slots = self.state["history"].keys()
         if "disease" not in all_mentioned_slots:
             raise KeyError("'disease' not in the keys of state['history']")
@@ -566,3 +568,15 @@ class User(object):
             if slot not in all_mentioned_slots:
                 self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_FAILED
                 break
+        '''
+
+        # Mentioned at least two symptoms which are not in the `explicit_inform_slots` of user goal.
+        all_mentioned_slots = copy.deepcopy(self.state["history"])
+        count = 0
+        all_mentioned_slots.pop("disease")
+        for key in all_mentioned_slots.keys():
+            if key not in self.goal["goal"]["explicit_inform_slots"].keys():
+                count += 1
+
+        if count < 2:
+            self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_FAILED

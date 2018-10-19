@@ -43,7 +43,7 @@ if __name__ == "__main__":
     # file_name = "./src/dialogue_system/model/dqn/learning_rate/learning_rate_d4_e999_agent1_dqn1.p"
     # file_name = "./src/dialogue_system/data/dataset/label/result/learning_rate/learning_rate_d4_e_agent1_dqn1_T22_lr0.001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma1.0_epsilon0.1_1499.p"
     # file_name = '/Users/qianlong/Desktop/acl/learning_rate_d4_e_agent1_dqn1_T22_lr0.001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma1.0_epsilon0.1_RID8_1499.p'
-    file_name = "/Users/qianlong/Desktop/learning_rate_d4_AgentDQN_dqn1_T22_lr0.001_RFS44_RFF-22.0_RFNCY-1_RFIRS-1_mls0_gamma0.9_epsilon0.1_awd0_crs0_RID1_datalabel_mGPU0_1099.p"
+    file_name = "/Users/qianlong/Desktop/learning_rate_d4_AgentDQN_dqn1_T22_lr0.001_RFS44_RFF-22.0_RFNCY-1_RFIRS-1_mls0_gamma0.9_epsilon0.1_awd0_crs0_RID1_datalabel_mGPU1_1099.p"
     save_name = file_name + ".png"
     ploter = Ploter(file_name)
     ploter.plot(save_name)

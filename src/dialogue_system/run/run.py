@@ -7,13 +7,11 @@ import sys, os
 import json
 sys.path.append(os.getcwd().replace("src/dialogue_system/run",""))
 
-from src.dialogue_system.dialogue_manager import DialogueManager
 from src.dialogue_system.agent import AgentRandom
 from src.dialogue_system.agent import AgentDQN
 from src.dialogue_system.agent import AgentRule
 from src.dialogue_system.agent import AgentActorCritic
-from src.dialogue_system.user_simulator import UserRule as User
-from src.dialogue_system import dialogue_configuration
+from src.dialogue_system.run.utils import verify_params
 
 from src.dialogue_system.run import RunningSteward
 
@@ -38,7 +36,7 @@ parser.add_argument("--epoch_size", dest="epoch_size", type=int, default=100, he
 parser.add_argument("--evaluate_epoch_number", dest="evaluate_epoch_number", type=int, default=500, help="the size of each simulate epoch when evaluation.")
 parser.add_argument("--experience_replay_pool_size", dest="experience_replay_pool_size", type=int, default=10000, help="the size of experience replay.")
 parser.add_argument("--hidden_size_dqn", dest="hidden_size_dqn", type=int, default=500, help="the hidden_size of DQN.")
-parser.add_argument("--warm_start", dest="warm_start",type=boolean_string, default=True, help="Filling the replay buffer with the experiences of rule-based agents. {True, False}")
+parser.add_argument("--warm_start", dest="warm_start",type=boolean_string, default=False, help="Filling the replay buffer with the experiences of rule-based agents. {True, False}")
 parser.add_argument("--warm_start_epoch_number", dest="warm_start_epoch_number", type=int, default=30, help="the number of epoch of warm starting.")
 parser.add_argument("--batch_size", dest="batch_size", type=int, default=30, help="the batch size when training.")
 parser.add_argument("--log_dir", dest="log_dir", type=str, default="./../../../log/", help="directory where event file of training will be written, ending with /")
@@ -48,13 +46,10 @@ parser.add_argument("--train_mode", dest="train_mode", type=boolean_string, defa
 
 # TODO: Save model, performance and dialogue content ? And what is the path if yes?
 parser.add_argument("--save_performance",dest="save_performance", type=boolean_string, default=False, help="save the performance? [True, False]")
-parser.add_argument("--performance_save_path",dest="performance_save_path", type=str, default="./../model/dqn/", help="The folder where learning rate save to.")
 parser.add_argument("--save_model", dest="save_model", type=boolean_string, default=False,help="Save model during training? [True, False]")
 parser.add_argument("--save_dialogue", dest="save_dialogue", type=boolean_string, default=False, help="Save the dialogue? [True, False]")
-parser.add_argument("--checkpoint_path",dest="checkpoint_path", type=str, default="./../model/dqn/checkpoint/", help="The folder where models save to.")
 parser.add_argument("--saved_model", dest="saved_model", type=str, default="./../model/dqn/checkpoint/checkpoint_d4_agt1_dqn1/model_d4_agent1_dqn1_s0.619_r18.221_t4.266_wd0.0_e432.ckpt")
 parser.add_argument("--dialogue_file", dest="dialogue_file", type=str, default="./../data/dialogue_output/dialogue_file.txt", help="the file that used to save dialogue content.")
-
 
 parser.add_argument("--run_id", dest='run_id', type=int, default=1, help='the id of this running.')
 
@@ -94,66 +89,10 @@ parser.add_argument("--minus_left_slots", dest="minus_left_slots", type=boolean_
 parser.add_argument("--gpu", dest="gpu", type=str, default="0",help="The id of GPU on the running machine.")
 parser.add_argument("--check_related_symptoms", dest="check_related_symptoms", type=boolean_string, default=False, help="Check the realted symptoms if the dialogue is success? True:Yes, False:No")
 parser.add_argument("--is_pytorch", dest="is_pytorch", default=True, type=boolean_string, help="Using the model writen with Pytorch?")
+parser.add_argument("--dqn_type", dest="dqn_type", default="DQN", type=str, help="[DQN, DoubleDQN")
 
 args = parser.parse_args()
 parameter = vars(args)
-
-
-def construct_run_info(params):
-    """
-    Constructing a string which contains the primary super-parameters.
-
-    Args:
-        params: the super-parameter
-
-    Returns:
-        A dict, the updated parameter.
-    """
-    gpu_str = os.environ.get("CUDA_VISIBLE_DEVICES")
-    gpu_str.replace(' ', '')
-    if len(gpu_str.split(',')) > 1:
-        params.setdefault("multi_GPUs",True)
-    else:
-        params.setdefault("multi_GPUs", False)
-
-    agent_id = params.get("agent_id")
-    dqn_id = params.get("dqn_id")
-    disease_number = params.get("disease_number")
-    lr = params.get("dqn_learning_rate")
-    reward_for_success = params.get("reward_for_success")
-    reward_for_fail = params.get("reward_for_fail")
-    reward_for_not_come_yet = params.get("reward_for_not_come_yet")
-    reward_for_inform_right_symptom = params.get("reward_for_inform_right_symptom")
-    allow_wrong_disease = params.get("allow_wrong_disease")
-    check_related_symptoms = params.get("check_related_symptoms")
-
-    max_turn = params.get("max_turn")
-    minus_left_slots = params.get("minus_left_slots")
-    gamma = params.get("gamma")
-    epsilon = params.get("epsilon")
-    data_set_name = params.get("goal_set").split("/")[-2]
-    run_id = params.get('run_id')
-    multi_gpu = params.get("multi_GPUs")
-    info = "learning_rate_d" + str(disease_number) + \
-           "_" + agent_id + \
-           "_dqn" + str(dqn_id) +\
-           "_T" + str(max_turn) + \
-           "_lr" + str(lr) + \
-           "_RFS" + str(reward_for_success) + \
-           "_RFF" + str(reward_for_fail) + \
-           "_RFNCY" + str(reward_for_not_come_yet) + \
-           "_RFIRS" + str(reward_for_inform_right_symptom) +\
-           "_mls" + str(int(minus_left_slots)) + \
-           "_gamma" + str(gamma) + \
-           "_epsilon" + str(epsilon) + \
-           "_awd" + str(int(allow_wrong_disease)) + \
-           "_crs" + str(int(check_related_symptoms)) + \
-           "_RID" + str(run_id) + \
-           "_data" + str(data_set_name) + \
-           "_mGPU" + str(int(multi_gpu))
-    params['run_info'] = info
-
-    return params
 
 
 def run(parameter):
@@ -164,21 +103,12 @@ def run(parameter):
         parameter: the super-parameter
 
     """
-    agent_id = parameter.get("agent_id")
-    dqn_id = parameter.get("dqn_id")
-    disease_number = parameter.get("disease_number")
-    max_turn = parameter.get("max_turn")
-
-    if agent_id == 1:
-        checkpoint_path = "./../model/checkpoint/" + parameter["run_info"]
-    else:
-        checkpoint_path = "./../model/checkpoint/" + parameter["run_info"]
     print(json.dumps(parameter, indent=2))
     time.sleep(2)
     slot_set = pickle.load(file=open(parameter["slot_set"], "rb"))
     action_set = pickle.load(file=open(parameter["action_set"], "rb"))
     disease_symptom = pickle.load(file=open(parameter["disease_symptom"], "rb"))
-    steward = RunningSteward(parameter=parameter,checkpoint_path=checkpoint_path)
+    steward = RunningSteward(parameter=parameter,checkpoint_path=parameter["checkpoint_path"])
 
     warm_start = parameter.get("warm_start")
     warm_start_epoch_number = parameter.get("warm_start_epoch_number")
@@ -207,8 +137,8 @@ def run(parameter):
 
 
 if __name__ == "__main__":
-    gpu_str = parameter["gpu"]
+    params = verify_params(parameter)
+    gpu_str = params["gpu"]
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu_str
-    parameter = construct_run_info(parameter)
-    print(parameter['run_info'])
+    print(params['run_info'])
     run(parameter=parameter)

@@ -20,7 +20,6 @@ class DQN0(object):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
-        self.checkpoint_path = parameter.get("checkpoint_path")
         self.log_dir = parameter.get("log_dir")
         self.parameter = parameter
         self.learning_rate = parameter.get("dqn_learning_rate")
@@ -118,8 +117,7 @@ class DQN0(object):
         self.session.run(self.update_target_weights)
         self.session.run(self.update_target_bias)
 
-    def save_model(self, model_performance,episodes_index, checkpoint_path = None):
-        if checkpoint_path == None: checkpoint_path = self.checkpoint_path
+    def save_model(self, model_performance,episodes_index, checkpoint_path):
         agent_id = self.parameter.get("agent_id")
         dqn_id = self.parameter.get("dqn_id")
         disease_number = self.parameter.get("disease_number")
@@ -143,7 +141,6 @@ class DQN1(object):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
-        self.checkpoint_path = parameter.get("checkpoint_path")
         self.log_dir = parameter.get("log_dir")
         self.parameter = parameter
         self.learning_rate = parameter.get("dqn_learning_rate")
@@ -254,8 +251,7 @@ class DQN1(object):
         max_index = np.argmax(Ys, axis=1)
         return Ys, max_index[0]
 
-    def save_model(self, model_performance,episodes_index, checkpoint_path = None):
-        if checkpoint_path == None: checkpoint_path = self.checkpoint_path
+    def save_model(self, model_performance,episodes_index, checkpoint_path):
         agent_id = self.parameter.get("agent_id")
         dqn_id = self.parameter.get("dqn_id")
         disease_number = self.parameter.get("disease_number")
@@ -300,7 +296,6 @@ class DQN2(object):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
-        self.checkpoint_path = parameter.get("checkpoint_path")
         self.log_dir = parameter.get("log_dir")
         self.parameter = parameter
         self.learning_rate = parameter.get("dqn_learning_rate")
@@ -426,8 +421,7 @@ class DQN2(object):
         max_index = np.argmax(Ys, axis=1)
         return Ys, max_index[0]
 
-    def save_model(self, model_performance,episodes_index, checkpoint_path = None):
-        if checkpoint_path == None: checkpoint_path = self.checkpoint_path
+    def save_model(self, model_performance,episodes_index, checkpoint_path):
         agent_id = self.parameter.get("agent_id")
         dqn_id = self.parameter.get("dqn_id")
         disease_number = self.parameter.get("disease_number")
