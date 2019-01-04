@@ -241,18 +241,17 @@ def read_conversation_with_check(file):
 
 
 ii='2'
-file1='./bio_data/conversation/batch1/tagger'+ii+'.csv'
+file1='/Users/qianlong/Downloads/conversation.csv'
 con1=read_conversation_with_check(file1)
-file2='./bio_data/self_report/tagger'+ii+'.csv'
+file2='/Users/qianlong/Downloads/self_report.csv'
 report=read_self_report(file2)
-file3='./raw_data.csv'
-outputfile='./resource/tagger2/goal_batch'+ii+'.json'
+file3='/Users/qianlong/Downloads/raw_data.csv'
+outputfile='/Users/qianlong/Downloads/goal.json'
 
 goal=normal_filter()
 goal.disease_tag(file3)
 goal.implicit_extraction(con1)
 goals=goal.explicit_extraction(report)
-
 
 f1=open(outputfile,'w')
 for sent in goals:
@@ -260,20 +259,23 @@ for sent in goals:
     f1.write('\n')
 f1.close()
 
-file11='./bio_data/conversation/batch2/tagger'+ii+'.csv'
-con11=read_conversation_with_check(file11)
-goal=normal_filter()
-goal.disease_tag(file3)
-goal.implicit_extraction(con1)
-goals=goal.explicit_extraction(report)
-f1=open(outputfile,'a')
-for sent in goals:
-    f1.writelines(json.dumps(sent))
-    f1.write('\n')
-f1.close()
+
+# file11='./bio_data/conversation/batch2/tagger'+ii+'.csv'
+# con11=read_conversation_with_check(file11)
+# goal=normal_filter()
+# goal.disease_tag(file3)
+# goal.implicit_extraction(con1)
+# goals=goal.explicit_extraction(report)
+#
+# f1=open(outputfile,'a')
+# for sent in goals:
+#     f1.writelines(json.dumps(sent))
+#     f1.write('\n')
+# f1.close()
 
 
 disease=[]
 for sent in goals:
     disease.append(sent['disease_tag'])
-Counter(disease)
+c = Counter(disease)
+print(c)

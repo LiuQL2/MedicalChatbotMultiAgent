@@ -1,5 +1,9 @@
 # -*- coding:utf-8 -*-
 
+"""
+For parameters. Drwaring the learning curve for each combination of parameters.
+"""
+
 import matplotlib.pyplot as plt
 import pickle
 import os

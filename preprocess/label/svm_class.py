@@ -10,8 +10,8 @@ import os,sys
 import pickle
 import copy
 import pandas as pd
-sys.path.append(os.getcwd().replace('\\resource\\tagger2',''))
-from preprocess import GoalDumper
+sys.path.append(os.getcwd().replace('/resource/tagger2',''))
+from preprocess.label.preprocess_label import GoalDumper
 from sklearn.svm import SVC
 from sklearn import svm
 #from sklearn.metrics import accuracy_score

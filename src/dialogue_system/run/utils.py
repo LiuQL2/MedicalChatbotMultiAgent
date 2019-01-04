@@ -28,7 +28,6 @@ def construct_info(params):
         params.setdefault("multi_GPUs", False)
 
     agent_id = params.get("agent_id")
-    dqn_id = params.get("dqn_id")
     disease_number = params.get("disease_number")
     lr = params.get("dqn_learning_rate")
     reward_for_success = params.get("reward_for_success")
@@ -49,7 +48,6 @@ def construct_info(params):
 
     info = "learning_rate_d" + str(disease_number) + \
            "_" + agent_id + \
-           "_dqn" + str(dqn_id) +\
            "_T" + str(max_turn) + \
            "_lr" + str(lr) + \
            "_RFS" + str(reward_for_success) + \

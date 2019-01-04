@@ -12,7 +12,6 @@ sys.path.append(os.getcwd().replace("src/dialogue_system/run",""))
 
 from src.dialogue_system.agent import AgentRule
 from src.dialogue_system.agent import AgentDQN
-from src.dialogue_system.agent import AgentActorCritic
 from src.dialogue_system.user_simulator import UserRule as User
 from src.dialogue_system.dialogue_manager import DialogueManager
 from src.dialogue_system import dialogue_configuration
@@ -33,7 +32,7 @@ class RunningSteward(object):
         goal_set = pickle.load(file=open(parameter["goal_set"], "rb"))
         disease_symptom = pickle.load(file=open(parameter["disease_symptom"], "rb"))
 
-        user = User(goal_set=goal_set, disease_syptom=disease_symptom,parameter=parameter)
+        user = User(goal_set=goal_set, slot_set=slot_set, disease_syptom=disease_symptom,parameter=parameter)
         agent = AgentRule(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=parameter)
         self.dialogue_manager = DialogueManager(user=user, agent=agent, parameter=parameter)
 
@@ -57,12 +56,6 @@ class RunningSteward(object):
                 self.dialogue_manager.train()
                 # Simulating and filling experience replay pool.
                 self.simulation_epoch(epoch_size=self.epoch_size,train_mode=train_mode)
-            # Training AgentActorCritic with sampling one trajectory.
-            elif train_mode == True and isinstance(self.dialogue_manager.state_tracker.agent, AgentActorCritic):
-                # Sample one trajectory for training.
-                # for _i in range(self.epoch_size):
-                    self.simulation_epoch(epoch_size=self.epoch_size,train_mode=train_mode)
-                    self.dialogue_manager.train()
 
             # Evaluating the model.
             result = self.evaluate_model(index)
