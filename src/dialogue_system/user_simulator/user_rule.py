@@ -9,7 +9,8 @@ from src.dialogue_system.user_simulator.user import User
 
 
 class UserRule(User):
-    def __init__(self, goal_set, disease_syptom, parameter):
+    def __init__(self, goal_set, disease_syptom, slot_set, parameter):
         super(UserRule,self).__init__(goal_set=goal_set,
                                       disease_symptom=disease_syptom,
+                                      slot_set=slot_set,
                                       parameter=parameter)

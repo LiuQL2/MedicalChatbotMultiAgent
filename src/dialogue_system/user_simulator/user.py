@@ -55,11 +55,12 @@ from src.dialogue_system.agent.agent import Agent
 
 
 class User(object):
-    def __init__(self, goal_set, disease_symptom, parameter):
+    def __init__(self, goal_set, disease_symptom, slot_set, parameter):
         self.goal_set, self.disease_sample_count = self.__prepare_goal_set__(goal_set,parameter)
         self.max_turn = parameter["max_turn"]
         self.parameter = parameter
         self.disease_symptom = Agent.disease_symptom_clip(disease_symptom=disease_symptom,denominator=20,parameter=parameter)
+        self.slot_set = list(slot_set.keys())
         self._init()
 
     def initialize(self, train_mode=True, epoch_index=None):
@@ -86,12 +87,18 @@ class User(object):
         for slot in goal["explicit_inform_slots"].keys():
             # self.state["explicit_inform_slots"][slot] = goal["explicit_inform_slots"][slot]
 
-            # Informing all explicit slots at the beginning of the dialogue..
-            # self.state["inform_slots"][slot] = goal["explicit_inform_slots"][slot]
+            # Informing all explicit slots at the beginning of the dialogue.
+            self.state["inform_slots"][slot] = goal["explicit_inform_slots"][slot]
 
-            # Informing randomly selected slots at first.
-            if slot in inform_slots:
-                self.state["inform_slots"][slot] = goal["explicit_inform_slots"][slot]
+        # Informing one of the explicit symptoms randomly.
+        # if len(inform_slots) > 0:
+        #     self.state["inform_slots"] = {}
+        #     slot = random.choice(inform_slots)
+        #     self.state["inform_slots"][slot] = goal["explicit_inform_slots"][slot]
+        # print('user goal ', goal["explicit_inform_slots"])
+        # print('state info', self.state["inform_slots"])
+        # print('*' * 10)
+
 
         for slot in goal["implicit_inform_slots"].keys():
             if slot not in self.state["request_slots"].keys():
@@ -138,13 +145,13 @@ class User(object):
             A dict, containing the information of this turn and the user's current state.
         """
         user_action = {
-            "turn":self.state["turn"],
-            "action":self.state["action"],
-            "speaker":"user",
-            "request_slots":self.state["request_slots"],
-            "inform_slots":self.state["inform_slots"],
-            "explicit_inform_slots":self.state["explicit_inform_slots"],
-            "implicit_inform_slots":self.state["implicit_inform_slots"]
+            "turn": self.state["turn"],
+            "action": self.state["action"],
+            "speaker": "user",
+            "request_slots": self.state["request_slots"],
+            "inform_slots": self.state["inform_slots"],
+            "explicit_inform_slots": self.state["explicit_inform_slots"],
+            "implicit_inform_slots": self.state["implicit_inform_slots"]
         }
         return user_action
 
@@ -212,6 +219,13 @@ class User(object):
             self.check_disease_related_symptoms()
         user_action = self._assemble_user_action()
         reward = self._reward_function()
+
+        if self.parameter.get('noisy_channel') == True:
+            user_action = self.noisy_channel(user_action)
+        else:
+            pass
+
+        # print(user_action)
         return user_action, reward, self.episode_over, self.dialogue_status
 
     def _response_closing(self, agent_action):
@@ -224,7 +238,7 @@ class User(object):
     ##############################################
     def _response_request(self, agent_action):
         """
-        The user informs slot must be one of implicit_inform_slots, because the explicit_inform_slots are all informed
+        The user informs slot must be\ one of implicit_inform_slots, because the explicit_inform_slots are all informed
         at beginning.
         # It would be easy at first whose job is to answer the implicit slot requested by agent.
         :param agent_action:
@@ -280,7 +294,7 @@ class User(object):
     # Response confirm_answer where explicit_inform_slots and implicit_inform_slots are handled in the same way.
     #############################################
     def _response_confirm_answer(self, agent_action):
-        # TODO (Qianlong): response to confirm answer action. I don't think it is logically right, but there is no slot
+        # TODO (Qianlong): response to confirm answer action. I don't think it is right, but there is no slot
         # TODO: in either inform_slots or request_slots when the action type is "confirm answer" in the action space of agent.
         if len(self.state["rest_slots"].keys()) > 0:
             slot = random.choice(list(self.state["rest_slots"].keys()))
@@ -302,7 +316,6 @@ class User(object):
     # Response for thanks.
     ##########################################
     def _response_thanks(self, agent_action):
-        # TODO (Qianlong): response to thanks action.
         self.episode_over = True
         self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_SUCCESS
 
@@ -334,7 +347,6 @@ class User(object):
     # Response for inform where explicit_inform_slots and implicit_inform_slots are handled in the same way.
     ##########################################
     def _response_inform(self, agent_action):
-        # TODO (Qianlong): response to inform action.
         agent_all_inform_slots = copy.deepcopy(agent_action["inform_slots"])
         agent_all_inform_slots.update(agent_action["explicit_inform_slots"])
         agent_all_inform_slots.update(agent_action["implicit_inform_slots"])
@@ -580,3 +592,47 @@ class User(object):
 
         if count < 2:
             self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_FAILED
+
+    def noisy_channel(self, user_action):
+        temp_user_action = copy.deepcopy(user_action)
+        act_type = temp_user_action['action']
+        if act_type != 'inform':
+            return temp_user_action
+
+        error_prob = self.parameter.get('error_prob', 0.05)
+        error_type = random.choice(['slot', 'value', 'both'])
+
+        random_float = random.random()
+        if random_float > error_prob:
+            return temp_user_action
+
+        if error_type == 'slot':
+            for slot, value in user_action['inform_slots'].items():
+                slot_set = copy.deepcopy(self.slot_set)
+                slot_set.pop(slot_set.index('disease'))
+                slot_set.pop(slot_set.index(slot))
+                new_slot = random.choice(slot_set)
+                temp_user_action['inform_slots'][new_slot]=value
+        elif error_type == 'value':
+            for slot, current_value in user_action['inform_slots'].items():
+                if current_value == dialogue_configuration.I_DO_NOT_KNOW or current_value in ['unk', 'UNK']:
+                    current_value = dialogue_configuration.I_DO_NOT_KNOW
+                candidate_values = list(set([True, False, current_value]))
+                candidate_values.pop(candidate_values.index(current_value))
+                new_value = random.choice(candidate_values)
+                temp_user_action['inform_slots'][slot] = new_value
+        elif error_type == 'both':
+            for slot, current_value in user_action['inform_slots'].items():
+                # slot
+                slot_set = copy.deepcopy(self.slot_set)
+                slot_set.pop(slot_set.index('disease'))
+                slot_set.pop(slot_set.index(slot))
+                new_slot = random.choice(slot_set)
+                # value
+                if current_value == dialogue_configuration.I_DO_NOT_KNOW or current_value in ['unk', 'UNK']:
+                    current_value = dialogue_configuration.I_DO_NOT_KNOW
+                candidate_values = list(set([True, False, current_value]))
+                candidate_values.pop(candidate_values.index(current_value))
+                new_value = random.choice(candidate_values)
+                temp_user_action['inform_slots'][new_slot]=[new_value]
+        return temp_user_action

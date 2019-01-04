@@ -173,7 +173,6 @@ class SymptomClassifier(object):
 
     def _train_and_evaluate_svm_one_fold_(self, train_set, test_set):
         """
-
         :param train_set: dict, {"fold_index":{"x":[],"x_ex":[]]}
         :param test_set: a list of batches.
         :return:

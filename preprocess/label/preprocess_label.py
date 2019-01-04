@@ -107,14 +107,31 @@ class GoalDumper(object):
             "validate":[]
         }
 
+        # for goal set
+        goal_disease = {}
         for goal in self.goal_set:
-            random_float = random.random()
-            if random_float <= train:
-                data_set["train"].append(goal)
-            elif train < random_float and random_float <= train+test:
-                data_set["test"].append(goal)
-            else:
-                data_set["validate"].append(goal)
+            goal_disease.setdefault(goal['disease_tag'], list())
+            goal_disease[goal['disease_tag']].append(goal)
+
+        for disease, v in goal_disease.items():
+            random.shuffle(v)
+            number = len(v)
+            train_n = int(number * train)
+            test_n = int(number * test)
+            validate_n = int(number * validate)
+            data_set['train'] = data_set['train'] + v[0:train_n]
+            data_set['test'] = data_set['test'] + v[train_n:train_n + test_n]
+            data_set['validate'] = data_set['validate'] + v[number-validate_n:number]
+
+
+        for goal in self.goal_set:
+            # random_float = random.random()
+            # if random_float <= train:
+            #     data_set["train"].append(goal)
+            # elif train < random_float and random_float <= train+test:
+            #     data_set["test"].append(goal)
+            # else:
+            #     data_set["validate"].append(goal)
 
             for slot, value in goal["goal"]["explicit_inform_slots"].items():
                 if value == False: print(goal)
@@ -173,11 +190,15 @@ if __name__ == "__main__":
     # slots_dumper.dump(slot_dump_file_name=slots_dump_file,disease_dump_file_name=disease_dump_file)
 
     # Goal
-    goal_file = "./../../resources/label/goal2_normal_filter.json"
-    goal_dump_file = "./../../resources/label/goal_set.p"
-    slots_dump_file = "./../../resources/label/slot_set.p"
-    disease_dump_file = "./../../resources/label/disease_symptom.p"
+    goal_file = "./../../resources/label/used/goal_find.json"
+    goal_dump_file = "./../../resources/label/used/goal_set.p"
+    slots_dump_file = "./../../resources/label/used/slot_set.p"
+    disease_dump_file = "./../../resources/label/used/disease_symptom.p"
     goal_dumper = GoalDumper(goal_file=goal_file)
     goal_dumper.dump(dump_file_name=goal_dump_file)
     goal_dumper.dump_slot(slots_dump_file)
     goal_dumper.dump_disease_symptom(disease_dump_file)
+
+    slot = pickle.load(open(slots_dump_file,'rb'))
+
+    print(len(slot))

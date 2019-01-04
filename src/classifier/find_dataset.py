@@ -21,6 +21,12 @@ class Finder(object):
         self._disease_index(disease_symptom=disease_symptom)
         self._symptom_index(symptom_set=symptom_set)
         self.goal_by_disease_set = self.__goal_by_disease__()
+        self.disease_to_english = {
+            '小儿腹泻': 'Infantile diarrhea',
+            '小儿支气管炎': 'Children’s bronchitis',
+            '小儿消化不良': 'Children functional dyspepsia',
+            '上呼吸道感染': 'Upper respiratory infection'
+        }
 
     def _symptom_index(self, symptom_set):
         """
@@ -72,7 +78,7 @@ class Finder(object):
         if save_set:
             file_name = save_path + "goal_set_" + str(gap) + ".p"
             print("saving...",file_name)
-            # self.dump_goal_set(dump_file_name=file_name)
+            self.dump_goal_set(dump_file_name=file_name)
         return gap,save_set
 
     def __goal_by_disease__(self):
@@ -83,6 +89,9 @@ class Finder(object):
                 append_or_not = self.__keep_sample_or_not__(goal)
                 if append_or_not:
                     goal_by_disease[goal["disease_tag"]].append(goal)
+                else:
+                    pass
+                    # print(goal)
         for key in goal_by_disease.keys():
             pass
             # print(key, len(goal_by_disease[key]))
@@ -101,9 +110,17 @@ class Finder(object):
         for disease,goal_list in goal_by_disease.items():
             random.shuffle(goal_list)
             if disease == "小儿消化不良":
-                all_sample = all_sample + list(random.sample(goal_list, 200))
+                print(disease,len(goal_list))
+                all_sample = all_sample + list(random.sample(goal_list, 250))
+            elif disease == '上呼吸道感染':
+                # print(disease,len(goal_list))
+                all_sample = all_sample + list(random.sample(goal_list, 180))
+            elif disease == '小儿腹泻':
+                # print(disease,len(goal_list))
+                all_sample = all_sample + list(random.sample(goal_list, 350))
             else:
-                all_sample = all_sample + list(random.sample(goal_list, 300))
+                # print(disease,len(goal_list))
+                all_sample = all_sample + list(random.sample(goal_list, 350))
 
         random.shuffle(all_sample)
         fold_size = int(len(all_sample) / self.k_fold)
@@ -145,7 +162,6 @@ class Finder(object):
                 # print(data_set)
                 append_or_not = self.__keep_sample_or_not__(goal)
                 if append_or_not:
-
                     sample_by_disease.setdefault(goal["disease_tag"], dict())
                     sample_by_disease[goal["disease_tag"]][goal["consult_id"]] = goal
 
@@ -157,10 +173,14 @@ class Finder(object):
                     data_set[k]["x_ex_im"].append(symptom_rep_ex_im)
                     data_set[k]["y"].append(disease_rep)
                     data_set[k]["consult_id"].append(goal["consult_id"])
+                else:
+                    pass
+                    # print(goal)
 
         self.data_set = data_set
         self.sample_by_disease = sample_by_disease
         self.disease_sample_count = disease_sample_count
+        # exit(0)
 
     def train_sklearn_svm(self):
         disease_accuracy = {}
@@ -290,6 +310,12 @@ class Finder(object):
             if len(goal["goal"]["explicit_inform_slots"].keys()) >= 0 and \
                     len(goal["goal"]["implicit_inform_slots"].keys()) >= 1:
                 keep_or_not = True
+                # symptom_list = list(goal['goal']['implicit_inform_slots'].keys()) + list(goal['goal']['explicit_inform_slots'].keys())
+                # for symptom in symptom_list:
+                #     if symptom in ['腹泻']:
+                #         keep_or_not = False
+                #         break
+
         elif disease_tag in ["小儿支气管炎"]:
             keep_or_not = False
             if len(goal["goal"]["explicit_inform_slots"].keys()) >= 1 and \
@@ -308,15 +334,14 @@ class Finder(object):
                     # if symptom in ["腹泻","咳嗽", "肺纹理增粗","涨肚"]:
                         keep_or_not = False
                         break
-        return True
+        return keep_or_not
 
 
 if __name__ == "__main__":
     # goal_set,symptom_set, disease_symptom
-    # goal_set_file = './../dialogue_system/data/4_diseases/both/goal_set.p'
-    goal_set_file = './../dialogue_system/data/dataset/label/goal_set.p'
-    slot_set_file = './../dialogue_system/data/dataset/label/slot_set.p'
-    disease_symptom_file = './../dialogue_system/data/dataset/label/disease_symptom.p'
+    goal_set_file = './../dialogue_system/data/filter10/goal_set.p'
+    slot_set_file = './../dialogue_system/data/filter10/slot_set.p'
+    disease_symptom_file = './../dialogue_system/data/filter10/disease_symptom.p'
     save_path = "./../dialogue_system/data/found_dataset/"
     goal_set = pickle.load(open(goal_set_file,"rb"))
     slot_set = pickle.load(open(slot_set_file,"rb"))

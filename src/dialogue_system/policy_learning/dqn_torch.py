@@ -14,12 +14,19 @@ class DQNModel(torch.nn.Module):
     def __init__(self, input_size, hidden_size, output_size, parameter):
         super(DQNModel, self).__init__()
         self.params = parameter
+        # Two layers
+        # self.layer1 = torch.nn.Linear(input_size, hidden_size,bias=True)
+        # self.layer2 = torch.nn.Linear(hidden_size, output_size, bias=True)
+
+        # one layer
         self.layer1 = torch.nn.Linear(input_size, output_size,bias=True)
+
 
     def forward(self, x):
         if torch.cuda.is_available():
             x.cuda()
         h1 = self.layer1(x)
+        # h2 = self.layer2(h1)
         return h1
 
 
@@ -51,7 +58,7 @@ class DQN(object):
             else:
                 weight_p.append(p)
 
-        self.optimizer = torch.optim.SGD([
+        self.optimizer = torch.optim.Adam([
             {'params': weight_p, 'weight_decay': 0.1}, # with L2 regularization
             {'params': bias_p, 'weight_decay': 0} # no L2 regularization.
         ], lr=self.parameter.get("dqn_learning_rate",0.001))
@@ -164,14 +171,13 @@ class DQN(object):
         if os.path.isdir(checkpoint_path) == False:
             os.mkdir(checkpoint_path)
         agent_id = self.parameter.get("agent_id")
-        dqn_id = self.parameter.get("dqn_id")
         disease_number = self.parameter.get("disease_number")
         success_rate = model_performance["success_rate"]
         average_reward = model_performance["average_reward"]
         average_turn = model_performance["average_turn"]
         average_wrong_disease = model_performance["average_wrong_disease"]
-        model_file_name = os.path.join(checkpoint_path, "model_d" + str(disease_number) + "_agent" + str(agent_id) + "_dqn" + \
-                          str(dqn_id) + "_s" + str(success_rate) + "_r" + str(average_reward) + "_t" + str(average_turn)\
+        model_file_name = os.path.join(checkpoint_path, "model_d" + str(disease_number) + "_agent" + str(agent_id)\
+                          + "_s" + str(success_rate) + "_r" + str(average_reward) + "_t" + str(average_turn)\
                           + "_wd" + str(average_wrong_disease) + "_e-" + str(episodes_index) + ".pkl")
 
         torch.save(self.current_net.state_dict(), model_file_name)

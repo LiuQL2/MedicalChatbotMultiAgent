@@ -55,6 +55,7 @@ class Normalize(object):
         reader = csv.reader(data_file)
         for line in reader:
             line = line[0].split('\t')
+            print(line)
             self.spoken_normal[line[0]] = line[1]
         data_file.close()
 
@@ -81,26 +82,34 @@ class FilterFrequency(object):
     """
     根据频率过滤症状。
     """
-    def __init__(self, symptom_frequency_file, threshold = 1):
+    def __init__(self, threshold = 1):
         self.threshold = threshold
-        data_file = open(symptom_frequency_file, 'r', encoding='utf-8')
-        reader = csv.reader(data_file)
-        self.symptom_frequency = {}
-        for line in reader:
-            self.symptom_frequency[line[0]] = int(line[1])
-        data_file.close()
 
     def load(self, goal_file):
         data_file = open(goal_file, 'r', encoding='utf8')
-        new_file = open(goal_file.split('.json')[0] + '_filter.json', 'w', encoding='utf8')
+        self.symptom_frequency = {}
+        for line in data_file:
+            line = json.loads(line)
+            for symptom in line['goal']['implicit_inform_slots'].keys():
+                self.symptom_frequency.setdefault(symptom, 0)
+                self.symptom_frequency[symptom] += 1
+
+            for symptom in line['goal']['explicit_inform_slots'].keys():
+                self.symptom_frequency.setdefault(symptom, 0)
+                self.symptom_frequency[symptom] += 1
+        data_file.close()
+        print(self.symptom_frequency)
+
+        data_file = open(goal_file, 'r', encoding='utf8')
+        new_file = open(goal_file.split('.json')[0] + '_filter_' + str(self.threshold) + '.json', 'w', encoding='utf8')
         for line in data_file:
             line = json.loads(line)
             temp_line = copy.deepcopy(line)
             for symptom, value in temp_line['goal']['implicit_inform_slots'].items():
-                if self.symptom_frequency[symptom] <= self.threshold:
+                if self.symptom_frequency[symptom] < self.threshold:
                     line['goal']['implicit_inform_slots'].pop(symptom)
             for symptom, value in temp_line['goal']['explicit_inform_slots'].items():
-                if self.symptom_frequency[symptom] <= self.threshold:
+                if self.symptom_frequency[symptom] < self.threshold:
                     line['goal']['explicit_inform_slots'].pop(symptom)
             new_file.write(json.dumps(line) + '\n')
         data_file.close()
@@ -131,23 +140,24 @@ class FirstRun(object):
 
 
 if __name__ == '__main__':
-    goal_file = './../../resources/label/goal2_normal_filter.json'
+    goal_file = './../../resources/label/new/goal2.json'
     # goal_file = './../../resources/label/goal2_normal.json'
     # goal_file = './../../resources/label/goal2.json'
     symptom_file = './../../resources/label/symptom_frequency.csv'
     disease_file = './../../resources/label/disease_frequency.csv'
 
+    goal_file = './../../resources/label/goal2_normal.json'
     # first = FirstRun()
     # first.read(goal_file)
 
-    #
+
     # normal_file = './../../resources/label/症状归一手动.csv'
     # normal = Normalize(normal_file)
     # normal.load(goal_file)
 
-    frequency = Frequency()
-    frequency.load(goal_file,symptom_file, disease_file)
+    # frequency = Frequency()
+    # frequency.load(goal_file,symptom_file, disease_file)
 
 
-    # filter = FilterFrequency(symptom_file,threshold=9)
-    # filter.load(goal_file)
+    filter = FilterFrequency(threshold=10)
+    filter.load(goal_file)

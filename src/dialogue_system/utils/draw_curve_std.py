@@ -1,10 +1,10 @@
 # -*- coding: utf8 -*-
 """
-用于画learning curve的图，这里只是不同agent之间进行对比分析，不包含simulator的greedy程度。
+用于画learning curve的图，将各个独立跑出的结果文件放入到一个文件夹中，针对每组参数进行选择即可画出各个模型的learning curve。
 """
 
 from __future__ import print_function
-import argparse, json
+import argparse
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np

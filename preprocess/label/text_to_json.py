@@ -239,43 +239,52 @@ def read_conversation_with_check(file):
 
 
 
-
-ii='2'
-file1='/Users/qianlong/Downloads/conversation.csv'
-con1=read_conversation_with_check(file1)
-file2='/Users/qianlong/Downloads/self_report.csv'
-report=read_self_report(file2)
-file3='/Users/qianlong/Downloads/raw_data.csv'
-outputfile='/Users/qianlong/Downloads/goal.json'
-
-goal=normal_filter()
-goal.disease_tag(file3)
-goal.implicit_extraction(con1)
-goals=goal.explicit_extraction(report)
-
-f1=open(outputfile,'w')
-for sent in goals:
-    f1.writelines(json.dumps(sent))
-    f1.write('\n')
-f1.close()
-
-
-# file11='./bio_data/conversation/batch2/tagger'+ii+'.csv'
-# con11=read_conversation_with_check(file11)
+#
+# ii='2'
+# file1='/Users/qianlong/Downloads/conversation.csv'
+# con1=read_conversation_with_check(file1)
+# file2='/Users/qianlong/Downloads/self_report.csv'
+# report=read_self_report(file2)
+# file3='/Users/qianlong/Downloads/raw_data.csv'
+# outputfile='/Users/qianlong/Downloads/goal.json'
+#
 # goal=normal_filter()
 # goal.disease_tag(file3)
 # goal.implicit_extraction(con1)
 # goals=goal.explicit_extraction(report)
 #
-# f1=open(outputfile,'a')
+# f1=open(outputfile,'w')
 # for sent in goals:
 #     f1.writelines(json.dumps(sent))
 #     f1.write('\n')
 # f1.close()
+#
+#
+# disease=[]
+# for sent in goals:
+#     disease.append(sent['disease_tag'])
+# c = Counter(disease)
+# print(c)
 
 
-disease=[]
-for sent in goals:
-    disease.append(sent['disease_tag'])
-c = Counter(disease)
-print(c)
+
+##############
+# 下面代码是去掉重复的症状
+##############
+
+file = open('./../../resources/label/new/goal1.json', 'r')
+new_file = open('./../../resources/label/new/goal3.json', 'w')
+
+for line in file:
+    line = json.loads(line)
+    print(line)
+    temp_line = copy.deepcopy(line)
+    for symptom in line["goal"]['explicit_inform_slots'].keys():
+        if symptom in temp_line["goal"]["implicit_inform_slots"].keys():
+            temp_line["goal"]["explicit_inform_slots"].pop(symptom)
+
+    new_line = json.dumps(temp_line)
+    new_file.write(new_line + "\n")
+
+new_file.close()
+file.close()

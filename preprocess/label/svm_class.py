@@ -44,7 +44,8 @@ def disease_symptom_clip(disease_symptom, denominator):
     return temp_disease_symptom
 
 def svm_model(dataset,min_count,target,svm_c):
-    index_len=600
+    print(dataset.shape)
+    index_len=dataset.shape[0]
     slots_x=np.zeros((index_len,sum(sum(abs(dataset),1)>min_count)))  
     count=0       
     for i,value in enumerate(sum(dataset,1)):
@@ -78,17 +79,14 @@ def svm_model(dataset,min_count,target,svm_c):
         scores.append(scores_tot)
     return np.mean(scores)
 
-goal_file = "./goal_batch2.json"
-goal_dump_file = "./goal_set.p"
-slots_dump_file = "./slot_set.p"
-goal=GoalDumper(goal_file)
-goal.dump(goal_dump_file)
-goal_set=goal.goalset
-goal.dump_slot(slots_dump_file)
-#goal_set,slot_set=goal.set_return()
-slot_set=pickle.load(open(slots_dump_file,'rb'))
+
+slots_set_file = './../../src/dialogue_system/data/slot_set.p'
+goal_set_file = './../../src/dialogue_system/data/goal_set.p'
+disease_symptom_file = './../../src/dialogue_system/data/disease_symptom.p'
+goal_set = pickle.load(open(goal_set_file,'rb'))
+slot_set=pickle.load(open(slots_set_file,'rb'))
 slot_set.pop('disease')
-disease_symptom=goal.disease_symptom
+disease_symptom= pickle.load(open(disease_symptom_file, 'rb'))
 disease_symptom1=disease_symptom_clip(disease_symptom,2)
 #slot_set.pop('发热39度3')
 #slot_set.pop('发热37.7至38.4度')
@@ -131,12 +129,10 @@ for i,dialogue in enumerate(total_set):
 
 
 
-
-        
-        
-        
-score_tot_exp=svm_model(dataset=slots_exp,min_count=0,target=disease_y,svm_c=10)    
-score_tot_all=svm_model(dataset=slots_all,min_count=0,target=disease_y,svm_c=10)    
+score_tot_exp=svm_model(dataset=slots_exp,min_count=0,target=disease_y,svm_c=10)
+score_tot_all=svm_model(dataset=slots_all,min_count=0,target=disease_y,svm_c=10)
+print('exp', score_tot_exp)
+print('all', score_tot_all)
 '''
 slots_x_all=np.zeros((len(total_set),sum(sum(abs(slots_all),1)>5)))  
 count=0       
@@ -168,9 +164,3 @@ clf = svm.SVC(kernel='linear', C=5)
 scores_all = cross_validate(clf, slots_input_all, disease_y, cv=5,scoring='accuracy',return_train_score=False)
 scores_tot_all=sum(scores_all['test_score'])/5
 '''
-
-
-   
-    
-    
-    
