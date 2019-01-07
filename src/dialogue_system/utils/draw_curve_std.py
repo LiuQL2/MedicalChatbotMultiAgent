@@ -79,8 +79,7 @@ class DrawCurve(object):
 
 
         no_key_word_list = ['.DS_Store','.pdf']
-
-        key_word_list = ['dqn']
+        key_word_list = ['DQN', 'hrl0']
         mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
                                                key_word_list=key_word_list,
                                                no_key_word_list=no_key_word_list)
@@ -89,15 +88,15 @@ class DrawCurve(object):
         plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[0], alpha=0.2)
         ave_result['RL-agent'] = mean_point
 
-
-        # key_word_list = ['sim1', 'issdecay1', 'rac0']
-        # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
-        #                                        key_word_list=key_word_list,
-        #                                        no_key_word_list=no_key_word_list)
-        # min_len_list.append(min_len)
-        # l2, = plt.plot(range(mean.shape[0]), mean, colors[1], label='DQN-Sim(Decay=1)', linewidth=linewidth)
-        # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[1], alpha=0.2)
-        # ave_result['DQN(Decay=1,RC=0)'] = mean_point
+        no_key_word_list = ['.DS_Store','.pdf']
+        key_word_list = ['DQN', 'hrl1']
+        mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
+                                               key_word_list=key_word_list,
+                                               no_key_word_list=no_key_word_list)
+        min_len_list.append(min_len)
+        l2, = plt.plot(range(mean.shape[0]), mean, colors[1], label='HRL-agent', linewidth=linewidth)
+        plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[1], alpha=0.2)
+        ave_result['DQN(Decay=1,RC=0)'] = mean_point
 
         min_len = min(min_len_list)
         plt.grid(True)
@@ -107,7 +106,7 @@ class DrawCurve(object):
         plt.legend(loc=4)
         # plt.savefig('learning_curve.png')
         # plt.show()
-        plt.savefig(os.path.join(self.params['result_path'] + '_sr_' + str(min_len) + '.pdf'))
+        plt.savefig(os.path.join(self.params['result_path'] + 'learning_curve' + str(min_len) + '.pdf'))
         print(ave_result)
 
     @staticmethod
@@ -164,7 +163,7 @@ class DrawCurve(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--result_path', dest='result_path', type=str, default='/Users/qianlong/Desktop/flat_dqn/', help='the directory of the results.')
+    parser.add_argument('--result_path', dest='result_path', type=str, default='/Users/qianlong/Desktop/performance/', help='the directory of the results.')
 
     parser.add_argument('--metric', dest='metric', type=str, default='recall', help='the metric to show')
 

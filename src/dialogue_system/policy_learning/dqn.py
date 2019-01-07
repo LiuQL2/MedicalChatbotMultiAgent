@@ -119,13 +119,12 @@ class DQN0(object):
 
     def save_model(self, model_performance,episodes_index, checkpoint_path):
         agent_id = self.parameter.get("agent_id")
-        dqn_id = self.parameter.get("dqn_id")
         disease_number = self.parameter.get("disease_number")
         success_rate = model_performance["success_rate"]
         average_reward = model_performance["average_reward"]
         average_turn = model_performance["average_turn"]
         average_wrong_disease = model_performance["average_wrong_disease"]
-        model_file_name = "model_d" + str(disease_number) + "_agent" + str(agent_id) + "_dqn" + str(dqn_id) + "_s" + str(success_rate) + "_r" + str(average_reward) + "_t" + str(average_turn) + "_wd" + str(average_wrong_disease) + "_e" + str(episodes_index) + ".ckpt"
+        model_file_name = "model_d" + str(disease_number) + "_agent" + str(agent_id) + "_s" + str(success_rate) + "_r" + str(average_reward) + "_t" + str(average_turn) + "_wd" + str(average_wrong_disease) + "_e" + str(episodes_index) + ".ckpt"
         self.model_saver.save(sess=self.session,save_path=checkpoint_path + model_file_name,global_step=episodes_index)
 
     def restore_model(self, saved_model):
@@ -253,13 +252,12 @@ class DQN1(object):
 
     def save_model(self, model_performance,episodes_index, checkpoint_path):
         agent_id = self.parameter.get("agent_id")
-        dqn_id = self.parameter.get("dqn_id")
         disease_number = self.parameter.get("disease_number")
         success_rate = model_performance["success_rate"]
         average_reward = model_performance["average_reward"]
         average_turn = model_performance["average_turn"]
         average_wrong_disease = model_performance["average_wrong_disease"]
-        model_file_name = "model_d" + str(disease_number) + "_agent" + str(agent_id) + "_dqn" + str(dqn_id) + "_s" + str(success_rate) + "_r" + str(average_reward) + "_t" + str(average_turn) + "_wd" + str(average_wrong_disease) + "_e" + str(episodes_index) + ".ckpt"
+        model_file_name = "model_d" + str(disease_number) + "_agent" + str(agent_id) + "_s" + str(success_rate) + "_r" + str(average_reward) + "_t" + str(average_turn) + "_wd" + str(average_wrong_disease) + "_e" + str(episodes_index) + ".ckpt"
         self.model_saver.save(sess=self.session,save_path=checkpoint_path + model_file_name,global_step=episodes_index)
 
     def restore_model(self, saved_model):
@@ -380,7 +378,6 @@ class DQN2(object):
         if self.parameter.get("train_mode") != True:
             self.restore_model(self.parameter.get("saved_model"))
 
-
     def singleBatch(self, batch, params):
         # state, agent_action, reward, next_state, episode_over
         gamma = params.get('gamma', 0.9)
@@ -423,13 +420,12 @@ class DQN2(object):
 
     def save_model(self, model_performance,episodes_index, checkpoint_path):
         agent_id = self.parameter.get("agent_id")
-        dqn_id = self.parameter.get("dqn_id")
         disease_number = self.parameter.get("disease_number")
         success_rate = model_performance["success_rate"]
         average_reward = model_performance["average_reward"]
         average_turn = model_performance["average_turn"]
         average_wrong_disease = model_performance["average_wrong_disease"]
-        model_file_name = "model_d" + str(disease_number) + "_agent" + str(agent_id) + "_dqn" + str(dqn_id) + "_s" + str(success_rate) + "_r" + str(average_reward) + "_t" + str(average_turn) + "_wd" + str(average_wrong_disease) + "_e" + str(episodes_index) + ".ckpt"
+        model_file_name = "model_d" + str(disease_number) + "_agent" + str(agent_id) + "_s" + str(success_rate) + "_r" + str(average_reward) + "_t" + str(average_turn) + "_wd" + str(average_wrong_disease) + "_e" + str(episodes_index) + ".ckpt"
         self.model_saver.save(sess=self.session,save_path=checkpoint_path + model_file_name,global_step=episodes_index)
 
     def restore_model(self, saved_model):

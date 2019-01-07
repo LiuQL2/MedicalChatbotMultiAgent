@@ -342,7 +342,7 @@ class User(object):
         user_all_inform_slots = copy.deepcopy(self.goal["goal"]["explicit_inform_slots"])
         user_all_inform_slots.update(self.goal["goal"]["implicit_inform_slots"])
 
-        # The agent informed the right disease and dialogue is over.
+        # The agent informed the right disease and the current dialogue session is over.
         if "disease" in agent_action["inform_slots"].keys() and agent_action["inform_slots"]["disease"] == self.goal["disease_tag"]:
             self.state["action"] = dialogue_configuration.CLOSE_DIALOGUE
             self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_SUCCESS
@@ -376,19 +376,23 @@ class User(object):
                 if slot in user_all_inform_slots.keys():
                     # Agent informed correct slot.
                     if agent_all_inform_slots[slot] == user_all_inform_slots[slot]:
-                        # dialogue status becomes DIALOGUE_STATUS_INFORM_RIGHT_SYMPTOM.
+                        # dialogue status changes into DIALOGUE_STATUS_INFORM_RIGHT_SYMPTOM.
                         self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_INFORM_RIGHT_SYMPTOM
                         self.state["history"][slot] = agent_all_inform_slots[slot]
-                        if slot in self.state["rest_slots"].keys(): self.state["rest_slots"].pop(slot)
+                        if slot in self.state["rest_slots"].keys(): self.state["rest_slots"].pop(slot) # pop this slot from left slots.
 
-                        if len(self.state["request_slots"].keys()) > 0:
+                        if len(self.state["request_slots"].keys()) > 0: # the act type is `request` if there exists slot in `request_slots`
                             self.state["action"] = "request"
+                            # confirm the slot-value.
+                            self.state["action"] = "confirm_answer"
+                            self.state["inform_slots"][slot] = agent_all_inform_slots[slot]
+
                         elif len(self.state["rest_slots"]) > 0:# The state["rest_slots"] is not empty.
                             rest_slot_set = copy.deepcopy(list(self.state['rest_slots'].keys()))
                             if "disease" in rest_slot_set:
                                 rest_slot_set.remove("disease")
 
-                            if len(rest_slot_set) > 0:
+                            if len(rest_slot_set) > 0: # Not the `disease` slots.
                                 inform_slot = random.choice(rest_slot_set)
                                 if inform_slot in self.goal["goal"]["explicit_inform_slots"].keys():
                                     self.state["inform_slots"][inform_slot] = self.goal["goal"]["explicit_inform_slots"][inform_slot]
@@ -398,7 +402,8 @@ class User(object):
                                     self.state["inform_slots"][inform_slot] = self.goal["goal"]["implicit_inform_slots"][inform_slot]
                                     self.state["action"] = "inform"
                                     self.state["rest_slots"].pop(inform_slot)
-                                elif inform_slot in self.goal["goal"]["request_slots"].keys():# This case will not appear
+                                # This case will not appear in medical dialogue system.
+                                elif inform_slot in self.goal["goal"]["request_slots"].keys():
                                     self.state["request_slots"][inform_slot] = dialogue_configuration.VALUE_UNKNOWN
                                     self.state["action"] = "request"
                                     self.state["rest_slots"].pop(inform_slot)
@@ -419,11 +424,15 @@ class User(object):
                         elif slot in self.goal["goal"]["implicit_inform_slots"].keys():
                             self.state["action"] = "inform"
                             self.state["inform_slots"][slot] = self.goal["goal"]["implicit_inform_slots"][slot]
+                        else:
+                            self.state["action"] = "inform"
+                            self.state["inform_slots"][slot] = dialogue_configuration.I_DO_NOT_KNOW
+
                         if slot in self.state["rest_slots"]: self.state["rest_slots"].pop(slot)
 
                 # The slot agent informed is not in the user explicit/implicit slots, which means the informed slots may
                 # in the user["request_slots"] or not in the request_slots and explicit/implicit_slots of the user.
-                # the "disease" case has been hanled specially.
+                # the "disease" case has been handled specially.
                 # TODO: I think this should deny the wrong informed slot. Attention.
                 else:
                     if slot in self.state["request_slots"].keys(): self.state["request_slots"].pop(slot)

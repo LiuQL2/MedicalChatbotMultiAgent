@@ -1,8 +1,8 @@
 .idea/
 resources/*
 others/
-src/dialogue_system/data/*
-src/dialogue_system/model/*
+src/data/*
+src/model/*
 log/train/*
 **/*.logs
 **/*.log

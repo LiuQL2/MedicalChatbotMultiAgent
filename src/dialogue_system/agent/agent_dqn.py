@@ -11,6 +11,7 @@ import sys, os
 sys.path.append(os.getcwd().replace("src/dialogue_system/agent",""))
 
 from src.dialogue_system.agent.agent import Agent
+from src.dialogue_system.policy_learning.dqn_torch import DQN
 
 
 class AgentDQN(Agent):
@@ -19,19 +20,6 @@ class AgentDQN(Agent):
         input_size = parameter.get("input_size_dqn")
         hidden_size = parameter.get("hidden_size_dqn", 100)
         output_size = len(self.action_sapce)
-        dqn_id = self.parameter.get("dqn_id")
-        if dqn_id == 0:
-            from src.dialogue_system.policy_learning import DQN0 as DQN
-        elif dqn_id == 1:
-            from src.dialogue_system.policy_learning import DQN1 as DQN
-        elif dqn_id == 2:
-            from src.dialogue_system.policy_learning import DQN2 as DQN
-        elif dqn_id == 3:
-            from src.dialogue_system.policy_learning import DQN3 as DQN
-
-        if parameter["is_pytorch"] == True:
-            from src.dialogue_system.policy_learning.dqn_torch import DQN
-
 
         self.dqn = DQN(input_size=input_size, hidden_size=hidden_size,output_size=output_size, parameter=parameter)
 

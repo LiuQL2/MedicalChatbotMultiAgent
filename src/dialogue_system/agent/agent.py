@@ -71,7 +71,7 @@ class Agent(object):
         :param batch: the sample used to training.
         :return:
         """
-        pass
+        raise NotImplementedError("The train methods in agent has not been imple")
 
     def state_to_representation_history(self, state):
         """

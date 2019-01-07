@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 
+import time
 import os
 
 def verify_params(params):
@@ -45,8 +46,10 @@ def construct_info(params):
     run_id = params.get('run_id')
     multi_gpu = params.get("multi_GPUs")
     dqn_type = params["dqn_type"]
+    hrl_with_goal = params["hrl_with_goal"]
 
-    info = "learning_rate_d" + str(disease_number) + \
+    run_time = time.strftime('%m%d%H%M%S', time.localtime(time.time()))
+    info = run_time + \
            "_" + agent_id + \
            "_T" + str(max_turn) + \
            "_lr" + str(lr) + \
@@ -59,16 +62,16 @@ def construct_info(params):
            "_epsilon" + str(epsilon) + \
            "_awd" + str(int(allow_wrong_disease)) + \
            "_crs" + str(int(check_related_symptoms)) + \
+           "_hrl" + str(int(hrl_with_goal)) + \
            "_RID" + str(run_id) + \
            "_data" + str(data_set_name) + \
-           "_mGPU" + str(int(multi_gpu)) + \
            "_" + dqn_type
     params['run_info'] = info
 
-    checkpoint_path = "./../model/" + dqn_type + "/checkpoint/" + info
+    checkpoint_path = "./../../model/" + dqn_type + "/checkpoint/" + info
     params["checkpoint_path"] = checkpoint_path
 
-    performance_save_path = "./../model/" + dqn_type + "/performance/"
+    performance_save_path = "./../../model/" + dqn_type + "/performance/"
     params["performance_save_path"] = performance_save_path
 
     return params

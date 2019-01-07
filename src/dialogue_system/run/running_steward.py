@@ -32,7 +32,7 @@ class RunningSteward(object):
         goal_set = pickle.load(file=open(parameter["goal_set"], "rb"))
         disease_symptom = pickle.load(file=open(parameter["disease_symptom"], "rb"))
 
-        user = User(goal_set=goal_set, slot_set=slot_set, disease_syptom=disease_symptom,parameter=parameter)
+        user = User(goal_set=goal_set, disease_syptom=disease_symptom,parameter=parameter)
         agent = AgentRule(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=parameter)
         self.dialogue_manager = DialogueManager(user=user, agent=agent, parameter=parameter)
 
@@ -165,7 +165,7 @@ class RunningSteward(object):
             # if len(self.dialogue_manager.experience_replay_pool)==self.parameter.get("experience_replay_pool_size"):
             #     break
 
-    def __dump_performance__(self,epoch_index):
+    def __dump_performance__(self, epoch_index):
         """
         Saving the performance of model.
 

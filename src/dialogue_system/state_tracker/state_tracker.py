@@ -24,7 +24,7 @@ class StateTracker(object):
         assert (user_action is None or agent_action is None), "user action and agent action cannot be None at the same time."
         self.state["turn"] = self.turn
         if user_action is not None:
-            self._state_update_with_user_acion(user_action=user_action)
+            self._state_update_with_user_action(user_action=user_action)
         elif agent_action is not None:
             self._state_update_with_agent_action(agent_action=agent_action)
         self.turn += 1
@@ -53,7 +53,7 @@ class StateTracker(object):
     def set_agent(self, agent):
         self.agent = agent
 
-    def _state_update_with_user_acion(self, user_action):
+    def _state_update_with_user_action(self, user_action):
         # Updating dialog state with user_action.
         self.state["user_action"] = user_action
         temp_action = copy.deepcopy(user_action)
