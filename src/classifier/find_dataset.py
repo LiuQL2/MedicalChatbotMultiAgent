@@ -313,11 +313,10 @@ class Finder(object):
 
 if __name__ == "__main__":
     # goal_set,symptom_set, disease_symptom
-    # goal_set_file = './../data/4_diseases/both/goal_set.p'
     goal_set_file = './../data/filter10/goal_set.p'
     slot_set_file = './../data/filter10/slot_set.p'
     disease_symptom_file = './../data/filter10/disease_symptom.p'
-    save_path = "./../data/found_dataset/"
+    save_path = "./../data/found_dataset_filter_5/"
     goal_set = pickle.load(open(goal_set_file,"rb"))
     slot_set = pickle.load(open(slot_set_file,"rb"))
     disease_symptom_set = pickle.load(open(disease_symptom_file,"rb"))

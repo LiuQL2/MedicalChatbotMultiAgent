@@ -1,7 +1,5 @@
 # -*- coding:utf-8 -*-
 
-import pickle
-import json
 import copy
 import random
 from collections import deque
@@ -10,9 +8,6 @@ sys.path.append(os.getcwd().replace("src/dialogue_system/dialogue_manager",""))
 
 from src.dialogue_system.state_tracker import StateTracker as StateTracker
 from src.dialogue_system import dialogue_configuration
-from src.dialogue_system.agent import AgentRandom
-from src.dialogue_system.agent import AgentDQN
-from src.dialogue_system.user_simulator import UserRule as User
 
 
 class DialogueManager(object):
@@ -24,8 +19,6 @@ class DialogueManager(object):
         self.parameter = parameter
         self.experience_replay_pool = deque(maxlen=self.parameter.get("experience_replay_pool_size"))
         self.inform_wrong_disease_count = 0
-        self.trajectory_pool = deque(maxlen=self.parameter.get("trajectory_pool_size",100))
-        self.trajectory = []
         self.dialogue_output_file = parameter.get("dialogue_file")
         self.save_dialogue = parameter.get("save_dialogue")
 
@@ -81,17 +74,12 @@ class DialogueManager(object):
             goal = self.state_tracker.user.get_goal()
             self.__output_dialogue(state=state, goal=goal)
 
-        # Record this episode.
-        if episode_over == True:
-            self.trajectory_pool.append(copy.deepcopy(self.trajectory))
-
         return reward, episode_over,dialogue_status
 
-    def initialize(self,train_mode=True, epoch_index=None):
-        self.trajectory = []
+    def initialize(self, train_mode=True, epoch_index=None):
         self.state_tracker.initialize()
         self.inform_wrong_disease_count = 0
-        user_action = self.state_tracker.user.initialize(train_mode=train_mode, epoch_index=epoch_index)
+        user_action = self.state_tracker.user.initialize(train_mode = train_mode, epoch_index=epoch_index)
         self.state_tracker.state_updater(user_action=user_action)
         self.state_tracker.agent.initialize()
         # print("#"*30 + "\n" + "user goal:\n", json.dumps(self.state_tracker.user.goal))
@@ -99,43 +87,14 @@ class DialogueManager(object):
         # print("turn:%2d, initialized state:\n" % (state["turn"]), json.dumps(state))
 
     def record_training_sample(self, state, agent_action, reward, next_state, episode_over):
-        state = self.state_tracker.agent.state_to_representation_last(state)
-        next_state = self.state_tracker.agent.state_to_representation_last(next_state)
-        self.experience_replay_pool.append((state, agent_action, reward, next_state, episode_over))
-        self.trajectory.append((state, agent_action, reward, next_state, episode_over))
+        self.state_tracker.agent.record_training_sample(state, agent_action, reward, next_state, episode_over)
 
     def set_agent(self,agent):
         self.state_tracker.set_agent(agent=agent)
 
     def train(self):
-        if isinstance(self.state_tracker.agent, AgentDQN):
-            self.__train_dqn()
-            self.state_tracker.agent.update_target_network()
-
-    def __train_dqn(self):
-        """
-        Train dqn.
-        :return:
-        """
-        cur_bellman_err = 0.0
-        batch_size = self.parameter.get("batch_size",16)
-        for iter in range(int(len(self.experience_replay_pool) / (batch_size))):
-            batch = random.sample(self.experience_replay_pool, batch_size)
-            loss = self.state_tracker.agent.train(batch=batch)
-            cur_bellman_err += loss["loss"]
-        print("cur bellman err %.4f, experience replay pool %s" % (float(cur_bellman_err) / (len(self.experience_replay_pool) + 1e-10), len(self.experience_replay_pool)))
-
-    def __train_actor_critic(self):
-        """
-        Train actor-critic.
-        :return:
-        """
-        trajectory_pool = list(self.trajectory_pool)
-        batch_size = self.parameter.get("batch_size",16)
-        for index in range(0, len(self.trajectory_pool), batch_size):
-            stop = max(len(self.trajectory_pool),index + batch_size)
-            batch_trajectory = trajectory_pool[index:stop]
-            self.state_tracker.agent.train(trajectories=batch_trajectory)
+        self.state_tracker.agent.train_dqn()
+        self.state_tracker.agent.update_target_network()
 
     def __output_dialogue(self,state, goal):
         history = state["history"]

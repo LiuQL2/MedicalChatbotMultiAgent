@@ -17,8 +17,8 @@ class AgentRandom(Agent):
 
     def next(self, state,turn,greedy_strategy):
         self.agent_action["turn"] = turn
-        action_index = random.randint(0, len(self.action_sapce)-1)
-        agent_action = self.action_sapce[action_index]
+        action_index = random.randint(0, len(self.action_space)-1)
+        agent_action = self.action_space[action_index]
         agent_action["turn"] = turn
         agent_action["speaker"] = "agent"
         return agent_action, action_index

@@ -47,6 +47,8 @@ def construct_info(params):
     multi_gpu = params.get("multi_GPUs")
     dqn_type = params["dqn_type"]
     hrl_with_goal = params["hrl_with_goal"]
+    weight_correction = params["weight_correction"]
+    value_as_reward = params["value_as_reward"]
 
     run_time = time.strftime('%m%d%H%M%S', time.localtime(time.time()))
     info = run_time + \
@@ -62,7 +64,9 @@ def construct_info(params):
            "_epsilon" + str(epsilon) + \
            "_awd" + str(int(allow_wrong_disease)) + \
            "_crs" + str(int(check_related_symptoms)) + \
-           "_hrl" + str(int(hrl_with_goal)) + \
+           "_hwg" + str(int(hrl_with_goal)) + \
+           "_wc" + str(int(weight_correction)) + \
+           "_var" + str(int(value_as_reward)) + \
            "_RID" + str(run_id) + \
            "_data" + str(data_set_name) + \
            "_" + dqn_type

@@ -52,7 +52,7 @@ class RunningSteward(object):
         # self.dialogue_manager.state_tracker.user.set_max_turn(max_turn=self.parameter.get('max_turn'))
         for index in range(0, epoch_number,1):
             # Training AgentDQN with experience replay
-            if train_mode == True and isinstance(self.dialogue_manager.state_tracker.agent, AgentDQN):
+            if train_mode is True:
                 self.dialogue_manager.train()
                 # Simulating and filling experience replay pool.
                 self.simulation_epoch(epoch_size=self.epoch_size,train_mode=train_mode)
@@ -62,7 +62,7 @@ class RunningSteward(object):
             if result["success_rate"] >= self.best_result["success_rate"] and \
                     result["success_rate"] > dialogue_configuration.SUCCESS_RATE_THRESHOLD and \
                     result["average_wrong_disease"] <= self.best_result["average_wrong_disease"] and train_mode==True:
-                self.dialogue_manager.experience_replay_pool = deque(maxlen=self.parameter.get("experience_replay_pool_size"))
+                self.dialogue_manager.state_tracker.agent.flush_pool()
                 self.simulation_epoch(epoch_size=self.epoch_size,train_mode=train_mode)
                 if save_model == True:
                     self.dialogue_manager.state_tracker.agent.save_model(model_performance=result, episodes_index = index, checkpoint_path=self.checkpoint_path)
@@ -116,10 +116,10 @@ class RunningSteward(object):
         absolute_success_count = 0
         total_reward = 0
         total_truns = 0
-        evaluate_epoch_number = self.parameter.get("evaluate_epoch_number")
-        # evaluate_epoch_number = len(self.dialogue_manager.state_tracker.user.goal_set["test"])
+        evaluate_session_number = self.parameter.get("evaluate_session_number")
+        # evaluate_session_number = len(self.dialogue_manager.state_tracker.user.goal_set["test"])
         inform_wrong_disease_count = 0
-        for epoch_index in range(0,evaluate_epoch_number, 1):
+        for epoch_index in range(0,evaluate_session_number, 1):
             self.dialogue_manager.initialize(train_mode=train_mode, epoch_index=epoch_index)
             episode_over = False
             while episode_over == False:
@@ -131,11 +131,11 @@ class RunningSteward(object):
                 success_count += 1
                 if self.dialogue_manager.inform_wrong_disease_count == 0:
                     absolute_success_count += 1
-        success_rate = float("%.3f" % (float(success_count) / evaluate_epoch_number))
-        absolute_success_rate = float("%.3f" % (float(absolute_success_count) / evaluate_epoch_number))
-        average_reward = float("%.3f" % (float(total_reward) / evaluate_epoch_number))
-        average_turn = float("%.3f" % (float(total_truns) / evaluate_epoch_number))
-        average_wrong_disease = float("%.3f" % (float(inform_wrong_disease_count) / evaluate_epoch_number))
+        success_rate = float("%.3f" % (float(success_count) / evaluate_session_number))
+        absolute_success_rate = float("%.3f" % (float(absolute_success_count) / evaluate_session_number))
+        average_reward = float("%.3f" % (float(total_reward) / evaluate_session_number))
+        average_turn = float("%.3f" % (float(total_truns) / evaluate_session_number))
+        average_wrong_disease = float("%.3f" % (float(inform_wrong_disease_count) / evaluate_session_number))
         res = {"success_rate":success_rate, "average_reward": average_reward, "average_turn": average_turn, "average_wrong_disease":average_wrong_disease,"ab_success_rate":absolute_success_rate}
         self.learning_curve.setdefault(index, dict())
         self.learning_curve[index]["success_rate"]=success_rate

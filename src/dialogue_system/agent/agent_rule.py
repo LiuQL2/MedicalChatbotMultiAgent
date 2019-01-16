@@ -41,7 +41,7 @@ class AgentRule(Agent):
         agent_action = copy.deepcopy(self.agent_action)
         agent_action.pop("turn")
         agent_action.pop("speaker")
-        agent_index = self.action_sapce.index(agent_action)
+        agent_index = self.action_space.index(agent_action)
         return self.agent_action, agent_index
 
     def _get_candidate_disease_symptoms(self, state):

@@ -5,122 +5,6 @@ import torch.nn.functional
 import os
 import numpy as np
 from collections import namedtuple
-from collections import OrderedDict
-
-
-class DQNModelWithGoal(torch.nn.Module):
-    """
-    The model in this file is reference to `Florensa, C., Duan, Y., & Abbeel, P. (2017). Stochastic neural networks for
-    hierarchical reinforcement learning. arXiv preprint arXiv:1704.03012.`
-    https://arxiv.org/abs/1704.03012
-    """
-    def __init__(self, input_size, hidden_size, output_size, number_of_latent_variables, parameter):
-        super(DQNModelWithGoal, self).__init__()
-        self.params = parameter
-        self.number_of_latent_variables = number_of_latent_variables
-        self.tau = self.params.get("temperature")
-        # different layers
-        self.goal_layer1 = torch.nn.Linear(input_size, number_of_latent_variables, bias=True)
-        self.policy_layer1 = torch.nn.Linear(input_size + number_of_latent_variables, output_size, bias=True)
-
-    def forward(self, x):
-        if torch.cuda.is_available():
-            x.cuda()
-        goal = self.goal_generator(x)
-        # print(goal)
-        q_values = self.compute_q_value(x,goal)
-        return q_values
-
-    def goal_generator(self, x):
-        logits = self.goal_layer1(x)
-        goal_rep = torch.nn.functional.gumbel_softmax(logits=logits, tau=self.tau, hard=False)
-        # goal_rep = torch.nn.functional.softmax(input=logits)
-        return goal_rep
-
-    def compute_q_value(self, x, goal):
-        temp = torch.cat((x, goal), dim=1)
-        q_values = self.policy_layer1(temp)
-        return q_values
-
-
-class DQNModelWithGoal2(torch.nn.Module):
-    """
-    The model in this file is reference to `Florensa, C., Duan, Y., & Abbeel, P. (2017). Stochastic neural networks for 
-    hierarchical reinforcement learning. arXiv preprint arXiv:1704.03012.`
-    https://arxiv.org/abs/1704.03012
-    """
-    def __init__(self, input_size, hidden_size, output_size, number_of_latent_variables, parameter):
-        super(DQNModelWithGoal2, self).__init__()
-        self.params = parameter
-        self.number_of_latent_variables = number_of_latent_variables
-        self.tau = self.params.get("temperature")
-        # different layers
-        self.goal_input_layer = torch.nn.Linear(input_size, hidden_size, bias=True)
-        self.goal_state_abstract_layer = torch.nn.Linear(hidden_size, hidden_size, bias=True)
-        self.goal_generate_layer = torch.nn.Linear(hidden_size, number_of_latent_variables, bias=True)
-
-        self.policy_layer1 = torch.nn.Linear(hidden_size * number_of_latent_variables, output_size, bias=True)
-
-    def forward(self, x):
-        if torch.cuda.is_available():
-            x.cuda()
-        batch_size = x.size()[0]
-        goal, abstract_state = self.goal_generator(x)
-        # print(goal)
-        temp = torch.bmm(goal.unsqueeze(2), abstract_state.unsqueeze(1))
-        temp = temp.view(batch_size, -1)
-        q_values = self.compute_q_value(temp)
-        return q_values
-
-    def goal_generator(self, x):
-        h1 = self.goal_input_layer(x)
-        h_state = self.goal_state_abstract_layer(torch.nn.functional.relu(h1))
-        goal_logits = self.goal_generate_layer(torch.nn.functional.relu(h1))
-        goal_rep = torch.nn.functional.gumbel_softmax(logits=goal_logits, tau=self.tau, hard=True)
-        # goal_rep = torch.nn.functional.softmax(input=logits)
-        return goal_rep, h_state
-
-    def compute_q_value(self, x):
-        q_values = self.policy_layer1(x)
-        return q_values
-
-
-class DQNModelWithGoal3(torch.nn.Module):
-    """
-    The model in this file is reference to `Florensa, C., Duan, Y., & Abbeel, P. (2017). Stochastic neural networks for
-    hierarchical reinforcement learning. arXiv preprint arXiv:1704.03012.`
-    https://arxiv.org/abs/1704.03012
-    """
-    def __init__(self, input_size, hidden_size, output_size, number_of_latent_variables, parameter):
-        super(DQNModelWithGoal3, self).__init__()
-        self.params = parameter
-        self.number_of_latent_variables = number_of_latent_variables
-        self.tau = self.params.get("temperature")
-        # different layers
-        self.goal_input_layer = torch.nn.Linear(input_size, number_of_latent_variables, bias=True)
-
-        self.policy_layer1 = torch.nn.Linear(input_size * number_of_latent_variables, output_size, bias=True)
-
-    def forward(self, x):
-        if torch.cuda.is_available():
-            x.cuda()
-        batch_size = x.size()[0]
-        goal = self.goal_generator(x)
-        # print(goal)
-        temp = torch.bmm(goal.unsqueeze(2), x.unsqueeze(1))
-        temp = temp.view(batch_size, -1)
-        q_values = self.compute_q_value(temp)
-        return q_values
-
-    def goal_generator(self, x):
-        logits = self.goal_input_layer(x)
-        goal_rep = torch.nn.functional.gumbel_softmax(logits=logits, tau=self.tau, hard=True)
-        # goal_rep = torch.nn.functional.softmax(input=logits)
-        return goal_rep
-
-    def compute_q_value(self, x):
-        q_values = self.policy_layer1(x)
-        return q_values
 
 
 class DQNModel(torch.nn.Module):
@@ -140,18 +24,13 @@ class DQNModel(torch.nn.Module):
 
 
 class DQN(object):
-    def __init__(self, input_size, hidden_size, output_size, parameter):
+    def __init__(self, input_size, hidden_size, output_size, parameter, named_tuple=('state', 'agent_action', 'reward', 'next_state', 'episode_over')):
         self.params = parameter
-        self.Transition = namedtuple('Transition', ('state', 'agent_action', 'reward', 'next_state', 'episode_over'))
+        self.Transition = namedtuple('Transition', named_tuple)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-        hrl_with_goal = self.params.get("hrl_with_goal")
-        if hrl_with_goal is True:
-            self.current_net = DQNModelWithGoal(input_size, hidden_size, output_size, 4, parameter).to(self.device)
-            self.target_net = DQNModelWithGoal(input_size, hidden_size, output_size, 4, parameter).to(self.device)
-        else:
-            self.current_net = DQNModel(input_size, hidden_size, output_size, parameter).to(self.device)
-            self.target_net = DQNModel(input_size, hidden_size, output_size, parameter).to(self.device)
+        self.output_size = output_size
+        self.current_net = DQNModel(input_size, hidden_size, output_size, parameter).to(self.device)
+        self.target_net = DQNModel(input_size, hidden_size, output_size, parameter).to(self.device)
 
         print(self.current_net)
 
@@ -174,7 +53,7 @@ class DQN(object):
             else:
                 weight_p.append(p)
 
-        self.optimizer = torch.optim.SGD([
+        self.optimizer = torch.optim.Adam([
             {'params': weight_p, 'weight_decay': 0.1}, # with L2 regularization
             {'params': bias_p, 'weight_decay': 0} # no L2 regularization.
         ], lr=self.params.get("dqn_learning_rate",0.001))
@@ -182,7 +61,7 @@ class DQN(object):
         if self.params.get("train_mode") is False:
             self.restore_model(self.params.get("saved_model"))
 
-    def singleBatch(self, batch, params):
+    def singleBatch(self, batch, params, weight_correction=False):
         """
          Training the model with the given batch of data.
 
@@ -190,11 +69,13 @@ class DQN(object):
             batch (list): the batch of data, each data point in the list is a tuple: (state, agent_action, reward,
                 next_state, episode_over).
             params (dict): dict like, the super-parameters.
+            weight_correction (boolean): weight sampling or not
 
         Returns:
             A scalar (float), the loss of this batch.
 
         """
+        assert isinstance(weight_correction, bool), 'weight correction is not a boolean.'
         gamma = params.get('gamma', 0.9)
         batch_size = len(batch)
         batch = self.Transition(*zip(*batch))
@@ -209,6 +90,8 @@ class DQN(object):
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the columns of actions taken
         state_action_values = self.current_net(state_batch).gather(1, action_batch)
 
+
+
         # Compute V(s_{t+1}) for all next states.
         if self.params.get("dqn_type") == "DQN":
             next_state_values = self.next_state_values_DQN(batch_size=batch_size, non_final_mask=non_final_mask, non_final_next_states=non_final_next_states)
@@ -216,6 +99,21 @@ class DQN(object):
             next_state_values = self.next_state_values_double_DQN(batch_size=batch_size, non_final_mask=non_final_mask, non_final_next_states=non_final_next_states)
         # Compute the expected Q values
         expected_state_action_values = (next_state_values * gamma) + reward_batch
+
+        # weight_sampling, mainly for master agent in agent_hrl.
+        if weight_correction is True:
+            epsilon = params.get('epsilon')
+            behave_prob = torch.Tensor(batch.behave_prob).to(device=self.device).view(-1,1)
+            current_prob = torch.Tensor(batch.behave_prob).to(device=self.device).view(-1,1)
+
+            new_action = torch.argmax(self.current_net(state_batch),dim=1,keepdim=True)
+            same_mask = new_action == action_batch
+            diff_mask = new_action != action_batch
+            current_prob[same_mask] = 1 - epsilon + epsilon / (self.output_size - 1)
+            current_prob[diff_mask] = epsilon / (self.output_size - 1)
+            # importance correction
+            weight = current_prob / behave_prob
+            expected_state_action_values = expected_state_action_values.mul(weight.view(-1))
 
         # Compute Huber loss
         loss = torch.nn.functional.mse_loss(input=state_action_values,target=expected_state_action_values.view(-1, 1))
@@ -288,7 +186,8 @@ class DQN(object):
             checkpoint_path (str): the directory that the model is going to save to. Default None.
         """
         if os.path.isdir(checkpoint_path) == False:
-            os.mkdir(checkpoint_path)
+            # os.mkdir(checkpoint_path)
+            os.makedirs(checkpoint_path)
         agent_id = self.params.get("agent_id")
         disease_number = self.params.get("disease_number")
         success_rate = model_performance["success_rate"]
@@ -307,7 +206,7 @@ class DQN(object):
         Args:
             saved_model (str): the file name which is the trained model.
         """
-        print("loading trained model")
+        print("loading trained model", saved_model)
         self.current_net.load_state_dict(torch.load(saved_model))
         self.target_net.load_state_dict(self.current_net.state_dict())
 

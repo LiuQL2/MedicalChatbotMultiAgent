@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 """
 Basic user simulator, random choice action.
-
 # Structure of agent_action:
 agent_action = {
     "turn":0,
@@ -12,7 +11,6 @@ agent_action = {
     "explicit_inform_slots":{},
     "implicit_inform_slots":{}
 }
-
 # Structure of user_action:
 user_action = {
     "turn": 0,
@@ -23,7 +21,6 @@ user_action = {
     "explicit_inform_slots": {},
     "implicit_inform_slots": {}
 }
-
 # Structure of user goal.
 {
   "consult_id": "10002219",
@@ -41,7 +38,6 @@ user_action = {
       "鼻塞": true
     }
   }
-
 """
 
 import random
@@ -133,7 +129,6 @@ class User(object):
     def _assemble_user_action(self):
         """
         Assembling the user action according to the current status.
-
         Returns:
             A dict, containing the information of this turn and the user's current state.
         """
@@ -151,11 +146,9 @@ class User(object):
     def next(self, agent_action, turn):
         """
         Responding to the agent. Call different responding functions for different action types.
-
         Args:
             agent_action: a dict, the action of agent, see the definition of agent action in the Agents.
             turn: int, indicating the current turn of this dialgue session.
-
         Returns:
             A tuple:
                 user_action: a dict, the user action returned by the _assemble_action funciton.
@@ -479,7 +472,6 @@ class User(object):
         """
         TODO: the same as the next function?
         Check whether all the explicit slots, implicit slots and request slots are correctly informed.
-
         Returns:
             bool, True:
         """
@@ -496,7 +488,6 @@ class User(object):
     def _informed_all_slots_or_not_(self):
         """
         Whether all the inform_slots and request_slots in the user goal are informed.
-
         Returns:
             bool, True: all the slots have been mentioned, False: not all slots have been mentioned.
         """
@@ -508,7 +499,6 @@ class User(object):
     def _reward_function(self):
         """
         Return a reward for this turn according to the dialoge status.
-
         Returns:
             A float, the immediate reward for this turn.
         """
@@ -558,7 +548,6 @@ class User(object):
         This function will be called only if dialogue status is successful to check whether the symptoms that related to the
         predicted disease have been all mentioned so far. If yes, the dialogue status still be success, otherwise, it
         will be changed into fail.
-
         Raise:
             Raise key error if the 'disease' not in the key of state['history'], i.e., the agent has not informed the
             right disease yet.

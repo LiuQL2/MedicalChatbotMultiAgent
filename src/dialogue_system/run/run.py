@@ -10,6 +10,7 @@ sys.path.append(os.getcwd().replace("src/dialogue_system/run",""))
 from src.dialogue_system.agent import AgentRandom
 from src.dialogue_system.agent import AgentDQN
 from src.dialogue_system.agent import AgentRule
+from src.dialogue_system.agent import AgentHRL
 from src.dialogue_system.run.utils import verify_params
 
 from src.dialogue_system.run import RunningSteward
@@ -30,9 +31,9 @@ parser.add_argument("--disease_number", dest="disease_number", type=int,default=
 parser.add_argument("--device_for_tf", dest="device_for_tf", type=str, default="/device:GPU:3", help="the device for tensorflow running on.")
 
 # simulation configuration
-parser.add_argument("--simulate_epoch_number", dest="simulate_epoch_number", type=int, default=1500, help="The number of simulate epoch.")
+parser.add_argument("--simulate_epoch_number", dest="simulate_epoch_number", type=int, default=2000, help="The number of simulate epoch.")
 parser.add_argument("--epoch_size", dest="epoch_size", type=int, default=100, help="The number of simulated sessions in each simulated epoch.")
-parser.add_argument("--evaluate_epoch_number", dest="evaluate_epoch_number", type=int, default=1000, help="the size of each simulate epoch when evaluation.")
+parser.add_argument("--evaluate_session_number", dest="evaluate_session_number", type=int, default=1000, help="the size of each simulate epoch when evaluation.")
 parser.add_argument("--experience_replay_pool_size", dest="experience_replay_pool_size", type=int, default=10000, help="the size of experience replay.")
 parser.add_argument("--hidden_size_dqn", dest="hidden_size_dqn", type=int, default=50, help="the hidden_size of DQN.")
 parser.add_argument("--warm_start", dest="warm_start",type=boolean_string, default=False, help="Filling the replay buffer with the experiences of rule-based agents. {True, False}")
@@ -56,7 +57,7 @@ parser.add_argument("--run_id", dest='run_id', type=int, default=0, help='the id
 parser.add_argument("--allow_wrong_disease", dest="allow_wrong_disease", type=boolean_string, default=False, help="Allow the agent to inform wrong disease? 1:Yes, 0:No")
 
 # Learning rate for dqn.
-parser.add_argument("--dqn_learning_rate", dest="dqn_learning_rate", type=float, default=0.001, help="the learning rate of dqn.")
+parser.add_argument("--dqn_learning_rate", dest="dqn_learning_rate", type=float, default=0.0001, help="the learning rate of dqn.")
 
 # the number condition of explicit symptoms and implicit symptoms in each user goal.
 parser.add_argument("--explicit_number", dest="explicit_number", type=int, default=0, help="the number of explicit symptoms of used sample")
@@ -64,7 +65,7 @@ parser.add_argument("--explicit_number", dest="explicit_number", type=int, defau
 parser.add_argument("--implicit_number", dest="implicit_number", type=int, default=0, help="the number of implicit symptoms of used sample")
 
 # agent to use.
-parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentDQN', help="The agent to be used:[AgentRule, AgentDQN, AgentRandom]")
+parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentHRL', help="The agent to be used:[AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentHRLGoal]")
 
 # goal set, slot set, action set.
 max_turn = 22
@@ -90,7 +91,9 @@ parser.add_argument("--error_prob", dest="error_prob", type=float, default=0.05,
 
 # HRL with goal
 parser.add_argument("--temperature", dest="temperature", type=float, default=1.0, help="the temperature in gumbel-softmax")
-parser.add_argument("--hrl_with_goal", dest="hrl_with_goal", type=boolean_string, default=True, help="Using hierarchical RL with goal?")
+parser.add_argument("--hrl_with_goal", dest="hrl_with_goal", type=boolean_string, default=False, help="Using hierarchical RL with goal?")
+parser.add_argument("--weight_correction", dest="weight_correction", type=boolean_string, default=False, help="weight corrention for the master agent in HRL? {True, False}")
+parser.add_argument("--value_as_reward", dest="value_as_reward", type=boolean_string, default=True, help="The state value of lower agent is the reward for the higher agent? {True, False}")
 
 
 
@@ -113,6 +116,7 @@ def run(parameter):
     disease_symptom = pickle.load(file=open(parameter["disease_symptom"], "rb"))
     steward = RunningSteward(parameter=parameter,checkpoint_path=parameter["checkpoint_path"])
 
+
     print('action_set', action_set)
     warm_start = parameter.get("warm_start")
     warm_start_epoch_number = parameter.get("warm_start_epoch_number")
@@ -132,6 +136,8 @@ def run(parameter):
         agent = AgentRandom(action_set=action_set,slot_set=slot_set,disease_symptom=disease_symptom,parameter=parameter)
     elif agent_id.lower() == 'agentrule':
         agent = AgentRule(action_set=action_set,slot_set=slot_set,disease_symptom=disease_symptom,parameter=parameter)
+    elif agent_id.lower() == 'agenthrl':
+        agent = AgentHRL(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=parameter)
     else:
         raise ValueError('Agent id should be one of [AgentRule, AgentDQN, AgentRandom].')
 
@@ -141,6 +147,6 @@ def run(parameter):
 if __name__ == "__main__":
     params = verify_params(parameter)
     gpu_str = params["gpu"]
-    os.environ['CUDA_VISIBLE_DEVICES'] = gpu_str
+    os.environ['CUDA_VISIBLE_DEVICES'] = gpu_str#  '0,1,2'
     print(params['run_info'])
     run(parameter=parameter)
