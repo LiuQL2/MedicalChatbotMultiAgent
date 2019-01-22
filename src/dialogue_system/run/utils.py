@@ -49,6 +49,7 @@ def construct_info(params):
     hrl_with_goal = params["hrl_with_goal"]
     weight_correction = params["weight_correction"]
     value_as_reward = params["value_as_reward"]
+    symptom_dist_as_input = params["symptom_dist_as_input"]
 
     run_time = time.strftime('%m%d%H%M%S', time.localtime(time.time()))
     info = run_time + \
@@ -67,8 +68,9 @@ def construct_info(params):
            "_hwg" + str(int(hrl_with_goal)) + \
            "_wc" + str(int(weight_correction)) + \
            "_var" + str(int(value_as_reward)) + \
+           "_sdai" + str(int(symptom_dist_as_input)) + \
+           "_data" + str(data_set_name.title()) + \
            "_RID" + str(run_id) + \
-           "_data" + str(data_set_name) + \
            "_" + dqn_type
     params['run_info'] = info
 

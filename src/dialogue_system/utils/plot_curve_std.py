@@ -79,7 +79,7 @@ class DrawCurve(object):
 
 
         no_key_word_list = ['.DS_Store','.pdf']
-        key_word_list = ['DQN', 'hrl0']
+        key_word_list = ['AgentDQN', '1999.p', 'RFIRS-1', 'RFNCY-1']
         mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
                                                key_word_list=key_word_list,
                                                no_key_word_list=no_key_word_list)
@@ -88,56 +88,100 @@ class DrawCurve(object):
         plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[0], alpha=0.2)
         ave_result['RL-agent'] = mean_point
 
-        no_key_word_list = ['.DS_Store','.pdf']
-        key_word_list = ['DQN', 'hrl1']
+        no_key_word_list = ['.DS_Store','.pdf', 'sdai']
+        key_word_list = ['AgentHRL', '1999.p', 'RFIRS-1', 'RFNCY-1', 'var0', 'wc0']
         mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
                                                key_word_list=key_word_list,
                                                no_key_word_list=no_key_word_list)
         min_len_list.append(min_len)
-        l2, = plt.plot(range(mean.shape[0]), mean, colors[1], label='HRL-agent(Goal)', linewidth=linewidth)
+        l2, = plt.plot(range(mean.shape[0]), mean, colors[1], label='HRL-agent(var0, wc0, sdai0)', linewidth=linewidth)
         plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[1], alpha=0.2)
-        ave_result['HRL-agent(Goal)'] = mean_point
+        ave_result['HRL-agent(var0, wc0, sdai0)'] = mean_point
 
-        no_key_word_list = ['.DS_Store','.pdf', 'wc1']
-        key_word_list = ['010811','DQN', 'AgentHRL', '1999.p']
+        no_key_word_list = ['.DS_Store','.pdf']
+        key_word_list = ['AgentHRL', '1999.p', 'RFIRS-1', 'RFNCY-1','sdai0', 'var1', 'wc1']
         mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
                                                key_word_list=key_word_list,
                                                no_key_word_list=no_key_word_list)
         min_len_list.append(min_len)
-        l2, = plt.plot(range(mean.shape[0]), mean, colors[2], label='HRL-agent(Master),var1,wc0', linewidth=linewidth)
+        l2, = plt.plot(range(mean.shape[0]), mean, colors[2], label='HRL-agent(var1, wc1, sdai0)', linewidth=linewidth)
         plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[2], alpha=0.2)
-        ave_result['HRL-agent(Master),var1,wc0'] = mean_point
+        ave_result['HRL-agent(var1, wc1, sdai0)'] = mean_point
+
+
 
         no_key_word_list = ['.DS_Store','.pdf']
-        key_word_list = ['0109','DQN', 'AgentHRL', '1499.p', 'wc1']
+        key_word_list = ['AgentHRL', '1999.p', 'RFIRS-1', 'RFNCY-1','sdai0', 'var1', 'wc0']
         mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
                                                key_word_list=key_word_list,
                                                no_key_word_list=no_key_word_list)
         min_len_list.append(min_len)
-        l2, = plt.plot(range(mean.shape[0]), mean, colors[3], label='HRL-agent(Master),var1,wc1', linewidth=linewidth)
+        l1, = plt.plot(range(mean.shape[0]), mean, colors[3], label='HRL-agent(var1, wc0, sdai0)', linewidth=linewidth)
         plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[3], alpha=0.2)
-        ave_result['HRL-agent(Master),var1,wc1'] = mean_point
+        ave_result['HRL-agent(var1, wc0, sdai0)'] = mean_point
 
 
         no_key_word_list = ['.DS_Store','.pdf']
-        key_word_list = ['01101732','DQN', 'AgentHRL', '1499.p', 'wc0']
+        key_word_list = ['AgentHRL', '1999.p', 'RFIRS-1', 'RFNCY-1','sdai1', 'var0', 'wc0']
         mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
                                                key_word_list=key_word_list,
                                                no_key_word_list=no_key_word_list)
         min_len_list.append(min_len)
-        l2, = plt.plot(range(mean.shape[0]), mean, colors[4], label='HRL-agent(Master),var0,wc0', linewidth=linewidth)
+        l2, = plt.plot(range(mean.shape[0]), mean, colors[4], label='HRL-agent(var0, wc0, sdai1)', linewidth=linewidth)
         plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[4], alpha=0.2)
-        ave_result['HRL-agent(Master),var0,wc0'] = mean_point
+        ave_result['HRL-agent(var0, wc0, sdai1)'] = mean_point
 
-        no_key_word_list = ['.DS_Store','.pdf']
-        key_word_list = ['011018','DQN', 'AgentHRL', '1499.p', 'wc1','var0']
-        mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
-                                               key_word_list=key_word_list,
-                                               no_key_word_list=no_key_word_list)
-        min_len_list.append(min_len)
-        l2, = plt.plot(range(mean.shape[0]), mean, colors[5], label='HRL-agent(Master),var0,wc1', linewidth=linewidth)
-        plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[5], alpha=0.2)
-        ave_result['HRL-agent(Master),var0,wc1'] = mean_point
+        # no_key_word_list = ['.DS_Store','.pdf']
+        # key_word_list = ['AgentHRL', '999.p', 'RFIRS1', 'RFNCY0']
+        # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
+        #                                        key_word_list=key_word_list,
+        #                                        no_key_word_list=no_key_word_list)
+        # min_len_list.append(min_len)
+        # l2, = plt.plot(range(mean.shape[0]), mean, colors[5], label='HRL-agent(RFIRS1, RFNCY0)', linewidth=linewidth)
+        # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[5], alpha=0.2)
+        # ave_result['HRL-agent'] = mean_point
+
+        #
+        # no_key_word_list = ['.DS_Store','.pdf', 'wc1']
+        # key_word_list = ['010811','DQN', 'AgentHRL', '1999.p']
+        # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
+        #                                        key_word_list=key_word_list,
+        #                                        no_key_word_list=no_key_word_list)
+        # min_len_list.append(min_len)
+        # l2, = plt.plot(range(mean.shape[0]), mean, colors[2], label='HRL-agent(Master),var1,wc0', linewidth=linewidth)
+        # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[2], alpha=0.2)
+        # ave_result['HRL-agent(Master),var1,wc0'] = mean_point
+        #
+        # no_key_word_list = ['.DS_Store','.pdf']
+        # key_word_list = ['0109','DQN', 'AgentHRL', '1499.p', 'wc1']
+        # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
+        #                                        key_word_list=key_word_list,
+        #                                        no_key_word_list=no_key_word_list)
+        # min_len_list.append(min_len)
+        # l2, = plt.plot(range(mean.shape[0]), mean, colors[3], label='HRL-agent(Master),var1,wc1', linewidth=linewidth)
+        # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[3], alpha=0.2)
+        # ave_result['HRL-agent(Master),var1,wc1'] = mean_point
+        #
+        #
+        # no_key_word_list = ['.DS_Store','.pdf']
+        # key_word_list = ['01101732','DQN', 'AgentHRL', '1499.p', 'wc0']
+        # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
+        #                                        key_word_list=key_word_list,
+        #                                        no_key_word_list=no_key_word_list)
+        # min_len_list.append(min_len)
+        # l2, = plt.plot(range(mean.shape[0]), mean, colors[4], label='HRL-agent(Master),var0,wc0', linewidth=linewidth)
+        # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[4], alpha=0.2)
+        # ave_result['HRL-agent(Master),var0,wc0'] = mean_point
+        #
+        # no_key_word_list = ['.DS_Store','.pdf']
+        # key_word_list = ['011018','DQN', 'AgentHRL', '1499.p', 'wc1','var0']
+        # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
+        #                                        key_word_list=key_word_list,
+        #                                        no_key_word_list=no_key_word_list)
+        # min_len_list.append(min_len)
+        # l2, = plt.plot(range(mean.shape[0]), mean, colors[5], label='HRL-agent(Master),var0,wc1', linewidth=linewidth)
+        # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[5], alpha=0.2)
+        # ave_result['HRL-agent(Master),var0,wc1'] = mean_point
 
         min_len = min(min_len_list)
         plt.grid(True)

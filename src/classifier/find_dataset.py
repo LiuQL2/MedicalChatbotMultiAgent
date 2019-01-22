@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 import copy
 import json
 import random
@@ -14,13 +11,20 @@ sys.path.append(os.getcwd().replace("src/classifier/symptom_as_feature",""))
 
 
 class Finder(object):
-    def __init__(self, goal_set,symptom_set, disease_symptom, k_fold):
+    def __init__(self, goal_set,symptom_set, disease_symptom, k_fold, svm_c):
         self.k_fold = k_fold
         self.goal_set = goal_set
+        self.svm_c = svm_c
         self.wrong_samples = {}
         self._disease_index(disease_symptom=disease_symptom)
         self._symptom_index(symptom_set=symptom_set)
         self.goal_by_disease_set = self.__goal_by_disease__()
+        self.disease_to_english = {
+            '小儿腹泻': 'Infantile diarrhea',
+            '小儿支气管炎': 'Children’s bronchitis',
+            '小儿消化不良': 'Children functional dyspepsia',
+            '上呼吸道感染': 'Upper respiratory infection'
+        }
 
     def _symptom_index(self, symptom_set):
         """
@@ -62,7 +66,11 @@ class Finder(object):
         # print(disease_accuracy)
 
         save_set = True
-        gap = float("%.4f"% (disease_accuracy["total_accuracy"]["ex&im"] - disease_accuracy["total_accuracy"]["ex"]))
+        ex_im = round(disease_accuracy["total_accuracy"]["ex&im"],4)
+        ex = round(disease_accuracy["total_accuracy"]["ex"],4)
+        # ex = float("%.4f"% (disease_accuracy["total_accuracy"]["ex"]))
+        # gap = float("%.4f"% (disease_accuracy["total_accuracy"]["ex&im"] - disease_accuracy["total_accuracy"]["ex"]))
+        gap = round(ex_im - ex,4)
         disease_accuracy.pop("total_accuracy")
         for disease, accuracy in disease_accuracy.items():
             if accuracy["ex&im"] <= accuracy["ex"]:
@@ -70,9 +78,9 @@ class Finder(object):
                 break
 
         if save_set:
-            file_name = save_path + "goal_set_" + str(gap) + ".p"
+            file_name = save_path + "goal_set_gap" + str(gap) + "_ex&im" + str(ex_im) + "_im" + str(ex) + ".p"
             print("saving...",file_name)
-            # self.dump_goal_set(dump_file_name=file_name)
+            self.dump_goal_set(dump_file_name=file_name)
         return gap,save_set
 
     def __goal_by_disease__(self):
@@ -83,6 +91,9 @@ class Finder(object):
                 append_or_not = self.__keep_sample_or_not__(goal)
                 if append_or_not:
                     goal_by_disease[goal["disease_tag"]].append(goal)
+                else:
+                    pass
+                    # print(goal)
         for key in goal_by_disease.keys():
             pass
             # print(key, len(goal_by_disease[key]))
@@ -101,9 +112,21 @@ class Finder(object):
         for disease,goal_list in goal_by_disease.items():
             random.shuffle(goal_list)
             if disease == "小儿消化不良":
-                all_sample = all_sample + list(random.sample(goal_list, 200))
+                all_sample = all_sample + list(random.sample(goal_list, 250))
+                # all_sample = all_sample + goal_list
+            elif disease == '上呼吸道感染':
+                # print(disease,len(goal_list))
+                all_sample = all_sample + list(random.sample(goal_list, 180))
+                # all_sample = all_sample + goal_list
+                # print(len(goal_list))
+            elif disease == '小儿腹泻':
+                # print(disease,len(goal_list))
+                all_sample = all_sample + list(random.sample(goal_list, 350))
+                # all_sample = all_sample + goal_list
             else:
-                all_sample = all_sample + list(random.sample(goal_list, 300))
+                # print(disease,len(goal_list))
+                all_sample = all_sample + list(random.sample(goal_list, 350))
+                # all_sample = all_sample + goal_list
 
         random.shuffle(all_sample)
         fold_size = int(len(all_sample) / self.k_fold)
@@ -122,30 +145,74 @@ class Finder(object):
             for goal in fold:
                 disease_rep = np.zeros(len(self.disease_to_index.keys()))
                 disease_rep[self.disease_to_index[goal["disease_tag"]]] = 1
-                symptom_rep_ex = np.zeros(len(self.symptom_to_index.keys()))
-                symptom_rep_im = np.zeros(len(self.symptom_to_index.keys()))
-                symptom_rep_ex_im = np.zeros(len(self.symptom_to_index.keys()))
+
+                ##########################
+                # 进行特征表示，这里向量的长度与slot的个数一样，不同位置上表示不同的症状，不同的值表示有或无
+                #############
+                # symptom_rep_ex = np.zeros(len(self.symptom_to_index.keys()))
+                # symptom_rep_im = np.zeros(len(self.symptom_to_index.keys()))
+                # symptom_rep_ex_im = np.zeros(len(self.symptom_to_index.keys()))
+                # # explicit
+                # for symptom, value in goal["goal"]["explicit_inform_slots"].items():
+                #     if value == True:
+                #         symptom_rep_ex[self.symptom_to_index[symptom]] = 1
+                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = 1
+                #     elif value == False:
+                #         symptom_rep_ex[self.symptom_to_index[symptom]] = -1
+                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = -1
+                #
+                #     elif value == 'UNK':
+                #         symptom_rep_ex[self.symptom_to_index[symptom]] = 2
+                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = 2
+                #
+                # # implicit
+                # for symptom, value in goal["goal"]["implicit_inform_slots"].items():
+                #     if value == True:
+                #         symptom_rep_im[self.symptom_to_index[symptom]] = 1
+                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = 1
+                #     elif value == False:
+                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = -1
+                #         symptom_rep_im[self.symptom_to_index[symptom]] = -1
+                #     elif value == 'UNK':
+                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = 2
+                #         symptom_rep_im[self.symptom_to_index[symptom]] = 2
+
+
+                # 每一个症状用一个one-hot向量进行表示，多个one-hot向量进行拼接。
+                symptom_rep_ex = np.zeros((len(self.symptom_to_index.keys()),3))
+                symptom_rep_im = np.zeros((len(self.symptom_to_index.keys()),3))
+                symptom_rep_ex_im = np.zeros((len(self.symptom_to_index.keys()),3))
                 # explicit
                 for symptom, value in goal["goal"]["explicit_inform_slots"].items():
                     if value == True:
-                        symptom_rep_ex[self.symptom_to_index[symptom]] = 1
-                        symptom_rep_ex_im[self.symptom_to_index[symptom]] = 1
-                    else:
-                        symptom_rep_ex[self.symptom_to_index[symptom]] = -1
-                        symptom_rep_ex_im[self.symptom_to_index[symptom]] = -1
+                        symptom_rep_ex[self.symptom_to_index[symptom]][0] = 1
+                        symptom_rep_ex_im[self.symptom_to_index[symptom]][0] = 1
+                    elif value == False:
+                        symptom_rep_ex[self.symptom_to_index[symptom]][1] = 1
+                        symptom_rep_ex_im[self.symptom_to_index[symptom]][1] = 1
+
+                    elif value == 'UNK':
+                        symptom_rep_ex[self.symptom_to_index[symptom]][2] = 1
+                        symptom_rep_ex_im[self.symptom_to_index[symptom]][2] = 1
 
                 # implicit
                 for symptom, value in goal["goal"]["implicit_inform_slots"].items():
                     if value == True:
-                        symptom_rep_im[self.symptom_to_index[symptom]] = 1
-                        symptom_rep_ex_im[self.symptom_to_index[symptom]] = 1
-                    else:
-                        symptom_rep_ex_im[self.symptom_to_index[symptom]] = -1
-                        symptom_rep_im[self.symptom_to_index[symptom]] = -1
+                        symptom_rep_im[self.symptom_to_index[symptom]][0] = 1
+                        symptom_rep_ex_im[self.symptom_to_index[symptom]][0] = 1
+                    elif value == False:
+                        symptom_rep_ex_im[self.symptom_to_index[symptom]][1] = 1
+                        symptom_rep_im[self.symptom_to_index[symptom]][1] = 1
+                    elif value == 'UNK':
+                        symptom_rep_ex_im[self.symptom_to_index[symptom]][2] = 1
+                        symptom_rep_im[self.symptom_to_index[symptom]][2] = 1
+
+                symptom_rep_ex = np.reshape(symptom_rep_ex, (3*len(self.symptom_to_index.keys())))
+                symptom_rep_im = np.reshape(symptom_rep_im, (3*len(self.symptom_to_index.keys())))
+                symptom_rep_ex_im = np.reshape(symptom_rep_ex_im, (3*len(self.symptom_to_index.keys())))
                 # print(data_set)
                 append_or_not = self.__keep_sample_or_not__(goal)
                 if append_or_not:
-
                     sample_by_disease.setdefault(goal["disease_tag"], dict())
                     sample_by_disease[goal["disease_tag"]][goal["consult_id"]] = goal
 
@@ -157,10 +224,14 @@ class Finder(object):
                     data_set[k]["x_ex_im"].append(symptom_rep_ex_im)
                     data_set[k]["y"].append(disease_rep)
                     data_set[k]["consult_id"].append(goal["consult_id"])
+                else:
+                    pass
+                    # print(goal)
 
         self.data_set = data_set
         self.sample_by_disease = sample_by_disease
         self.disease_sample_count = disease_sample_count
+        # exit(0)
 
     def train_sklearn_svm(self):
         disease_accuracy = {}
@@ -185,18 +256,21 @@ class Finder(object):
             disease_accuracy[key]["ex&im"] = float("%.4f" % (value["ex&im"] / len(self.data_set.keys())))
             disease_accuracy[key]["ex"] = float("%.4f" % (value["ex"] / len(self.data_set.keys())))
 
-        # print(disease_accuracy)
+        print(disease_accuracy)
         return disease_accuracy
 
     def _train_and_evaluate_svm_one_fold_(self, train_set, test_set):
         """
-
         :param train_set: dict, {"fold_index":{"x":[],"x_ex":[]]}
         :param test_set: a list of batches.
         :return:
         """
-        clf_ex = svm.SVC(decision_function_shape="ovo")
-        clf_ex_im = svm.SVC(decision_function_shape="ovo")
+        # clf_ex = svm.SVC(kernel='linear', C=self.svm_c)
+        # clf_ex_im = svm.SVC(kernel='linear', C=self.svm_c)
+        clf_ex = svm.SVC(kernel='linear')
+        clf_ex_im = svm.SVC(kernel='linear')
+        # clf_ex = svm.SVC(decision_function_shape="ovo")
+        # clf_ex_im = svm.SVC(decision_function_shape="ovo")
         Xs_ex = []
         Xs_ex_im = []
         Ys = []
@@ -273,7 +347,7 @@ class Finder(object):
                     print(sample_test)
                     print(sample_train)
 
-        pickle.dump(file=open(dump_file_name,"wb"), obj=data_set)
+        # pickle.dump(file=open(dump_file_name,"wb"), obj=data_set)
 
 
     def __keep_sample_or_not__(self, goal):
@@ -288,8 +362,14 @@ class Finder(object):
         elif disease_tag in ["小儿消化不良"]:
             keep_or_not = False
             if len(goal["goal"]["explicit_inform_slots"].keys()) >= 0 and \
-                    len(goal["goal"]["implicit_inform_slots"].keys()) >= 1:
+                    len(goal["goal"]["implicit_inform_slots"].keys()) >= 2:
                 keep_or_not = True
+                # symptom_list = list(goal['goal']['implicit_inform_slots'].keys()) + list(goal['goal']['explicit_inform_slots'].keys())
+                # for symptom in symptom_list:
+                #     if symptom in ['腹泻']:
+                #         keep_or_not = False
+                #         break
+
         elif disease_tag in ["小儿支气管炎"]:
             keep_or_not = False
             if len(goal["goal"]["explicit_inform_slots"].keys()) >= 1 and \
@@ -299,29 +379,37 @@ class Finder(object):
         elif disease_tag == "上呼吸道感染":
             keep_or_not = False
             if len(goal["goal"]["explicit_inform_slots"].keys()) >= 0 and \
-                    len(goal["goal"]["implicit_inform_slots"].keys()) >= 2:
+                    len(goal["goal"]["implicit_inform_slots"].keys()) >= 1:
                 keep_or_not = True
                 for symptom in goal["goal"]["implicit_inform_slots"].keys():
+                    pass
                     # if symptom in ["腹泻","黄绿稀溏","稀便","脱水","喘鸣","呼吸不畅"]:
                     # if symptom in ["腹泻","黄绿稀溏","稀便", "涨肚","咳嗽"]:
                     if symptom in ["腹泻", "涨肚", "咳嗽", "肺纹理增粗"]:
                     # if symptom in ["腹泻","咳嗽", "肺纹理增粗","涨肚"]:
                         keep_or_not = False
                         break
-        return True
+        return keep_or_not
 
 
 if __name__ == "__main__":
     # goal_set,symptom_set, disease_symptom
-    goal_set_file = './../data/filter10/goal_set.p'
-    slot_set_file = './../data/filter10/slot_set.p'
-    disease_symptom_file = './../data/filter10/disease_symptom.p'
-    save_path = "./../data/found_dataset_filter_5/"
+    filter_path = 'filter10'
+    goal_set_file = './../data/' + filter_path + '/goal_set.p'
+    slot_set_file = './../data/' + filter_path + '/slot_set.p'
+    disease_symptom_file = './../data/' + filter_path + '/disease_symptom.p'
+    save_path = "./../data/found_dataset_" + filter_path + '/'
+
+    goal_set_file = './../data/goal_set.p'
+    slot_set_file = './../data/slot_set.p'
+    disease_symptom_file = './../data/disease_symptom.p'
+
     goal_set = pickle.load(open(goal_set_file,"rb"))
     slot_set = pickle.load(open(slot_set_file,"rb"))
     disease_symptom_set = pickle.load(open(disease_symptom_file,"rb"))
+    svm_c = 0.3 # Penalty parameter C of the error term.
     # print(goal_set)
-    finder = Finder(goal_set=goal_set,symptom_set=slot_set,disease_symptom=disease_symptom_set,k_fold=5)
+    finder = Finder(goal_set=goal_set,symptom_set=slot_set,disease_symptom=disease_symptom_set,k_fold=5, svm_c=svm_c)
 
     gap = 0.0
     save_set = False

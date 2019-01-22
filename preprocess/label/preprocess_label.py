@@ -100,6 +100,8 @@ class GoalDumper(object):
 
             self.goal_set.append(line)
         data_file.close()
+
+        # self.goal_set = pickle.load(open(self.file_name, 'rb'))
         goal_number = len(self.goal_set)
         data_set = {
             "train":[],
@@ -107,23 +109,11 @@ class GoalDumper(object):
             "validate":[]
         }
 
+        goal_by_disease = {}
         for goal in self.goal_set:
-            random_float = random.random()
-            if random_float <= train:
-                data_set["train"].append(goal)
-            elif train < random_float and random_float <= train+test:
-                data_set["test"].append(goal)
-            else:
-                data_set["validate"].append(goal)
-
-            for slot, value in goal["goal"]["explicit_inform_slots"].items():
-                if value == False: print(goal)
-                break
-            for slot, value in goal["goal"]["implicit_inform_slots"].items():
-                if value == False: print(goal)
-                break
-
-            # for slot.
+            goal_by_disease.setdefault(goal['disease_tag'], [])
+            goal_by_disease[goal['disease_tag']].append(goal)
+            # for slot
             for symptom in goal["goal"]["explicit_inform_slots"].keys(): self.slot_set.add(symptom)
             for symptom in goal["goal"]["implicit_inform_slots"].keys(): self.slot_set.add(symptom)
 
@@ -137,6 +127,24 @@ class GoalDumper(object):
             for symptom in goal["goal"]["implicit_inform_slots"].keys():
                 self.disease_symptom[disease]['symptom'].setdefault(symptom, 0)
                 self.disease_symptom[disease]['symptom'][symptom] += 1
+
+        for disease, goal_list in goal_by_disease.items():
+            random.shuffle(goal_list)
+            num = len(goal_list)
+            train_num = int(num * train)
+            validate_num = int(num * validate)
+            test_num = num - train_num - validate_num
+            data_set['train'] = data_set['train'] + goal_list[0:train_num]
+            data_set['validate'] = data_set['validate'] + goal_list[train_num:train_num+validate_num]
+            data_set['test'] = data_set['test'] + goal_list[train_num + validate_num:num]
+
+            for slot, value in goal["goal"]["explicit_inform_slots"].items():
+                if value == False: print(goal)
+                break
+            for slot, value in goal["goal"]["implicit_inform_slots"].items():
+                if value == False: print(goal)
+                break
+
 
         pickle.dump(file=open(dump_file_name,"wb"), obj=data_set)
 
@@ -173,10 +181,10 @@ if __name__ == "__main__":
     # slots_dumper.dump(slot_dump_file_name=slots_dump_file,disease_dump_file_name=disease_dump_file)
 
     # Goal
-    goal_file = "./../../resources/label/goal2_normal_filter.json"
-    goal_dump_file = "./../../resources/label/goal_set.p"
-    slots_dump_file = "./../../resources/label/slot_set.p"
-    disease_dump_file = "./../../resources/label/disease_symptom.p"
+    goal_file = "./../../src/data/simulated/synthetic_data"
+    goal_dump_file = "./../../src/data/simulated/goal_set.p"
+    slots_dump_file = "./../../src/data/simulated/slot_set.p"
+    disease_dump_file = "./../../src/data/simulated/disease_symptom.p"
     goal_dumper = GoalDumper(goal_file=goal_file)
     goal_dumper.dump(dump_file_name=goal_dump_file)
     goal_dumper.dump_slot(slots_dump_file)

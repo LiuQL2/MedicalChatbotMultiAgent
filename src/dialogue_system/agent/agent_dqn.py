@@ -7,22 +7,34 @@ model will change if the user's answer is no in continual several times.
 """
 
 import random
+import copy
+import numpy as np
 import sys, os
 sys.path.append(os.getcwd().replace("src/dialogue_system/agent",""))
 from src.dialogue_system.agent.agent import Agent
 from src.dialogue_system.policy_learning.dqn_torch import DQN
-from src.dialogue_system.agent.utils import state_to_representation_last, state_to_representation_history
+from src.dialogue_system.agent.utils import state_to_representation_last
 
 
 class AgentDQN(Agent):
     def __init__(self, action_set, slot_set, disease_symptom, parameter):
         super(AgentDQN, self).__init__(action_set=action_set, slot_set=slot_set,disease_symptom=disease_symptom, parameter=parameter)
-        input_size = parameter.get("input_size_dqn")
+
+        # 是否将疾病的症状分布作为额外的输入。
+        self.symptom_dist_as_input = parameter.get("symptom_dist_as_input")
+        self.agent_id = parameter.get("agent_id")
+
+        if self.symptom_dist_as_input is True and self.agent_id.lower() == 'agenthrl':
+            temp_slot_set = copy.deepcopy(slot_set)
+            temp_slot_set.pop('disease')
+            input_size = parameter.get("input_size_dqn") + len(temp_slot_set)
+        else:
+            input_size = parameter.get("input_size_dqn")
         hidden_size = parameter.get("hidden_size_dqn", 100)
         output_size = len(self.action_space)
         self.dqn = DQN(input_size=input_size, hidden_size=hidden_size,output_size=output_size, parameter=parameter)
 
-    def next(self, state, turn, greedy_strategy):
+    def next(self, state, turn, greedy_strategy, **kwargs):
         """
         Taking action based on different methods, e.g., DQN-based AgentDQN, rule-based AgentRule.
         Detail codes will be implemented in different sub-class of this class.
@@ -31,11 +43,15 @@ class AgentDQN(Agent):
         :return: the agent action, a tuple consists of the selected agent action and action index.
         """
         self.agent_action["turn"] = turn
+        symptom_dist = kwargs.get('symptom_dist')
         state_rep = state_to_representation_last(state=state,
                                                  action_set=self.action_set,
                                                  slot_set=self.slot_set,
                                                  disease_symptom=self.disease_symptom,
                                                  max_turn=self.parameter["max_turn"]) # sequence representation.
+
+        if self.symptom_dist_as_input is True and self.agent_id.lower() == 'agenthrl':
+            state_rep = np.concatenate((state_rep, symptom_dist), axis=0)
 
         if greedy_strategy == True:
             greedy = random.random()

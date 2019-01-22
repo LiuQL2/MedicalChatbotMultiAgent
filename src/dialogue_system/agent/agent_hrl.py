@@ -19,6 +19,22 @@ class AgentHRL(object):
         self.action_set = action_set
         self.slot_set = slot_set
         self.disease_symptom = disease_symptom
+
+        # symptom distribution by diseases.
+        temp_slot_set = copy.deepcopy(slot_set)
+        temp_slot_set.pop('disease')
+        self.disease_to_symptom_dist = {}
+        total_count = np.zeros(len(temp_slot_set))
+        for disease, v in self.disease_symptom.items():
+            dist = np.zeros(len(temp_slot_set))
+            for symptom, count in v['symptom'].items():
+                dist[temp_slot_set[symptom]] = count
+                total_count[temp_slot_set[symptom]] += count
+            self.disease_to_symptom_dist[disease] = dist
+
+        for disease in self.disease_to_symptom_dist.keys():
+            self.disease_to_symptom_dist[disease] = self.disease_to_symptom_dist[disease] / total_count
+
         ##################################
         # Building lower agents. The state representation that the master agent and lower agents are the same, so the
         # slot set are same for these different agents.
@@ -109,7 +125,8 @@ class AgentHRL(object):
         self.current_lower_agent_id = action_index
 
         # Lower agent takes an agent.
-        agent_action, action_index = self.id2lowerAgent[self.current_lower_agent_id].next(state, turn, greedy_strategy)
+        symptom_dist = self.disease_to_symptom_dist[self.id2disease[self.current_lower_agent_id]]
+        agent_action, action_index = self.id2lowerAgent[self.current_lower_agent_id].next(state, turn, greedy_strategy, symptom_dist=symptom_dist)
         return agent_action, action_index
 
     def train(self, batch):
@@ -158,7 +175,7 @@ class AgentHRL(object):
 
     def record_training_sample(self, state, agent_action, reward, next_state, episode_over):
         # samples of lower agent
-        self.id2lowerAgent[self.current_lower_agent_id].record_training_sample(state, agent_action, reward, next_state, episode_over)
+        self.id2lowerAgent[self.current_lower_agent_id].record_training_sample(state, agent_action, reward, next_state, episode_over, symptom_dist=self.disease_to_symptom_dist[self.id2disease[self.current_lower_agent_id]])
 
         # samples of master agent.
         state_rep = state_to_representation_last(state=state,

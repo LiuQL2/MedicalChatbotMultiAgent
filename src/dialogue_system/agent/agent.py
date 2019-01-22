@@ -9,7 +9,7 @@ import sys, os
 from collections import deque
 sys.path.append(os.getcwd().replace("src/dialogue_system/agent",""))
 from src.dialogue_system import dialogue_configuration
-from src.dialogue_system.agent.utils import state_to_representation_history, state_to_representation_last
+from src.dialogue_system.agent.utils import state_to_representation_last
 
 
 class Agent(object):
@@ -61,7 +61,7 @@ class Agent(object):
             "speaker":"agent"
         }
 
-    def next(self, state, turn, greedy_strategy):
+    def next(self, *args, **kwargs):
         """
         Taking action based on different methods, e.g., DQN-based AgentDQN, rule-based AgentRule.
         Detail codes will be implemented in different sub-class of this class.
@@ -132,9 +132,16 @@ class Agent(object):
             temp_disease_symptom[key]['symptom'] = symptom_list
         return temp_disease_symptom
 
-    def record_training_sample(self, state, agent_action, reward, next_state, episode_over):
+    def record_training_sample(self, state, agent_action, reward, next_state, episode_over, **kwargs):
+        symptom_dist = kwargs.get('symptom_dist')
+        symptom_dist_as_input = self.parameter.get("symptom_dist_as_input")
+        agent_id = self.parameter.get("agent_id")
+
         state = state_to_representation_last(state=state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
         next_state = state_to_representation_last(state=next_state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
+        if symptom_dist_as_input is True and agent_id.lower() == 'agenthrl':
+            state = np.concatenate((state, symptom_dist), axis=0)
+            next_state = np.concatenate((next_state, symptom_dist), axis=0)
         self.experience_replay_pool.append((state, agent_action, reward, next_state, episode_over))
 
     def flush_pool(self):

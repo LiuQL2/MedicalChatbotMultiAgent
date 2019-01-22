@@ -11,6 +11,7 @@ from src.dialogue_system.agent import AgentRandom
 from src.dialogue_system.agent import AgentDQN
 from src.dialogue_system.agent import AgentRule
 from src.dialogue_system.agent import AgentHRL
+from src.dialogue_system.agent import AgentWithGoal
 from src.dialogue_system.run.utils import verify_params
 
 from src.dialogue_system.run import RunningSteward
@@ -65,16 +66,17 @@ parser.add_argument("--explicit_number", dest="explicit_number", type=int, defau
 parser.add_argument("--implicit_number", dest="implicit_number", type=int, default=0, help="the number of implicit symptoms of used sample")
 
 # agent to use.
-parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentHRL', help="The agent to be used:[AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentHRLGoal]")
+parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentWithGoal', help="The agent to be used:[AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentHRLGoal]")
 
 # goal set, slot set, action set.
 max_turn = 22
-parser.add_argument("--action_set", dest="action_set", type=str, default='./../../data/action_set.p',help='path and filename of the action set')
-parser.add_argument("--slot_set", dest="slot_set", type=str, default='./../../data/slot_set.p',help='path and filename of the slots set')
-parser.add_argument("--goal_set", dest="goal_set", type=str, default='./../../data/goal_set.p',help='path and filename of user goal')
-parser.add_argument("--disease_symptom", dest="disease_symptom", type=str,default="./../../data/disease_symptom.p",help="path and filename of the disease_symptom file")
+parser.add_argument("--action_set", dest="action_set", type=str, default='./../../data/real_world/action_set.p',help='path and filename of the action set')
+parser.add_argument("--slot_set", dest="slot_set", type=str, default='./../../data/real_world/slot_set.p',help='path and filename of the slots set')
+parser.add_argument("--goal_set", dest="goal_set", type=str, default='./../../data/real_world/goal_set.p',help='path and filename of user goal')
+parser.add_argument("--disease_symptom", dest="disease_symptom", type=str,default="./../../data/real_world/disease_symptom.p",help="path and filename of the disease_symptom file")
 parser.add_argument("--max_turn", dest="max_turn", type=int, default=max_turn, help="the max turn in one episode.")
-parser.add_argument("--input_size_dqn", dest="input_size_dqn", type=int, default=max_turn + 447, help="the input_size of DQN.")
+parser.add_argument("--input_size_dqn", dest="input_size_dqn", type=int, default=max_turn + 787, help="the input_size of DQN.")
+# parser.add_argument("--input_size_dqn", dest="input_size_dqn", type=int, default=2438, help="the input_size of DQN.")
 parser.add_argument("--reward_for_not_come_yet", dest="reward_for_not_come_yet", type=float,default=-1)
 parser.add_argument("--reward_for_success", dest="reward_for_success", type=float,default=3*max_turn)
 parser.add_argument("--reward_for_fail", dest="reward_for_fail", type=float,default=-1*max_turn)
@@ -94,7 +96,7 @@ parser.add_argument("--temperature", dest="temperature", type=float, default=1.0
 parser.add_argument("--hrl_with_goal", dest="hrl_with_goal", type=boolean_string, default=False, help="Using hierarchical RL with goal?")
 parser.add_argument("--weight_correction", dest="weight_correction", type=boolean_string, default=False, help="weight corrention for the master agent in HRL? {True, False}")
 parser.add_argument("--value_as_reward", dest="value_as_reward", type=boolean_string, default=True, help="The state value of lower agent is the reward for the higher agent? {True, False}")
-
+parser.add_argument("--symptom_dist_as_input", dest="symptom_dist_as_input", type=boolean_string, default=False, help="The distribution over symptoms of each disease is taken as input to the lower agent? {True, False}")
 
 
 args = parser.parse_args()
@@ -138,8 +140,10 @@ def run(parameter):
         agent = AgentRule(action_set=action_set,slot_set=slot_set,disease_symptom=disease_symptom,parameter=parameter)
     elif agent_id.lower() == 'agenthrl':
         agent = AgentHRL(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=parameter)
+    elif agent_id.lower() == 'agentwithgoal':
+        agent = AgentWithGoal(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=parameter)
     else:
-        raise ValueError('Agent id should be one of [AgentRule, AgentDQN, AgentRandom].')
+        raise ValueError('Agent id should be one of [AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentWithGoal].')
 
     steward.simulate(agent=agent,epoch_number=simulate_epoch_number, train_mode=train_mode)
 

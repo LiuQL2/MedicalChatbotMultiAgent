@@ -91,21 +91,36 @@ def state_to_representation_last(state, action_set, slot_set, disease_symptom, m
     current_slots.update(state["current_slots"]["explicit_inform_slots"])
     current_slots.update(state["current_slots"]["implicit_inform_slots"])
     current_slots.update(state["current_slots"]["proposed_slots"])
-    current_slots_rep = np.zeros(len(slot_set.keys()))
-    for slot in current_slots.keys():
-        # current_slots_rep[slot_set[slot]] = 1.0
 
+    # current_slots_rep = np.zeros(len(slot_set.keys()))
+    # for slot in current_slots.keys():
+    #     # current_slots_rep[slot_set[slot]] = 1.0
+    #
+    #     # different values for different slot values.
+    #     if current_slots[slot] == True:
+    #         current_slots_rep[slot_set[slot]] = 1.0
+    #     elif current_slots[slot] == False:
+    #         current_slots_rep[slot_set[slot]] = -1.0
+    #     elif current_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
+    #         current_slots_rep[slot_set[slot]] = 2.0
+    #     elif current_slots[slot] == dialogue_configuration.I_DENY:
+    #         current_slots_rep[slot_set[slot]] = -2.0
+    #     elif current_slots[slot] == dialogue_configuration.I_DO_NOT_CARE:
+    #         current_slots_rep[slot_set[slot]] = 3.0
+
+    # one-hot vector for each symptom.
+    current_slots_rep = np.zeros((len(slot_set.keys()),3))
+    for slot in current_slots.keys():
         # different values for different slot values.
         if current_slots[slot] == True:
-            current_slots_rep[slot_set[slot]] = 1.0
+            current_slots_rep[slot_set[slot]][0] = 1.0
         elif current_slots[slot] == False:
-            current_slots_rep[slot_set[slot]] = -1.0
+            current_slots_rep[slot_set[slot]][1] = 1.0
         elif current_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
-            current_slots_rep[slot_set[slot]] = 2.0
-        elif current_slots[slot] == dialogue_configuration.I_DENY:
-            current_slots_rep[slot_set[slot]] = -2.0
-        elif current_slots[slot] == dialogue_configuration.I_DO_NOT_CARE:
-            current_slots_rep[slot_set[slot]] = 3.0
+            current_slots_rep[slot_set[slot]][2] = 1.0
+        # elif current_slots[slot] == dialogue_configuration.I_DENY:
+        #     current_slots_rep[slot_set[slot]][3] = 1.0
+    current_slots_rep = np.reshape(current_slots_rep, (len(slot_set.keys())*3))
 
     # wrong diseases rep.
     # wrong_diseases = state["current_slots"]["wrong_diseases"]
@@ -126,21 +141,38 @@ def state_to_representation_last(state, action_set, slot_set, disease_symptom, m
     user_inform_slots.update(state["user_action"]["explicit_inform_slots"])
     user_inform_slots.update(state["user_action"]["implicit_inform_slots"])
     if "disease" in user_inform_slots: user_inform_slots.pop("disease")
-    user_inform_slots_rep = np.zeros(len(slot_set.keys()))
-    for slot in user_inform_slots.keys():
-        # user_inform_slots_rep[slot_set[slot]] = 1.0
 
+    # user_inform_slots_rep = np.zeros(len(slot_set.keys()))
+    # for slot in user_inform_slots.keys():
+    #     # user_inform_slots_rep[slot_set[slot]] = 1.0
+    #
+    #     # different values for different slot values.
+    #     if user_inform_slots[slot] == True:
+    #         user_inform_slots_rep[slot_set[slot]] = 1.0
+    #     elif user_inform_slots[slot] == False:
+    #         user_inform_slots_rep[slot_set[slot]] = -1.0
+    #     elif user_inform_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
+    #         user_inform_slots_rep[slot_set[slot]] = 2.0
+    #     elif user_inform_slots[slot] == dialogue_configuration.I_DENY:
+    #         user_inform_slots_rep[slot_set[slot]] = -2.0
+    #     elif user_inform_slots[slot] == dialogue_configuration.I_DO_NOT_CARE:
+    #         user_inform_slots_rep[slot_set[slot]] = 3.0
+
+    # one-hot vector for each symptom.
+    user_inform_slots_rep = np.zeros((len(slot_set.keys()),3))
+    for slot in user_inform_slots.keys():
         # different values for different slot values.
         if user_inform_slots[slot] == True:
-            user_inform_slots_rep[slot_set[slot]] = 1.0
+            user_inform_slots_rep[slot_set[slot]][0] = 1.0
         elif user_inform_slots[slot] == False:
-            user_inform_slots_rep[slot_set[slot]] = -1.0
+            user_inform_slots_rep[slot_set[slot]][1] = 1.0
         elif user_inform_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
-            user_inform_slots_rep[slot_set[slot]] = 2.0
-        elif user_inform_slots[slot] == dialogue_configuration.I_DENY:
-            user_inform_slots_rep[slot_set[slot]] = -2.0
-        elif user_inform_slots[slot] == dialogue_configuration.I_DO_NOT_CARE:
-            user_inform_slots_rep[slot_set[slot]] = 3.0
+            user_inform_slots_rep[slot_set[slot]][2] = 1.0
+        # elif user_inform_slots[slot] == dialogue_configuration.I_DENY:
+        #     user_inform_slots_rep[slot_set[slot]][3] = 1.0
+        # elif user_inform_slots[slot] == dialogue_configuration.I_DO_NOT_CARE:
+        #     user_inform_slots_rep[slot_set[slot]][4] = 1.0
+    user_inform_slots_rep = np.reshape(user_inform_slots_rep, (len(slot_set.keys())*3))
 
     # User last request slot rep.
     user_request_slots = copy.deepcopy(state["user_action"]["request_slots"])
