@@ -47,6 +47,9 @@ class RunningSteward(object):
                            parameters of the model will not be updated.
         :return: nothing to return.
         """
+        # initializing the count matrix for AgentWithGoal
+        # print('Initializing the count matrix for AgentWithGoal')
+        # self.simulation_epoch(epoch_size=500, train_mode=train_mode)
         save_model = self.parameter.get("save_model")
         self.dialogue_manager.set_agent(agent=agent)
         # self.dialogue_manager.state_tracker.user.set_max_turn(max_turn=self.parameter.get('max_turn'))

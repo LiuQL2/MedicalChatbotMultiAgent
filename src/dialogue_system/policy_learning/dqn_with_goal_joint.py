@@ -124,9 +124,9 @@ class DQNModelWithGoal3(torch.nn.Module):
         return q_values
 
 
-class DQNWithGoal(DQN):
+class DQNWithGoalJoint(DQN):
     def __init__(self, input_size, hidden_size, output_size, parameter):
-        super(DQNWithGoal, self).__init__(input_size, hidden_size, output_size, parameter)
+        super(DQNWithGoalJoint, self).__init__(input_size, hidden_size, output_size, parameter)
         del self.current_net
         del self.target_net
 

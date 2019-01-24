@@ -133,13 +133,13 @@ class Agent(object):
         return temp_disease_symptom
 
     def record_training_sample(self, state, agent_action, reward, next_state, episode_over, **kwargs):
-        symptom_dist = kwargs.get('symptom_dist')
         symptom_dist_as_input = self.parameter.get("symptom_dist_as_input")
         agent_id = self.parameter.get("agent_id")
 
         state = state_to_representation_last(state=state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
         next_state = state_to_representation_last(state=next_state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
         if symptom_dist_as_input is True and agent_id.lower() == 'agenthrl':
+            symptom_dist = kwargs.get('symptom_dist')
             state = np.concatenate((state, symptom_dist), axis=0)
             next_state = np.concatenate((next_state, symptom_dist), axis=0)
         self.experience_replay_pool.append((state, agent_action, reward, next_state, episode_over))

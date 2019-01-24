@@ -50,6 +50,7 @@ def construct_info(params):
     weight_correction = params["weight_correction"]
     value_as_reward = params["value_as_reward"]
     symptom_dist_as_input = params["symptom_dist_as_input"]
+    weight_for_reward_shaping = params["weight_for_reward_shaping"]
 
     run_time = time.strftime('%m%d%H%M%S', time.localtime(time.time()))
     info = run_time + \
@@ -69,6 +70,7 @@ def construct_info(params):
            "_wc" + str(int(weight_correction)) + \
            "_var" + str(int(value_as_reward)) + \
            "_sdai" + str(int(symptom_dist_as_input)) + \
+           "_wfrs" + str(weight_for_reward_shaping) + \
            "_data" + str(data_set_name.title()) + \
            "_RID" + str(run_id) + \
            "_" + dqn_type

@@ -11,6 +11,7 @@ from src.dialogue_system.agent import AgentRandom
 from src.dialogue_system.agent import AgentDQN
 from src.dialogue_system.agent import AgentRule
 from src.dialogue_system.agent import AgentHRL
+from src.dialogue_system.agent import AgentWithGoalJoint
 from src.dialogue_system.agent import AgentWithGoal
 from src.dialogue_system.run.utils import verify_params
 
@@ -95,9 +96,11 @@ parser.add_argument("--error_prob", dest="error_prob", type=float, default=0.05,
 parser.add_argument("--temperature", dest="temperature", type=float, default=1.0, help="the temperature in gumbel-softmax")
 parser.add_argument("--hrl_with_goal", dest="hrl_with_goal", type=boolean_string, default=False, help="Using hierarchical RL with goal?")
 parser.add_argument("--weight_correction", dest="weight_correction", type=boolean_string, default=False, help="weight corrention for the master agent in HRL? {True, False}")
-parser.add_argument("--value_as_reward", dest="value_as_reward", type=boolean_string, default=True, help="The state value of lower agent is the reward for the higher agent? {True, False}")
+parser.add_argument("--value_as_reward", dest="value_as_reward", type=boolean_string, default=False, help="The state value of lower agent is the reward for the higher agent? {True, False}")
 parser.add_argument("--symptom_dist_as_input", dest="symptom_dist_as_input", type=boolean_string, default=False, help="The distribution over symptoms of each disease is taken as input to the lower agent? {True, False}")
 
+# reward shapping
+parser.add_argument("--weight_for_reward_shaping", dest='weight_for_reward_shaping', type=float, default=0.01, help="weight for reward shaping. 0 means no reward shaping.")
 
 args = parser.parse_args()
 parameter = vars(args)
@@ -140,10 +143,12 @@ def run(parameter):
         agent = AgentRule(action_set=action_set,slot_set=slot_set,disease_symptom=disease_symptom,parameter=parameter)
     elif agent_id.lower() == 'agenthrl':
         agent = AgentHRL(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=parameter)
+    elif agent_id.lower() == 'agentwithgoaljoint':
+        agent = AgentWithGoalJoint(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=parameter)
     elif agent_id.lower() == 'agentwithgoal':
         agent = AgentWithGoal(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=parameter)
     else:
-        raise ValueError('Agent id should be one of [AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentWithGoal].')
+        raise ValueError('Agent id should be one of [AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentWithGoal, AgentWithGoalJoint].')
 
     steward.simulate(agent=agent,epoch_number=simulate_epoch_number, train_mode=train_mode)
 

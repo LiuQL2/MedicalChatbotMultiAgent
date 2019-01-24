@@ -50,8 +50,14 @@ class AgentDQN(Agent):
                                                  disease_symptom=self.disease_symptom,
                                                  max_turn=self.parameter["max_turn"]) # sequence representation.
 
+        # Lower agent of HRL with four lower agents.
         if self.symptom_dist_as_input is True and self.agent_id.lower() == 'agenthrl':
             state_rep = np.concatenate((state_rep, symptom_dist), axis=0)
+
+        # HRL with goal (not joint training one.)
+        goal = kwargs.get('goal')
+        if self.agent_id.lower() == 'agentwithgoal':
+            state_rep = np.concatenate((state_rep, goal),axis=0)
 
         if greedy_strategy == True:
             greedy = random.random()
@@ -99,7 +105,12 @@ class AgentDQN(Agent):
             cur_bellman_err += loss["loss"]
         print("cur bellman err %.4f, experience replay pool %s" % (float(cur_bellman_err) / (len(self.experience_replay_pool) + 1e-10), len(self.experience_replay_pool)))
 
-    def get_q_values(self, state):
+    def get_q_values(self, state, **kwargs):
         state_rep = state_to_representation_last(state=state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
+        # Lower agent of HRL with goal (not the one with joint training).
+        goal = kwargs.get('goal')
+        if self.agent_id.lower() == 'agentwithgoal':
+            state_rep = np.concatenate((state_rep, goal), axis=0)
+
         Q_values, max_index = self.dqn.predict(Xs=[state_rep])
         return Q_values.cpu().detach().numpy()
