@@ -18,7 +18,7 @@ class StateTracker(object):
         self._init()
 
     def get_state(self):
-        return self.state
+        return copy.deepcopy(self.state)
 
     def state_updater(self, user_action=None, agent_action=None):
         assert (user_action is None or agent_action is None), "user action and agent action cannot be None at the same time."

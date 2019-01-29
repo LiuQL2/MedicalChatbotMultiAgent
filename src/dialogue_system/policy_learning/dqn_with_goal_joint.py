@@ -21,6 +21,12 @@ class DQNModelWithGoal(torch.nn.Module):
         self.number_of_latent_variables = number_of_latent_variables
         self.tau = self.params.get("temperature")
         # different layers
+        # self.goal_layer1 = torch.nn.Linear(input_size, hidden_size, bias=True)
+        # self.goal_layer2 = torch.nn.Linear(hidden_size, number_of_latent_variables, bias=True)
+        # self.policy_layer1 = torch.nn.Linear(input_size + number_of_latent_variables, hidden_size, bias=True)
+        # self.policy_layer2 = torch.nn.Linear(hidden_size, output_size, bias=True)
+
+        # different layers
         self.goal_layer1 = torch.nn.Linear(input_size, number_of_latent_variables, bias=True)
         self.policy_layer1 = torch.nn.Linear(input_size + number_of_latent_variables, output_size, bias=True)
 
@@ -34,6 +40,7 @@ class DQNModelWithGoal(torch.nn.Module):
 
     def goal_generator(self, x):
         logits = self.goal_layer1(x)
+        # logits = self.goal_layer2(torch.nn.functional.leaky_relu(logits))
         goal_rep = torch.nn.functional.gumbel_softmax(logits=logits, tau=self.tau, hard=False)
         # goal_rep = torch.nn.functional.softmax(input=logits)
         return goal_rep
@@ -41,6 +48,7 @@ class DQNModelWithGoal(torch.nn.Module):
     def compute_q_value(self, x, goal):
         temp = torch.cat((x, goal), dim=1)
         q_values = self.policy_layer1(temp)
+        # q_values = self.policy_layer2(torch.nn.functional.leaky_relu(q_values))
         return q_values
 
 

@@ -61,8 +61,9 @@ class RunningSteward(object):
                 self.simulation_epoch(epoch_size=self.epoch_size,train_mode=train_mode)
 
             # Evaluating the model.
-            result = self.evaluate_model(index)
-            if result["success_rate"] >= self.best_result["success_rate"] and \
+            # result = self.evaluate_model(index)
+            result = self.evaluate_model_on_test_set(index)
+            if result["success_rate"] > self.best_result["success_rate"] and \
                     result["success_rate"] > dialogue_configuration.SUCCESS_RATE_THRESHOLD and \
                     result["average_wrong_disease"] <= self.best_result["average_wrong_disease"] and train_mode==True:
                 self.dialogue_manager.state_tracker.agent.flush_pool()
@@ -89,7 +90,7 @@ class RunningSteward(object):
             self.dialogue_manager.initialize(train_mode=self.parameter.get("train_mode"))
             episode_over = False
             while episode_over == False:
-                reward, episode_over, dialogue_status = self.dialogue_manager.next(save_record=True,train_mode=train_mode,greedy_strategy=True)
+                reward, episode_over, dialogue_status = self.dialogue_manager.next(train_mode=train_mode,greedy_strategy=True)
                 total_reward += reward
             total_truns += self.dialogue_manager.state_tracker.turn
             inform_wrong_disease_count += self.dialogue_manager.inform_wrong_disease_count
@@ -123,10 +124,10 @@ class RunningSteward(object):
         # evaluate_session_number = len(self.dialogue_manager.state_tracker.user.goal_set["test"])
         inform_wrong_disease_count = 0
         for epoch_index in range(0,evaluate_session_number, 1):
-            self.dialogue_manager.initialize(train_mode=train_mode, epoch_index=epoch_index)
+            self.dialogue_manager.initialize(train_mode=train_mode)
             episode_over = False
             while episode_over == False:
-                reward, episode_over, dialogue_status = self.dialogue_manager.next(save_record=False,train_mode=train_mode,greedy_strategy=False)
+                reward, episode_over, dialogue_status = self.dialogue_manager.next(train_mode=train_mode,greedy_strategy=False)
                 total_reward += reward
             total_truns += self.dialogue_manager.state_tracker.turn
             inform_wrong_disease_count += self.dialogue_manager.inform_wrong_disease_count
@@ -139,6 +140,53 @@ class RunningSteward(object):
         average_reward = float("%.3f" % (float(total_reward) / evaluate_session_number))
         average_turn = float("%.3f" % (float(total_truns) / evaluate_session_number))
         average_wrong_disease = float("%.3f" % (float(inform_wrong_disease_count) / evaluate_session_number))
+        res = {"success_rate":success_rate, "average_reward": average_reward, "average_turn": average_turn, "average_wrong_disease":average_wrong_disease,"ab_success_rate":absolute_success_rate}
+        self.learning_curve.setdefault(index, dict())
+        self.learning_curve[index]["success_rate"]=success_rate
+        self.learning_curve[index]["average_reward"]=average_reward
+        self.learning_curve[index]["average_turn"] = average_turn
+        self.learning_curve[index]["average_wrong_disease"]=average_wrong_disease
+        if index % 10 ==0:
+            print('[INFO]', self.parameter["run_info"])
+        if index % 100 == 99 and save_performance == True:
+            self.__dump_performance__(epoch_index=index)
+        print("%3d simulation SR [%s], ABSR [%s], ave reward %s, ave turns %s, ave wrong disease %s" % (index,res['success_rate'], res["ab_success_rate"],res['average_reward'], res['average_turn'], res["average_wrong_disease"]))
+        return res
+
+    def evaluate_model_on_test_set(self,index):
+        """
+        Evaluating model during training.
+        :param index: int, the simulation index.
+        :return: a dict of evaluation results including success rate, average reward, average number of wrong diseases.
+        """
+        save_performance = self.parameter.get("save_performance")
+        self.dialogue_manager.state_tracker.agent.dqn.current_net.eval() # for testing
+        train_mode = False
+        success_count = 0
+        absolute_success_count = 0
+        total_reward = 0
+        total_truns = 0
+        evaluate_session_number = len(self.dialogue_manager.state_tracker.user.goal_set["test"])
+        inform_wrong_disease_count = 0
+        for goal_index in range(0,evaluate_session_number, 1):
+            self.dialogue_manager.initialize(train_mode=train_mode, goal_index=goal_index)
+            episode_over = False
+            while episode_over == False:
+                reward, episode_over, dialogue_status = self.dialogue_manager.next(train_mode=train_mode,greedy_strategy=False)
+                total_reward += reward
+            total_truns += self.dialogue_manager.state_tracker.turn
+            inform_wrong_disease_count += self.dialogue_manager.inform_wrong_disease_count
+            if dialogue_status == dialogue_configuration.DIALOGUE_STATUS_SUCCESS:
+                success_count += 1
+                if self.dialogue_manager.inform_wrong_disease_count == 0:
+                    absolute_success_count += 1
+        success_rate = float("%.3f" % (float(success_count) / evaluate_session_number))
+        absolute_success_rate = float("%.3f" % (float(absolute_success_count) / evaluate_session_number))
+        average_reward = float("%.3f" % (float(total_reward) / evaluate_session_number))
+        average_turn = float("%.3f" % (float(total_truns) / evaluate_session_number))
+        average_wrong_disease = float("%.3f" % (float(inform_wrong_disease_count) / evaluate_session_number))
+
+        self.dialogue_manager.state_tracker.agent.dqn.current_net.train() # for training.
         res = {"success_rate":success_rate, "average_reward": average_reward, "average_turn": average_turn, "average_wrong_disease":average_wrong_disease,"ab_success_rate":absolute_success_rate}
         self.learning_curve.setdefault(index, dict())
         self.learning_curve[index]["success_rate"]=success_rate

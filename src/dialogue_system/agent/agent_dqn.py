@@ -14,11 +14,13 @@ sys.path.append(os.getcwd().replace("src/dialogue_system/agent",""))
 from src.dialogue_system.agent.agent import Agent
 from src.dialogue_system.policy_learning.dqn_torch import DQN
 from src.dialogue_system.agent.utils import state_to_representation_last
+from src.dialogue_system import dialogue_configuration
 
 
 class AgentDQN(Agent):
-    def __init__(self, action_set, slot_set, disease_symptom, parameter):
-        super(AgentDQN, self).__init__(action_set=action_set, slot_set=slot_set,disease_symptom=disease_symptom, parameter=parameter)
+    def __init__(self, action_set, slot_set, disease_symptom, parameter, disease_as_action=True):
+        super(AgentDQN, self).__init__(action_set=action_set, slot_set=slot_set,disease_symptom=disease_symptom,
+                                       parameter=parameter,disease_as_action=disease_as_action)
 
         # 是否将疾病的症状分布作为额外的输入。
         self.symptom_dist_as_input = parameter.get("symptom_dist_as_input")
@@ -72,7 +74,7 @@ class AgentDQN(Agent):
         agent_action = self.action_space[action_index]
         agent_action["turn"] = turn
         agent_action["speaker"] = "agent"
-
+        agent_action["action_index"] = action_index
         return agent_action, action_index
 
     def train(self, batch):
@@ -114,3 +116,37 @@ class AgentDQN(Agent):
 
         Q_values, max_index = self.dqn.predict(Xs=[state_rep])
         return Q_values.cpu().detach().numpy()
+
+    def reward_shaping(self, state, next_state):
+        def delete_item_from_dict(item, value):
+            new_item = {}
+            for k, v in item.items():
+                if v != value: new_item[k] = v
+            return new_item
+
+        # slot number in state.
+        slot_dict = copy.deepcopy(state["current_slots"]["inform_slots"])
+        slot_dict.update(state["current_slots"]["explicit_inform_slots"])
+        slot_dict.update(state["current_slots"]["implicit_inform_slots"])
+        slot_dict.update(state["current_slots"]["proposed_slots"])
+        slot_dict.update(state["current_slots"]["agent_request_slots"])
+        slot_dict = delete_item_from_dict(slot_dict, dialogue_configuration.I_DO_NOT_KNOW)
+
+        next_slot_dict = copy.deepcopy(next_state["current_slots"]["inform_slots"])
+        next_slot_dict.update(next_state["current_slots"]["explicit_inform_slots"])
+        next_slot_dict.update(next_state["current_slots"]["implicit_inform_slots"])
+        next_slot_dict.update(next_state["current_slots"]["proposed_slots"])
+        next_slot_dict.update(next_state["current_slots"]["agent_request_slots"])
+        next_slot_dict = delete_item_from_dict(next_slot_dict, dialogue_configuration.I_DO_NOT_KNOW)
+        gamma = self.parameter.get("gamma")
+        return gamma * len(next_slot_dict) - len(slot_dict)
+
+    def record_training_sample(self, state, agent_action, reward, next_state, episode_over, **kwargs):
+        shaping = self.reward_shaping(state, next_state)
+        alpha = self.parameter.get("weight_for_reward_shaping")
+        # if True:
+        #     print('shaping', shaping)
+        reward = reward + alpha * shaping
+        state_rep = state_to_representation_last(state=state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
+        next_state_rep = state_to_representation_last(state=next_state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
+        self.experience_replay_pool.append((state_rep, agent_action, reward, next_state_rep, episode_over))

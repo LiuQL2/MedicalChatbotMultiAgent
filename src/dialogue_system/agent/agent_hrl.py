@@ -95,7 +95,7 @@ class AgentHRL(object):
             "speaker": "agent"
         }
 
-    def next(self, state, turn, greedy_strategy):
+    def next(self, state, turn, greedy_strategy, **kwargs):
         """
         Taking action based on different methods, e.g., DQN-based AgentDQN, rule-based AgentRule.
         Detail codes will be implemented in different sub-class of this class.

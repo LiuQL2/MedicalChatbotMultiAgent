@@ -16,7 +16,7 @@ class Agent(object):
     """
     Basic class of agent.
     """
-    def __init__(self, action_set, slot_set, disease_symptom, parameter):
+    def __init__(self, action_set, slot_set, disease_symptom, parameter, disease_as_action=True):
 
         symptom_set = set()
         for key, v in disease_symptom.items():
@@ -31,7 +31,7 @@ class Agent(object):
         self.parameter = parameter
         self.candidate_disease_list = []
         self.candidate_symptom_list = []
-        self.action_space = self._build_action_space(disease_symptom)
+        self.action_space = self._build_action_space(disease_symptom,disease_as_action)
         self.disease_symptom = self.disease_symptom_clip(disease_symptom, 2.5, parameter)
 
         self.agent_action = {
@@ -80,7 +80,7 @@ class Agent(object):
         """
         raise NotImplementedError('The `train` function of agent has not been implemented.')
 
-    def _build_action_space(self, disease_symptom):
+    def _build_action_space(self, disease_symptom, disease_as_action):
         """
         Building the Action Space for the RL-based Agent.
         All diseases are treated as actions.
@@ -105,8 +105,9 @@ class Agent(object):
             if slot != "disease":
                 feasible_actions.append({'action': 'inform', 'inform_slots': {slot: True}, 'request_slots': {}, "explicit_inform_slots":{}, "implicit_inform_slots":{}})
         # Diseases as actions.
-        for disease in disease_symptom.keys():
-            feasible_actions.append({'action': 'inform', 'inform_slots': {"disease":disease}, 'request_slots': {},"explicit_inform_slots":{}, "implicit_inform_slots":{}})
+        if disease_as_action is True:
+            for disease in disease_symptom.keys():
+                feasible_actions.append({'action': 'inform', 'inform_slots': {"disease":disease}, 'request_slots': {},"explicit_inform_slots":{}, "implicit_inform_slots":{}})
 
         return feasible_actions
 

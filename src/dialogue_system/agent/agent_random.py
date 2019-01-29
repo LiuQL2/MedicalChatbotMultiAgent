@@ -15,7 +15,7 @@ class AgentRandom(Agent):
         super(AgentRandom, self).__init__(action_set=action_set, slot_set=slot_set,disease_symptom=disease_symptom,parameter=parameter)
         self.max_turn = parameter["max_turn"]
 
-    def next(self, state,turn,greedy_strategy):
+    def next(self, state,turn,greedy_strategy,**kwargs):
         self.agent_action["turn"] = turn
         action_index = random.randint(0, len(self.action_space)-1)
         agent_action = self.action_space[action_index]

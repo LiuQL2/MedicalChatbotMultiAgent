@@ -13,7 +13,6 @@ def verify_params(params):
 def construct_info(params):
     """
     Constructing a string which contains the primary super-parameters.
-
     Args:
         params: the super-parameter
 

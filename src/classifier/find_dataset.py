@@ -80,7 +80,7 @@ class Finder(object):
         if save_set:
             file_name = save_path + "goal_set_gap" + str(gap) + "_ex&im" + str(ex_im) + "_im" + str(ex) + ".p"
             print("saving...",file_name)
-            self.dump_goal_set(dump_file_name=file_name)
+            # self.dump_goal_set(dump_file_name=file_name)
         return gap,save_set
 
     def __goal_by_disease__(self):
@@ -347,7 +347,7 @@ class Finder(object):
                     print(sample_test)
                     print(sample_train)
 
-        # pickle.dump(file=open(dump_file_name,"wb"), obj=data_set)
+        pickle.dump(file=open(dump_file_name,"wb"), obj=data_set)
 
 
     def __keep_sample_or_not__(self, goal):
@@ -400,9 +400,9 @@ if __name__ == "__main__":
     disease_symptom_file = './../data/' + filter_path + '/disease_symptom.p'
     save_path = "./../data/found_dataset_" + filter_path + '/'
 
-    goal_set_file = './../data/goal_set.p'
-    slot_set_file = './../data/slot_set.p'
-    disease_symptom_file = './../data/disease_symptom.p'
+    goal_set_file = './../data/real_world/goal_set.p'
+    slot_set_file = './../data/real_world/slot_set.p'
+    disease_symptom_file = './../data/real_world/disease_symptom.p'
 
     goal_set = pickle.load(open(goal_set_file,"rb"))
     slot_set = pickle.load(open(slot_set_file,"rb"))

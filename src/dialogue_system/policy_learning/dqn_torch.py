@@ -14,13 +14,20 @@ class DQNModel(torch.nn.Module):
     def __init__(self, input_size, hidden_size, output_size, parameter):
         super(DQNModel, self).__init__()
         self.params = parameter
-        self.layer1 = torch.nn.Linear(input_size, output_size,bias=True)
+        # different layers. Two layers.
+        self.policy_layer = torch.nn.Sequential(
+            torch.nn.Linear(input_size, hidden_size, bias=True),
+            torch.nn.Dropout(0.5),
+            torch.nn.LeakyReLU(),
+            torch.nn.Linear(hidden_size, output_size, bias=True)
+        )
+        # self.policy_layer = torch.nn.Linear(input_size, output_size, bias=True)
 
     def forward(self, x):
         if torch.cuda.is_available():
             x.cuda()
-        h1 = self.layer1(x)
-        return h1
+        q_values = self.policy_layer(x)
+        return q_values
 
 
 class DQN(object):
@@ -60,6 +67,8 @@ class DQN(object):
 
         if self.params.get("train_mode") is False:
             self.restore_model(self.params.get("saved_model"))
+            self.current_net.eval()
+            self.target_net.eval()
 
     def singleBatch(self, batch, params, weight_correction=False):
         """
@@ -89,8 +98,6 @@ class DQN(object):
 
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the columns of actions taken
         state_action_values = self.current_net(state_batch).gather(1, action_batch)
-
-
 
         # Compute V(s_{t+1}) for all next states.
         if self.params.get("dqn_type") == "DQN":
@@ -165,8 +172,13 @@ class DQN(object):
         return next_state_values
 
     def predict(self, Xs, **kwargs):
+        # train_mode = kwargs.get("train_mode")
+        # assert train_mode is not None
+        # if train_mode is False:
+        #     self.current_net.eval()
         Xs = torch.Tensor(Xs).to(device=self.device)
         Ys = self.current_net(Xs)
+        # self.current_net.train()
         max_index = np.argmax(Ys.detach().cpu().numpy(), axis=1)
         return Ys, max_index[0]
 

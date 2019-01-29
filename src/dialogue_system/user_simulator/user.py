@@ -49,6 +49,8 @@ sys.path.append(os.getcwd().replace("src/dialogue_system",""))
 from src.dialogue_system import dialogue_configuration
 from src.dialogue_system.agent.agent import Agent
 
+random.seed(12345)
+
 
 class User(object):
     def __init__(self, goal_set, disease_symptom, parameter):
@@ -58,8 +60,8 @@ class User(object):
         self.disease_symptom = Agent.disease_symptom_clip(disease_symptom=disease_symptom,denominator=20,parameter=parameter)
         self._init()
 
-    def initialize(self, train_mode=True, epoch_index=None):
-        self._init(train_mode=train_mode,epoch_index=epoch_index)
+    def initialize(self, train_mode=True, goal_index=None):
+        self._init(train_mode=train_mode,goal_index=goal_index)
 
         # Initialize rest slot for this user.
         # 初始的时候request slot里面必有disease，然后随机选择explicit_inform_slots里面的slot进行用户主诉的构建，若explicit里面没
@@ -101,7 +103,7 @@ class User(object):
         user_action = self._assemble_user_action()
         return user_action
 
-    def _init(self,train_mode=True,epoch_index=None):
+    def _init(self,train_mode=True,goal_index=None):
         """
         used for initializing an instance or an episode.
         :return: Nothing
@@ -117,11 +119,15 @@ class User(object):
             "rest_slots":{} # For slots that have not been informed.
         }
         if train_mode == True:
-            self.goal = random.choice(self.goal_set["train"])
+            if goal_index is None: self.goal = random.choice(self.goal_set["train"])
+            else: self.goal = self.goal_set["train"][goal_index]
         else:
-            self.goal = random.choice(self.goal_set["test"])
-            # assert (epoch_index != None), "epoch index is None when evaluating."
-            # self.goal = self.goal_set["test"][epoch_index]
+            if goal_index is None:
+                self.goal = random.choice(self.goal_set["test"])
+                # assert (epoch_index != None), "epoch index is None when evaluating."
+                # self.goal = self.goal_set["test"][epoch_index]
+            else:
+                self.goal = self.goal_set["test"][goal_index]
         self.episode_over = False
         self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_NOT_COME_YET
         self.constraint_check = dialogue_configuration.CONSTRAINT_CHECK_FAILURE
