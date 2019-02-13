@@ -86,8 +86,10 @@ class AgentWithGoal(object):
         Initializing an dialogue session.
         :return: nothing to return.
         """
+        # print('{} new session {}'.format('*'*20, '*'*20))
         self.master_reward = 0.
         self.sub_task_terminal = True
+        self.inform_disease = False
         self.master_action_index = None
         self.intrinsic_reward = 0.0
         self.sub_task_turn = 0
@@ -105,6 +107,13 @@ class AgentWithGoal(object):
         :param turn: int, the time step of current dialogue session.
         :return: the agent action, a tuple consists of the selected agent action and action index.
         """
+        # Inform disease.
+        if self.inform_disease is True:
+            self.action["turn"] = turn
+            self.action["inform_slots"] = {"disease": self.id2disease[self.master_action_index]}
+            self.action["speaker"] = 'agent'
+            self.action["action_index"] = None
+            return self.action, None
 
         if self.sub_task_terminal is True:
             self.master_reward = 0.0
@@ -113,25 +122,13 @@ class AgentWithGoal(object):
             self.master_action_index = self.__master_next__(state, greedy_strategy)
         else:
             pass
-
-        # intrinsic critic. Informing disease or not ?
-        _, self.inform_disease, _ = self.intrinsic_critic(state, self.master_action_index)
-
-        # Both the sub-task and session is terminated.
-        if self.inform_disease is True:
-            self.action["turn"] = turn
-            self.action["inform_slots"] = {"disease":self.id2disease[self.master_action_index]}
-            self.action["speaker"] = 'agent'
-            self.action["action_index"] = None
-            return self.action, None
-
+        # print('turn: {}, goal: {}, sub-task finish: {}, inform disease: {}'.format(turn, self.master_action_index, self.sub_task_terminal, self.inform_disease))
         # Lower agent takes an agent. Not inform disease.
         goal = np.zeros(self.output_size)
         self.sub_task_turn += 1
         goal[self.master_action_index] = 1
         agent_action, action_index = self.lower_agent.next(state, turn, greedy_strategy, goal=goal)
-
-        # print(self.master_action_index, self.sub_task_terminal)
+        # print('action', agent_action)
         return agent_action, action_index
 
     def __master_next__(self, state, greedy_strategy):
@@ -214,21 +211,22 @@ class AgentWithGoal(object):
         else:
             self.experience_replay_pool.append((master_state_rep, self.master_action_index, self.master_reward, next_state_rep, episode_over))
 
-        # samples of lower agent. Only when this current session is not over.
-        if episode_over is False:
-            self.sub_task_terminal, _, self.intrinsic_reward = self.intrinsic_critic(next_state, self.master_action_index)
-
+        # Terminate or not.
+        self.sub_task_terminal, self.inform_disease, self.intrinsic_reward = self.intrinsic_critic(next_state, self.master_action_index)
+        if agent_action is not None: # session is not over. Otherwise the agent_action is not one of the lower agent's actions.
             goal = np.zeros(self.output_size)
             goal[self.master_action_index] = 1
             state_rep = np.concatenate((state_rep, goal), axis=0)
             next_state_rep = np.concatenate((next_state_rep, goal), axis=0)
 
-            #如果达到固定长度，同时去掉即将删除transition的计数。
+            # 如果达到固定长度，同时去掉即将删除transition的计数。
             self.visitation_count[self.master_action_index, agent_action] += 1
             if len(self.lower_agent.experience_replay_pool) == self.lower_agent.experience_replay_pool.maxlen:
                 _, pre_agent_action, _, _, _, pre_master_action = self.lower_agent.experience_replay_pool.popleft()
                 self.visitation_count[pre_master_action, pre_agent_action] -= 1
-            self.lower_agent.experience_replay_pool.append((state_rep, agent_action, self.intrinsic_reward, next_state_rep, self.sub_task_terminal, self.master_action_index))
+            self.lower_agent.experience_replay_pool.append((state_rep, agent_action, self.intrinsic_reward,
+                                                            next_state_rep, self.sub_task_terminal,
+                                                            self.master_action_index))
             # self.lower_agent.experience_replay_pool.append((state_rep, agent_action, reward, next_state_rep, self.sub_task_terminal, self.master_action_index))# extrinsic reward is returned to lower agent directly.
 
     def flush_pool(self):

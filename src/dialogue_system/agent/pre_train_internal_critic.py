@@ -12,8 +12,10 @@ import copy
 from tqdm import tqdm
 from sklearn.metrics import  accuracy_score, confusion_matrix
 from src.dialogue_system.policy_learning.internal_critic import InternalCritic
+import random
 
-
+random.seed(12345)
+torch.manual_seed(12345)
 
 
 slot_set = pickle.load(file=open('./../../data/real_world/slot_set.p', "rb"))
@@ -121,12 +123,17 @@ def get_batches(goal_list):
 
 batch_size = 32
 lr = 0.001
-epoch_num=1000
+epoch_num = 1000
 
 params = {}
 params['dqn_learning_rate'] = 0.001
 params['multi_GPUs'] = False
-model = InternalCritic(input_size=len(slot_set) * 3 + 4, hidden_size=50, output_size=len(slot_set), goal_num=4,
+# model = InternalCritic(input_size=len(slot_set) * 3 + 4, hidden_size=50, output_size=len(slot_set), goal_num=4,
+#                        goal_embedding_value=goal_embed_value,
+#                        slot_set=slot_set,
+#                        parameter=params)
+
+model = InternalCritic(input_size=len(slot_set) * 3, hidden_size=100, output_size=4, goal_num=4,
                        goal_embedding_value=goal_embed_value,
                        slot_set=slot_set,
                        parameter=params)
@@ -162,9 +169,10 @@ data_im, data_ex, data_both, label_list, fake_label_list = get_batches(goal_set[
 predict = []
 index = 0
 for one_data in data_ex:
-    batch = [one_data] * 4
+    batch = [one_data] * 1
     label = [0, 1,2,3]
-    similarity = model.get_similarity(batch, label)
+    similarity = model.get_similarity(batch, label)[0]
+    # similarity = model.get_similarity(batch, label)
     print(label_list[index], np.argmax(similarity),  min(similarity), similarity)
     predict.append(int(np.argmax(similarity)))
     index += 1
@@ -178,9 +186,10 @@ print(accu)
 model.critic.eval()
 predict = []
 for one_data in data_ex:
-    batch = [one_data] * 4
+    batch = [one_data] * 1
     label = [0, 1,2,3]
-    similarity = model.get_similarity(batch, label)
+    similarity = model.get_similarity(batch, label)[0]
+    # similarity = model.get_similarity(batch, label)
     predict.append(int(np.argmax(similarity)))
 
 res = confusion_matrix(label_list, predict)

@@ -18,7 +18,6 @@ from src.dialogue_system.agent import AgentWithGoal
 from src.dialogue_system.run.utils import verify_params
 
 from src.dialogue_system.run import RunningSteward
-
 random.seed(12345)
 
 
@@ -71,14 +70,15 @@ parser.add_argument("--explicit_number", dest="explicit_number", type=int, defau
 parser.add_argument("--implicit_number", dest="implicit_number", type=int, default=0, help="the number of implicit symptoms of used sample")
 
 # agent to use.
-parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentWithGoal', help="The agent to be used:[AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentHRLGoal]")
+parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentWithGoalJoint', help="The agent to be used:[AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentHRLGoal]")
+# parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentDQN', help="The agent to be used:[AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentHRLGoal]")
 
 # goal set, slot set, action set.
 max_turn = 22
-parser.add_argument("--action_set", dest="action_set", type=str, default='./../../data/real_world/action_set.p',help='path and filename of the action set')
-parser.add_argument("--slot_set", dest="slot_set", type=str, default='./../../data/real_world/slot_set.p',help='path and filename of the slots set')
-parser.add_argument("--goal_set", dest="goal_set", type=str, default='./../../data/real_world/goal_set.p',help='path and filename of user goal')
-parser.add_argument("--disease_symptom", dest="disease_symptom", type=str,default="./../../data/real_world/disease_symptom.p",help="path and filename of the disease_symptom file")
+parser.add_argument("--action_set", dest="action_set", type=str, default='./../../data/simulated/action_set.p',help='path and filename of the action set')
+parser.add_argument("--slot_set", dest="slot_set", type=str, default='./../../data/simulated/slot_set.p',help='path and filename of the slots set')
+parser.add_argument("--goal_set", dest="goal_set", type=str, default='./../../data/simulated/goal_set.p',help='path and filename of user goal')
+parser.add_argument("--disease_symptom", dest="disease_symptom", type=str,default="./../../data/simulated/disease_symptom.p",help="path and filename of the disease_symptom file")
 parser.add_argument("--max_turn", dest="max_turn", type=int, default=max_turn, help="the max turn in one episode.")
 parser.add_argument("--input_size_dqn", dest="input_size_dqn", type=int, default=max_turn + 447, help="the input_size of DQN.")
 # parser.add_argument("--input_size_dqn", dest="input_size_dqn", type=int, default=2438, help="the input_size of DQN.")
@@ -161,5 +161,7 @@ if __name__ == "__main__":
     params = verify_params(parameter)
     gpu_str = params["gpu"]
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu_str#  '0,1,2'
+    torch.cuda.manual_seed(12345)
+    torch.manual_seed(12345)
     print(params['run_info'])
     run(parameter=parameter)

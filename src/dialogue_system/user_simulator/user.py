@@ -80,16 +80,15 @@ class User(object):
 
         # inform all explicit_symptoms at first.
         inform_slots = list(goal["explicit_inform_slots"].keys())
-
-        for slot in goal["explicit_inform_slots"].keys():
-            # self.state["explicit_inform_slots"][slot] = goal["explicit_inform_slots"][slot]
-
-            # Informing all explicit slots at the beginning of the dialogue..
-            # self.state["inform_slots"][slot] = goal["explicit_inform_slots"][slot]
-
-            # Informing randomly selected slots at first.
+        for slot in list(goal["explicit_inform_slots"].keys()):
             if slot in inform_slots:
                 self.state["inform_slots"][slot] = goal["explicit_inform_slots"][slot]
+
+        # # inform all implicit_symptoms at first.
+        # inform_slots = list(goal["implicit_inform_slots"].keys())
+        # for slot in list(goal["implicit_inform_slots"].keys()):
+        #     if slot in inform_slots:
+        #         self.state["inform_slots"][slot] = goal["implicit_inform_slots"][slot]
 
         for slot in goal["implicit_inform_slots"].keys():
             if slot not in self.state["request_slots"].keys():

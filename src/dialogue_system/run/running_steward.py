@@ -84,7 +84,7 @@ class RunningSteward(object):
         success_count = 0
         absolute_success_count = 0
         total_reward = 0
-        total_truns = 0
+        total_turns = 0
         inform_wrong_disease_count = 0
         for epoch_index in range(0,epoch_size, 1):
             self.dialogue_manager.initialize(train_mode=self.parameter.get("train_mode"))
@@ -92,7 +92,7 @@ class RunningSteward(object):
             while episode_over == False:
                 reward, episode_over, dialogue_status = self.dialogue_manager.next(train_mode=train_mode,greedy_strategy=True)
                 total_reward += reward
-            total_truns += self.dialogue_manager.state_tracker.turn
+            total_turns += self.dialogue_manager.state_tracker.turn
             inform_wrong_disease_count += self.dialogue_manager.inform_wrong_disease_count
             if dialogue_status == dialogue_configuration.DIALOGUE_STATUS_SUCCESS:
                 success_count += 1
@@ -101,7 +101,7 @@ class RunningSteward(object):
         success_rate = float("%.3f" % (float(success_count) / epoch_size))
         absolute_success_rate = float("%.3f" % (float(absolute_success_count) / epoch_size))
         average_reward = float("%.3f" % (float(total_reward) / epoch_size))
-        average_turn = float("%.3f" % (float(total_truns) / epoch_size))
+        average_turn = float("%.3f" % (float(total_turns) / epoch_size))
         average_wrong_disease = float("%.3f" % (float(inform_wrong_disease_count) / epoch_size))
         res = {"success_rate":success_rate, "average_reward": average_reward, "average_turn": average_turn, "average_wrong_disease":average_wrong_disease,"ab_success_rate":absolute_success_rate}
         # print("%3d simulation success rate %s, ave reward %s, ave turns %s, ave wrong disease %s" % (index,res['success_rate'], res['average_reward'], res['average_turn'], res["average_wrong_disease"]))
@@ -119,7 +119,7 @@ class RunningSteward(object):
         success_count = 0
         absolute_success_count = 0
         total_reward = 0
-        total_truns = 0
+        total_turns = 0
         evaluate_session_number = self.parameter.get("evaluate_session_number")
         # evaluate_session_number = len(self.dialogue_manager.state_tracker.user.goal_set["test"])
         inform_wrong_disease_count = 0
@@ -129,7 +129,7 @@ class RunningSteward(object):
             while episode_over == False:
                 reward, episode_over, dialogue_status = self.dialogue_manager.next(train_mode=train_mode,greedy_strategy=False)
                 total_reward += reward
-            total_truns += self.dialogue_manager.state_tracker.turn
+            total_turns += self.dialogue_manager.state_tracker.turn
             inform_wrong_disease_count += self.dialogue_manager.inform_wrong_disease_count
             if dialogue_status == dialogue_configuration.DIALOGUE_STATUS_SUCCESS:
                 success_count += 1
@@ -138,7 +138,7 @@ class RunningSteward(object):
         success_rate = float("%.3f" % (float(success_count) / evaluate_session_number))
         absolute_success_rate = float("%.3f" % (float(absolute_success_count) / evaluate_session_number))
         average_reward = float("%.3f" % (float(total_reward) / evaluate_session_number))
-        average_turn = float("%.3f" % (float(total_truns) / evaluate_session_number))
+        average_turn = float("%.3f" % (float(total_turns) / evaluate_session_number))
         average_wrong_disease = float("%.3f" % (float(inform_wrong_disease_count) / evaluate_session_number))
         res = {"success_rate":success_rate, "average_reward": average_reward, "average_turn": average_turn, "average_wrong_disease":average_wrong_disease,"ab_success_rate":absolute_success_rate}
         self.learning_curve.setdefault(index, dict())
@@ -165,7 +165,7 @@ class RunningSteward(object):
         success_count = 0
         absolute_success_count = 0
         total_reward = 0
-        total_truns = 0
+        total_turns = 0
         evaluate_session_number = len(self.dialogue_manager.state_tracker.user.goal_set["test"])
         inform_wrong_disease_count = 0
         for goal_index in range(0,evaluate_session_number, 1):
@@ -174,7 +174,7 @@ class RunningSteward(object):
             while episode_over == False:
                 reward, episode_over, dialogue_status = self.dialogue_manager.next(train_mode=train_mode,greedy_strategy=False)
                 total_reward += reward
-            total_truns += self.dialogue_manager.state_tracker.turn
+            total_turns += self.dialogue_manager.state_tracker.turn
             inform_wrong_disease_count += self.dialogue_manager.inform_wrong_disease_count
             if dialogue_status == dialogue_configuration.DIALOGUE_STATUS_SUCCESS:
                 success_count += 1
@@ -183,7 +183,7 @@ class RunningSteward(object):
         success_rate = float("%.3f" % (float(success_count) / evaluate_session_number))
         absolute_success_rate = float("%.3f" % (float(absolute_success_count) / evaluate_session_number))
         average_reward = float("%.3f" % (float(total_reward) / evaluate_session_number))
-        average_turn = float("%.3f" % (float(total_truns) / evaluate_session_number))
+        average_turn = float("%.3f" % (float(total_turns) / evaluate_session_number))
         average_wrong_disease = float("%.3f" % (float(inform_wrong_disease_count) / evaluate_session_number))
 
         self.dialogue_manager.state_tracker.agent.dqn.current_net.train() # for training.
