@@ -80,7 +80,7 @@ class Finder(object):
         if save_set:
             file_name = save_path + "goal_set_gap" + str(gap) + "_ex&im" + str(ex_im) + "_im" + str(ex) + ".p"
             print("saving...",file_name)
-            # self.dump_goal_set(dump_file_name=file_name)
+            self.dump_goal_set(dump_file_name=file_name)
         return gap,save_set
 
     def __goal_by_disease__(self):
@@ -111,21 +111,27 @@ class Finder(object):
         all_sample = []
         for disease,goal_list in goal_by_disease.items():
             random.shuffle(goal_list)
+            # print(disease,len(goal_list))
+
             if disease == "小儿消化不良":
-                all_sample = all_sample + list(random.sample(goal_list, 250))
+                all_sample = all_sample + list(random.sample(goal_list, 350))
+                # all_sample = all_sample + list(random.sample(goal_list, 250))
                 # all_sample = all_sample + goal_list
             elif disease == '上呼吸道感染':
                 # print(disease,len(goal_list))
-                all_sample = all_sample + list(random.sample(goal_list, 180))
+                all_sample = all_sample + list(random.sample(goal_list, 240))
+                # all_sample = all_sample + list(random.sample(goal_list, 180))
                 # all_sample = all_sample + goal_list
                 # print(len(goal_list))
             elif disease == '小儿腹泻':
                 # print(disease,len(goal_list))
-                all_sample = all_sample + list(random.sample(goal_list, 350))
+                all_sample = all_sample + list(random.sample(goal_list, 450))
+                # all_sample = all_sample + list(random.sample(goal_list, 350))
                 # all_sample = all_sample + goal_list
             else:
                 # print(disease,len(goal_list))
-                all_sample = all_sample + list(random.sample(goal_list, 350))
+                all_sample = all_sample + list(random.sample(goal_list, 450))
+                # all_sample = all_sample + list(random.sample(goal_list, 350))
                 # all_sample = all_sample + goal_list
 
         random.shuffle(all_sample)
@@ -265,8 +271,6 @@ class Finder(object):
         :param test_set: a list of batches.
         :return:
         """
-        # clf_ex = svm.SVC(kernel='linear', C=self.svm_c)
-        # clf_ex_im = svm.SVC(kernel='linear', C=self.svm_c)
         clf_ex = svm.SVC(kernel='linear')
         clf_ex_im = svm.SVC(kernel='linear')
         # clf_ex = svm.SVC(decision_function_shape="ovo")
@@ -318,7 +322,7 @@ class Finder(object):
         return disease_accuracy
 
 
-    def dump_goal_set(self, dump_file_name, train=0.8, test=0.2, validate=0.0):
+    def dump_goal_set(self, dump_file_name, train=0.6, test=0.2, validate=0.2):
         assert (train*100+test*100+validate*100==100), "train + test + validate not equals to 1.0."
         data_set = {
             "train":[],
@@ -337,7 +341,7 @@ class Finder(object):
         data_set["validate"] = list(all_sample_list[int(len(all_sample_list) * (train+test)):len(all_sample_list)])
 
 
-        print("total",len(data_set["test"]) + len(data_set["train"]))
+        print("total",len(data_set["test"]) + len(data_set["train"]) + len(data_set["validate"]))
         print("train",len(data_set["train"]))
         print("test",len(data_set["test"]))
 
@@ -346,6 +350,15 @@ class Finder(object):
                 if sample_test["consult_id"] == sample_train["consult_id"]:
                     print(sample_test)
                     print(sample_train)
+
+        from collections import Counter
+        for key in data_set.keys():
+            disease_name_list = []
+            for one in data_set[key]:
+                disease_name_list.append(one['disease_tag'])
+            c = Counter(disease_name_list)
+            print(key)
+            print(c)
 
         pickle.dump(file=open(dump_file_name,"wb"), obj=data_set)
 
@@ -394,15 +407,16 @@ class Finder(object):
 
 if __name__ == "__main__":
     # goal_set,symptom_set, disease_symptom
-    filter_path = 'filter10'
-    goal_set_file = './../data/' + filter_path + '/goal_set.p'
-    slot_set_file = './../data/' + filter_path + '/slot_set.p'
-    disease_symptom_file = './../data/' + filter_path + '/disease_symptom.p'
-    save_path = "./../data/found_dataset_" + filter_path + '/'
+    filter_path = 'filter10_2'
+    goal_set_file = './../data/real_world/' + filter_path + '/goal_set_2.p'
+    slot_set_file = './../data/real_world/' + filter_path + '/slot_set.p'
+    disease_symptom_file = './../data/real_world/' + filter_path + '/disease_symptom.p'
+    save_path = "./../data/real_world/found_dataset_" + filter_path + '/'
 
-    goal_set_file = './../data/real_world/goal_set.p'
+    goal_set_file = './../data/real_world/goal_set_2.p'
     slot_set_file = './../data/real_world/slot_set.p'
     disease_symptom_file = './../data/real_world/disease_symptom.p'
+    save_path = "./../data/real_world/"
 
     goal_set = pickle.load(open(goal_set_file,"rb"))
     slot_set = pickle.load(open(slot_set_file,"rb"))
@@ -415,7 +429,7 @@ if __name__ == "__main__":
     save_set = False
     save_count = 0
     index = 0
-    while save_count <= 500:
+    while save_count <= 0:
         index += 1
         gap, save_set = finder.find(save_path=save_path)
         print("finding...", index, "gap:",gap)

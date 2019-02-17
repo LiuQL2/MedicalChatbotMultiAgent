@@ -95,6 +95,6 @@ class DistributionPloter(object):
 
 
 if __name__ == '__main__':
-    goal_set_file = './../../data/goal_set.p'
+    goal_set_file = './../../data/goal_set_2.p'
     ploter = DistributionPloter(goal_set_file)
     ploter.plot()

@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     disease_file = "/Users/qianlong/Documents/Qianlong/Research/MedicalChatbot/origin_file/儿科咨询疾病标注数据.xlsx"
     top_self_report_file_save = "./../resources/880/top_self_report_text.csv"
-    goal_set = pickle.load(open("./../src/dialogue_system/data/4_diseases/both/goal_set.p","rb"))
+    goal_set = pickle.load(open("./../src/dialogue_system/data/4_diseases/both/goal_set_2.p","rb"))
     consult_id_dict = {}
     for key in goal_set.keys():
         print(key, len(goal_set[key]))

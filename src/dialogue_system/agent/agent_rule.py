@@ -93,3 +93,9 @@ class AgentRule(Agent):
             if symptom not in inform_slots.keys():
                 candidate_symptoms.append(symptom)
         return {"disease":match_disease,"candidate_symptoms":candidate_symptoms}
+
+    def train_mode(self):
+        pass
+
+    def eval_mode(self):
+        pass

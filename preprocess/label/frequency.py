@@ -131,9 +131,9 @@ class FirstRun(object):
 
 
 if __name__ == '__main__':
-    goal_file = './../../resources/label/goal2_normal_filter.json'
-    # goal_file = './../../resources/label/goal2_normal.json'
-    # goal_file = './../../resources/label/goal2.json'
+    # goal_file = './../../resources/label/goal2_normal_filter.json'
+    goal_file = './../../resources/label/goal_normal.json'
+    # goal_file = './../../resources/label/new/goal.json'
     symptom_file = './../../resources/label/symptom_frequency.csv'
     disease_file = './../../resources/label/disease_frequency.csv'
 
@@ -145,9 +145,9 @@ if __name__ == '__main__':
     # normal = Normalize(normal_file)
     # normal.load(goal_file)
 
-    frequency = Frequency()
-    frequency.load(goal_file,symptom_file, disease_file)
+    # frequency = Frequency()
+    # frequency.load(goal_file,symptom_file, disease_file)
 
 
-    # filter = FilterFrequency(symptom_file,threshold=9)
-    # filter.load(goal_file)
+    filter = FilterFrequency(symptom_file,threshold=9)
+    filter.load(goal_file)

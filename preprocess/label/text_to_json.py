@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2018/5/6 18:49
 # @Author  : Ting
+"""
+将标注的BIO文件处理成json格式。
+"""
 import csv
 import copy
 import json
 from collections import Counter
+
+
 class normal_filter(object):
     def __init__(self):
         self.filter={
@@ -58,8 +63,7 @@ class normal_filter(object):
             #print(str(ii))
             filters['disease_tag']=self.disease[str(ii)]
             self.goal_filter.append(filters)
-            
-                
+
     def explicit_extraction(self,report):
          for i,sent in enumerate(self.goal_filter):
              idx=sent['consult_id']
@@ -74,10 +78,24 @@ class normal_filter(object):
                         for kk in k_splited:
                             explicit_inform_slots[kk]=True
              self.goal_filter[i]['goal']["explicit_inform_slots"]=explicit_inform_slots
-         return self.goal_filter
+
+         #如果隐性症状已经在显性症状出现了，这去掉这个隐性症状。
+         print(self.goal_filter)
+
+         goal_list = []
+         for goal in self.goal_filter:
+             temp_goal = copy.deepcopy(goal)
+             implicit_symptom = {}
+             for symptom, value in goal["goal"]["implicit_inform_slots"].items():
+                 if symptom not in goal["goal"]["explicit_inform_slots"].keys():
+                     implicit_symptom[symptom] = value
+             temp_goal["goal"]["implicit_inform_slots"] = implicit_symptom
+             goal_list.append(temp_goal)
+         return goal_list
                         
     def disease_tag(self,file):
-        f=open(file,encoding='gb18030')
+        # f=open(file,encoding='gb18030')
+        f=open(file,encoding='utf8')
         data={}
         '''
         for line in f:
@@ -241,11 +259,22 @@ def read_conversation_with_check(file):
 
 
 ii='2'
-file1='/Users/qianlong/Downloads/conversation.csv'
+file1='/Users/qianlong/Documents/Qianlong/Research/MedicalChatbot/人工标注/医疗-20190216/bio_data/conversation/tagger3.csv'
+con3=read_conversation_with_check(file1)
+
+file1='/Users/qianlong/Documents/Qianlong/Research/MedicalChatbot/人工标注/医疗-20190216/bio_data/conversation/tagger2.csv'
+con2=read_conversation_with_check(file1)
+con3.update(con2)
+file1='/Users/qianlong/Documents/Qianlong/Research/MedicalChatbot/人工标注/医疗-20190216/bio_data/conversation/tagger1.csv'
 con1=read_conversation_with_check(file1)
-file2='/Users/qianlong/Downloads/self_report.csv'
+con3.update(con1)#最后再用con1更新前面两个的，因为tagger1.csv的标注质量最高。
+con1 = con3
+
+
+
+file2='/Users/qianlong/Documents/Qianlong/Research/MedicalChatbot/人工标注/医疗-20190216/bio_data/self_report/tagger1.csv'
 report=read_self_report(file2)
-file3='/Users/qianlong/Downloads/raw_data.csv'
+file3='/Users/qianlong/Documents/Qianlong/Research/MedicalChatbot/人工标注/医疗-20190216/raw_data/data.csv'
 outputfile='/Users/qianlong/Downloads/goal.json'
 
 goal=normal_filter()

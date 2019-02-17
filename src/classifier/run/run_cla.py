@@ -12,7 +12,7 @@ from src.classifier.self_report_as_feature.report_classifier import ReportClassi
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--goal_set", dest="goal_set", type=str, default="./../../dialogue_system/data/dataset/label/goal_set.p", help='path and filename of user goal')
+parser.add_argument("--goal_set", dest="goal_set", type=str, default="./../../dialogue_system/data/dataset/label/goal_set_2.p", help='path and filename of user goal')
 parser.add_argument("--slot_set", dest="slot_set", type=str, default='./../../dialogue_system/data/dataset/label/slot_set.p', help='path and filename of the slots set')
 parser.add_argument("--disease_symptom", dest="disease_symptom", type=str, default="./../../dialogue_system/data/dataset/label/disease_symptom.p", help="path and filename of the disease_symptom file")
 

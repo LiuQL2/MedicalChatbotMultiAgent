@@ -21,6 +21,8 @@ class DQNModel(torch.nn.Module):
             torch.nn.LeakyReLU(),
             torch.nn.Linear(hidden_size, output_size, bias=True)
         )
+
+        # one layer.
         # self.policy_layer = torch.nn.Linear(input_size, output_size, bias=True)
 
     def forward(self, x):
@@ -65,7 +67,7 @@ class DQN(object):
             {'params': bias_p, 'weight_decay': 0} # no L2 regularization.
         ], lr=self.params.get("dqn_learning_rate",0.001))
 
-        if self.params.get("train_mode") is False:
+        if self.params.get("train_mode") is False and self.params.get("agent_id").lower() == 'agentdqn':
             self.restore_model(self.params.get("saved_model"))
             self.current_net.eval()
             self.target_net.eval()

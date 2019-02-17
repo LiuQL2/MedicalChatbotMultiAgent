@@ -157,7 +157,11 @@ class AgentWithGoal(object):
         # reward shaping
         alpha = self.parameter.get("weight_for_reward_shaping")
         shaping = self.reward_shaping(agent_action, self.master_agent_index)
-        reward = reward + alpha * shaping
+        # Reward shaping only when non-terminal state.
+        if episode_over is True:
+            pass
+        else:
+            reward = reward + alpha * shaping
         # state to vec.
         state_rep = state_to_representation_last(state=state, action_set=self.action_set, slot_set=self.slot_set,disease_symptom=self.disease_symptom, max_turn=self.parameter['max_turn'])
         next_state_rep = state_to_representation_last(state=next_state, action_set=self.action_set,slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter['max_turn'])
@@ -228,3 +232,11 @@ class AgentWithGoal(object):
         prob_goal = self.visitation_count.sum(1)[goal] / (self.visitation_count.sum() + 1e-8)
         prob_action = self.visitation_count.sum(0)[lower_agent_action] / (self.visitation_count.sum() + 1e-8)
         return np.log(prob_action_goal / (prob_action * prob_goal + 1e-8))
+
+    def train_mode(self):
+        self.dqn.current_net.train()
+        self.lower_agent.dqn.current_net.train()
+
+    def eval_mode(self):
+        self.dqn.current_net.eval()
+        self.lower_agent.dqn.current_net.eval()

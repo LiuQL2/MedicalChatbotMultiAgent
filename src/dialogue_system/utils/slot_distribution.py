@@ -83,7 +83,7 @@ class SlotDistributor(object):
 
 if __name__ == "__main__":
     slot_set = "./../data/10_diseases/slot_set.p"
-    goal_set = "./../data/10_diseases/goal_set.p"
+    goal_set = "./../data/10_diseases/goal_set_2.p"
     disease_symptom = "./../data/10_diseases/disease_symptom.p"
     distributor = SlotDistributor(goal_set,slot_set,disease_symptom)
     distributor.calculate()

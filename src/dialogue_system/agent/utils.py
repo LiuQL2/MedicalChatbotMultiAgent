@@ -99,7 +99,7 @@ def state_to_representation_last(state, action_set, slot_set, disease_symptom, m
     # Not one hot
     current_slots_rep = np.zeros(len(slot_set.keys()))
     for slot in current_slots.keys():
-        # current_slots_rep[slot_set[slot]] = 1.0
+        current_slots_rep[slot_set[slot]] = 1.0
         # different values for different slot values.
         if current_slots[slot] == True:
             current_slots_rep[slot_set[slot]] = 1.0
@@ -157,7 +157,6 @@ def state_to_representation_last(state, action_set, slot_set, disease_symptom, m
     user_inform_slots_rep = np.zeros(len(slot_set.keys()))
     for slot in user_inform_slots.keys():
         # user_inform_slots_rep[slot_set[slot]] = 1.0
-
         # different values for different slot values.
         if user_inform_slots[slot] == True:
             user_inform_slots_rep[slot_set[slot]] = 1.0

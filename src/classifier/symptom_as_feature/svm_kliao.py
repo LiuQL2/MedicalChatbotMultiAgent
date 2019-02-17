@@ -90,7 +90,7 @@ def svm_model(dataset, min_count, target, svm_c, epoch):
 
 # goal_file = "./goal_batch2.json"
 goal_file = "./../../data/goal_find.json"
-goal_dump_file = "./../../data/goal_set.p"
+goal_dump_file = "./../../data/goal_set_2.p"
 slots_dump_file = "./../../data/slot_set.p"
 goal = GoalDumper(goal_file)
 goal.dump(goal_dump_file)

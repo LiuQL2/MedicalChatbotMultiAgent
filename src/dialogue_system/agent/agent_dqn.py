@@ -145,8 +145,18 @@ class AgentDQN(Agent):
         shaping = self.reward_shaping(state, next_state)
         alpha = self.parameter.get("weight_for_reward_shaping")
         # if True:
-        #     print('shaping', shaping)
-        reward = reward + alpha * shaping
+            # print('shaping', shaping)
+        # Reward shaping only when non-terminal state.
+        if episode_over is True:
+            pass
+        else:
+            reward = reward + alpha * shaping
         state_rep = state_to_representation_last(state=state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
         next_state_rep = state_to_representation_last(state=next_state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
         self.experience_replay_pool.append((state_rep, agent_action, reward, next_state_rep, episode_over))
+
+    def train_mode(self):
+        self.dqn.current_net.train()
+
+    def eval_mode(self):
+        self.dqn.current_net.eval()

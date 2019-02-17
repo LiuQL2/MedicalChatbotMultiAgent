@@ -11,7 +11,7 @@ import pickle
 import copy
 import pandas as pd
 sys.path.append(os.getcwd().replace('/resource/tagger2',''))
-from preprocess.label.preprocess_label import GoalDumper
+from preprocess.label.json_to_pickle import GoalDumper
 from sklearn.svm import SVC
 from sklearn import svm
 #from sklearn.metrics import accuracy_score
@@ -79,7 +79,7 @@ def svm_model(dataset,min_count,target,svm_c):
     return np.mean(scores)
 
 goal_file = "./goal_batch2.json"
-goal_dump_file = "./goal_set.p"
+goal_dump_file = "./goal_set_2.p"
 slots_dump_file = "./slot_set.p"
 goal=GoalDumper(goal_file)
 goal.dump(goal_dump_file)

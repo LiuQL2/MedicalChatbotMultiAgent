@@ -39,6 +39,10 @@ class DQNModelWithGoal(torch.nn.Module):
             torch.nn.Linear(hidden_size, number_of_latent_variables, bias=True)
         )
 
+        # one layer.
+        # self.policy_layer = torch.nn.Linear(input_size + number_of_latent_variables, output_size, bias=True)
+        # self.goal_layer = torch.nn.Linear(input_size, number_of_latent_variables, bias=True)
+
     def forward(self, x):
         if torch.cuda.is_available():
             x.cuda()
@@ -151,7 +155,7 @@ class DQNWithGoalJoint(DQN):
             {'params': bias_p, 'weight_decay': 0} # no L2 regularization.
         ], lr=self.params.get("dqn_learning_rate",0.001))
 
-        if self.params.get("train_mode") is False:
+        if self.params.get("train_mode") is False and self.params.get('agent_id').lower() == 'agentwithgoaljoint':
             self.restore_model(self.params.get("saved_model"))
             self.current_net.eval()
             self.target_net.eval()

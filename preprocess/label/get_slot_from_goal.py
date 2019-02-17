@@ -39,5 +39,5 @@ class GoalReader(object):
 if __name__ == '__main__':
     path = './../../resources/label/used/'
     reader = GoalReader()
-    reader.load(path + 'goal_set.p')
+    reader.load(path + 'goal_set_2.p')
     reader.dump(path + 'slot_set.p', path + 'disease_symptom.p')

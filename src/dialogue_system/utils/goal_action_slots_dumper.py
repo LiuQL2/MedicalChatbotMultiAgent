@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
     # Goal
     goal_file = "./../../../resources/goal_slot_value_0.2.json"
-    goal_dump_file = "./../data/goal_set.p"
+    goal_dump_file = "./../data/goal_set_2.p"
     slots_dump_file = "./../data/slot_set_2.p"
     goal_dumper = GoalDumper(goal_file=goal_file)
     goal_dumper.dump(dump_file_name=goal_dump_file)

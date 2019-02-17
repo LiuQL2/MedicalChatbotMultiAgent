@@ -91,6 +91,7 @@ class AgentWithGoal(object):
         self.sub_task_terminal = True
         self.inform_disease = False
         self.master_action_index = None
+        self.is_master_takes_action = False
         self.intrinsic_reward = 0.0
         self.sub_task_turn = 0
         self.lower_agent.initialize()
@@ -107,6 +108,14 @@ class AgentWithGoal(object):
         :param turn: int, the time step of current dialogue session.
         :return: the agent action, a tuple consists of the selected agent action and action index.
         """
+        self.disease_tag = kwargs.get("disease_tag")
+        # Internal critic.
+        self.sub_task_terminal, self.inform_disease, self.intrinsic_reward, similar_score = self.intrinsic_critic(state, self.master_action_index, disease_tag=kwargs.get("disease_tag"))
+
+        # if self.master_action_index is None:
+        #     self.is_master_takes_action = False
+        #     self.master_action_index = self.__master_next__(state, greedy_strategy)
+
         # Inform disease.
         if self.inform_disease is True:
             self.action["turn"] = turn
@@ -115,14 +124,17 @@ class AgentWithGoal(object):
             self.action["action_index"] = None
             return self.action, None
 
-        if self.sub_task_terminal is True:
+        # Not inform disease and the current sub-task is terminated.
+        if self.sub_task_terminal is True or self.master_action_index is None:
             self.master_reward = 0.0
             self.master_state = state
             self.sub_task_turn = 0
             self.master_action_index = self.__master_next__(state, greedy_strategy)
         else:
             pass
-        # print('turn: {}, goal: {}, sub-task finish: {}, inform disease: {}'.format(turn, self.master_action_index, self.sub_task_terminal, self.inform_disease))
+        # print('turn: {}, goal: {}, sub-task finish: {}, inform disease: {}, intrinsic reward: {}, similar score: {}'.format(
+        #     turn, self.master_action_index,self.sub_task_terminal, self.inform_disease, self.intrinsic_reward, similar_score))
+
         # Lower agent takes an agent. Not inform disease.
         goal = np.zeros(self.output_size)
         self.sub_task_turn += 1
@@ -199,20 +211,23 @@ class AgentWithGoal(object):
         # if episode_over is True: shaping = self.reward_shaping(agent_action, self.master_action_index)
         # else: shaping = 0
         shaping = 0
-        reward = reward + alpha * shaping
+        # Reward shaping only when non-terminal state.
+        if episode_over is True:
+            pass
+        else:
+            reward = reward + alpha * shaping
+
         # state to vec.
         state_rep = state_to_representation_last(state=state, action_set=self.action_set, slot_set=self.slot_set,disease_symptom=self.disease_symptom, max_turn=self.parameter['max_turn'])
         next_state_rep = state_to_representation_last(state=next_state, action_set=self.action_set,slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter['max_turn'])
         master_state_rep = state_to_representation_last(state=self.master_state, action_set=self.action_set,slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter['max_turn'])
         # samples of master agent.
+        sub_task_terminal, inform_disease, intrinsic_reward,_ = self.intrinsic_critic(next_state, self.master_action_index,disease_tag=self.disease_tag)
+
         self.master_reward += reward
-        if self.sub_task_terminal is False:
-            pass
-        else:
+        if self.sub_task_terminal is True and sub_task_terminal is True:
             self.experience_replay_pool.append((master_state_rep, self.master_action_index, self.master_reward, next_state_rep, episode_over))
 
-        # Terminate or not.
-        self.sub_task_terminal, self.inform_disease, self.intrinsic_reward = self.intrinsic_critic(next_state, self.master_action_index)
         if agent_action is not None: # session is not over. Otherwise the agent_action is not one of the lower agent's actions.
             goal = np.zeros(self.output_size)
             goal[self.master_action_index] = 1
@@ -224,17 +239,20 @@ class AgentWithGoal(object):
             if len(self.lower_agent.experience_replay_pool) == self.lower_agent.experience_replay_pool.maxlen:
                 _, pre_agent_action, _, _, _, pre_master_action = self.lower_agent.experience_replay_pool.popleft()
                 self.visitation_count[pre_master_action, pre_agent_action] -= 1
-            self.lower_agent.experience_replay_pool.append((state_rep, agent_action, self.intrinsic_reward,
-                                                            next_state_rep, self.sub_task_terminal,
+            self.lower_agent.experience_replay_pool.append((state_rep, agent_action, intrinsic_reward,
+                                                            next_state_rep, sub_task_terminal,
                                                             self.master_action_index))
-            # self.lower_agent.experience_replay_pool.append((state_rep, agent_action, reward, next_state_rep, self.sub_task_terminal, self.master_action_index))# extrinsic reward is returned to lower agent directly.
 
     def flush_pool(self):
         self.experience_replay_pool = deque(maxlen=self.parameter.get("experience_replay_pool_size"))
         self.lower_agent.flush_pool()
         self.visitation_count = np.zeros(shape=(self.output_size, len(self.lower_agent.action_space))) # [goal_num, lower_action_num]
 
-    def intrinsic_critic(self, state, master_action_index):
+    def intrinsic_critic(self, state, master_action_index, disease_tag):
+        self.internal_critic.critic.eval()
+        # For the first turn.
+        if master_action_index is None:
+            return True, False, 0, 0
         sub_task_terminate = False
         intrinsic_reward = 0
         inform_disease = False
@@ -243,24 +261,35 @@ class AgentWithGoal(object):
         state_batch = [state] * self.output_size
         similarity_score = self.internal_critic.get_similarity_state_dict(state_batch, goal_list)[master_action_index]
 
-        if similarity_score > 0.98:
+        if similarity_score > 0.97:
             sub_task_terminate = True
-            inform_disease = True
-            intrinsic_reward = similarity_score
+            # inform_disease = True
+            intrinsic_reward = 1
 
-        if similarity_score < 1e-3:
+        if similarity_score < 1e-2:
             sub_task_terminate = True
             inform_disease = False
-            intrinsic_reward = 1 - similarity_score
+            intrinsic_reward = 1
 
-        if self.sub_task_turn > 4:
+        if self.sub_task_turn >= 4:
             sub_task_terminate = True
             intrinsic_reward = -1
 
-        return sub_task_terminate, inform_disease, intrinsic_reward
+        if self.id2disease[self.master_action_index] == disease_tag:
+            inform_disease = True
+        self.internal_critic.critic.train()
+        return sub_task_terminate, inform_disease, intrinsic_reward, similarity_score
 
     def reward_shaping(self, lower_agent_action, goal):
         prob_action_goal = self.visitation_count[goal, lower_agent_action] / (self.visitation_count.sum() + 1e-8)
         prob_goal = self.visitation_count.sum(1)[goal] / (self.visitation_count.sum() + 1e-8)
         prob_action = self.visitation_count.sum(0)[lower_agent_action] / (self.visitation_count.sum() + 1e-8)
         return np.log(prob_action_goal / (prob_action * prob_goal + 1e-8))
+
+    def train_mode(self):
+        self.dqn.current_net.train()
+        self.lower_agent.dqn.current_net.train()
+
+    def eval_mode(self):
+        self.dqn.current_net.eval()
+        self.lower_agent.dqn.current_net.eval()

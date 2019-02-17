@@ -22,3 +22,9 @@ class AgentRandom(Agent):
         agent_action["turn"] = turn
         agent_action["speaker"] = "agent"
         return agent_action, action_index
+
+    def train_mode(self):
+        pass
+
+    def eval_mode(self):
+        pass

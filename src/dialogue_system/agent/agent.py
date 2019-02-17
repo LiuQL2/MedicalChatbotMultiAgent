@@ -86,29 +86,28 @@ class Agent(object):
         All diseases are treated as actions.
         :return: Action Space, a list of feasible actions.
         """
-
-        feasible_actions = [
-            {'action': "confirm_question", 'inform_slots': {}, 'request_slots': {},"explicit_inform_slots":{}, "implicit_inform_slots":{}},
-            {'action': "confirm_answer", 'inform_slots': {}, 'request_slots': {},"explicit_inform_slots":{}, "implicit_inform_slots":{}},
-            {'action': "deny", 'inform_slots': {}, 'request_slots': {},"explicit_inform_slots":{}, "implicit_inform_slots":{}},
-            {'action': dialogue_configuration.CLOSE_DIALOGUE, 'inform_slots': {}, 'request_slots': {},"explicit_inform_slots":{}, "implicit_inform_slots":{}},
-            {'action': dialogue_configuration.THANKS, 'inform_slots': {}, 'request_slots': {}, "explicit_inform_slots": {}, "implicit_inform_slots": {}}
-        ]
-        # Adding the inform actions and request actions. And the slots are extracted from the links
-        # between disease and symptom, i.e., disease_symptom
+        feasible_actions = []
+        # Adding the request actions. And the slots are extracted from the links between disease and symptom,
+        # i.e., disease_symptom
         slot_set = []
         for disease, v in disease_symptom.items():
             slot_set = slot_set + list(v["symptom"])
         slot_set = list(set(slot_set))
-        for slot in slot_set:
-            feasible_actions.append({'action': 'request', 'inform_slots': {}, 'request_slots': {slot: dialogue_configuration.VALUE_UNKNOWN},"explicit_inform_slots":{}, "implicit_inform_slots":{}})
+        for slot in sorted(slot_set):
             if slot != "disease":
-                feasible_actions.append({'action': 'inform', 'inform_slots': {slot: True}, 'request_slots': {}, "explicit_inform_slots":{}, "implicit_inform_slots":{}})
-        # Diseases as actions.
+                feasible_actions.append({'action': 'request', 'inform_slots': {}, 'request_slots': {slot: dialogue_configuration.VALUE_UNKNOWN},"explicit_inform_slots":{}, "implicit_inform_slots":{}})
+
+        # Diseases as actions: inform + disease.
         if disease_as_action is True:
-            for disease in disease_symptom.keys():
+            for disease in sorted(disease_symptom.keys()):
                 feasible_actions.append({'action': 'inform', 'inform_slots': {"disease":disease}, 'request_slots': {},"explicit_inform_slots":{}, "implicit_inform_slots":{}})
 
+        # greeting actions includes Thanks and close dialogue.
+        # feasible_actions.append({'action': "confirm_question", 'inform_slots': {}, 'request_slots': {},"explicit_inform_slots":{}, "implicit_inform_slots":{}})
+        # feasible_actions.append({'action': "confirm_answer", 'inform_slots': {}, 'request_slots': {},"explicit_inform_slots":{}, "implicit_inform_slots":{}})
+        # feasible_actions.append({'action': "deny", 'inform_slots': {}, 'request_slots': {},"explicit_inform_slots":{}, "implicit_inform_slots":{}})
+        # feasible_actions.append({'action': dialogue_configuration.CLOSE_DIALOGUE, 'inform_slots': {}, 'request_slots': {},"explicit_inform_slots":{}, "implicit_inform_slots":{}})
+        # feasible_actions.append({'action': dialogue_configuration.THANKS, 'inform_slots': {}, 'request_slots': {}, "explicit_inform_slots": {}, "implicit_inform_slots": {}})
         return feasible_actions
 
     @staticmethod
@@ -147,3 +146,15 @@ class Agent(object):
 
     def flush_pool(self):
         self.experience_replay_pool = deque(maxlen=self.parameter.get("experience_replay_pool_size"))
+
+    def train_mode(self):
+        """
+        Set the agent as the train mode, i.e., the parameters will be updated and dropout will be activated.
+        """
+        raise NotImplementedError("The `train_mode` function of agent has not been implemented")
+
+    def eval_mode(self):
+        """
+        Set the agent as the train mode, i.e., the parameters will be unchanged and dropout will be deactivated.
+        """
+        raise NotImplementedError("The `train_mode` function of agent has not been implemented")

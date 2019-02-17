@@ -12,6 +12,7 @@ import copy
 from tqdm import tqdm
 from sklearn.metrics import  accuracy_score, confusion_matrix
 from src.dialogue_system.policy_learning.internal_critic import InternalCritic
+# from src.dialogue_system.policy_learning.internal_critic import MultiClassifier as InternalCritic
 import random
 
 random.seed(12345)
@@ -19,6 +20,7 @@ torch.manual_seed(12345)
 
 
 slot_set = pickle.load(file=open('./../../data/real_world/slot_set.p', "rb"))
+print(len(slot_set))
 del slot_set['disease']
 disease_symptom = pickle.load(file=open('./../../data/real_world/disease_symptom.p', "rb"))
 goal_set = pickle.load(file=open('./../../data/real_world/goal_set.p', "rb"))
@@ -116,7 +118,7 @@ def get_batches(goal_list):
         index_list = [i for i in range(4)]
         index_list.pop(disease_index)
         fake_label_list.append(index_list)
-    return data_im, data_both, data_both, label_list, fake_label_list
+    return data_im, data_ex, data_both, label_list, fake_label_list
 
 
 
@@ -128,15 +130,15 @@ epoch_num = 1000
 params = {}
 params['dqn_learning_rate'] = 0.001
 params['multi_GPUs'] = False
-# model = InternalCritic(input_size=len(slot_set) * 3 + 4, hidden_size=50, output_size=len(slot_set), goal_num=4,
-#                        goal_embedding_value=goal_embed_value,
-#                        slot_set=slot_set,
-#                        parameter=params)
-
-model = InternalCritic(input_size=len(slot_set) * 3, hidden_size=100, output_size=4, goal_num=4,
+model = InternalCritic(input_size=len(slot_set) * 3 + 4, hidden_size=50, output_size=len(slot_set), goal_num=4,
                        goal_embedding_value=goal_embed_value,
                        slot_set=slot_set,
                        parameter=params)
+
+# model = InternalCritic(input_size=len(slot_set) * 3, hidden_size=100, output_size=4, goal_num=4,
+#                        goal_embedding_value=goal_embed_value,
+#                        slot_set=slot_set,
+#                        parameter=params)
 
 data_im, data_ex, data_both, label_list, fake_label_list = get_batches(goal_set['train'])
 
@@ -165,20 +167,22 @@ for epoch_index in range(epoch_num):
 # model.restore_model('pre_trained_internal_critic_dropout.pkl')
 
 # model.critic.eval()
-data_im, data_ex, data_both, label_list, fake_label_list = get_batches(goal_set['test'])
+print('validate')
+data_im, data_ex, data_both, label_list, fake_label_list = get_batches(goal_set['validate'])
 predict = []
 index = 0
 for one_data in data_ex:
-    batch = [one_data] * 1
+    batch = [one_data] * 4
     label = [0, 1,2,3]
-    similarity = model.get_similarity(batch, label)[0]
-    # similarity = model.get_similarity(batch, label)
-    print(label_list[index], np.argmax(similarity),  min(similarity), similarity)
+    # similarity = model.get_similarity(batch, label)[0]
+    similarity = model.get_similarity(batch, label)
+    # print(label_list[index], np.argmax(similarity), min(similarity), similarity)
     predict.append(int(np.argmax(similarity)))
     index += 1
 
 res = confusion_matrix(label_list, predict)
 accu = accuracy_score(label_list, predict)
+print('validate')
 print(res)
 print(accu)
 
@@ -186,14 +190,52 @@ print(accu)
 model.critic.eval()
 predict = []
 for one_data in data_ex:
-    batch = [one_data] * 1
+    batch = [one_data] * 4
     label = [0, 1,2,3]
-    similarity = model.get_similarity(batch, label)[0]
-    # similarity = model.get_similarity(batch, label)
+    # similarity = model.get_similarity(batch, label)[0]
+    similarity = model.get_similarity(batch, label)
     predict.append(int(np.argmax(similarity)))
 
 res = confusion_matrix(label_list, predict)
 accu = accuracy_score(label_list, predict)
+print('validate')
 print(res)
 print(accu)
-# model.save_model('pre_trained_internal_critic_dropout_both.pkl')
+model.save_model('pre_trained_internal_critic_dropout.pkl')
+
+
+
+model.critic.train()
+data_im, data_ex, data_both, label_list, fake_label_list = get_batches(goal_set['test'])
+predict = []
+index = 0
+for one_data in data_ex:
+    batch = [one_data] * 4
+    label = [0, 1,2,3]
+    # similarity = model.get_similarity(batch, label)[0]
+    similarity = model.get_similarity(batch, label)
+    # print(label_list[index], np.argmax(similarity), min(similarity), similarity)
+    predict.append(int(np.argmax(similarity)))
+    index += 1
+
+res = confusion_matrix(label_list, predict)
+accu = accuracy_score(label_list, predict)
+print('test')
+print(res)
+print(accu)
+
+
+model.critic.eval()
+predict = []
+for one_data in data_ex:
+    batch = [one_data] * 4
+    label = [0, 1,2,3]
+    # similarity = model.get_similarity(batch, label)[0]
+    similarity = model.get_similarity(batch, label)
+    predict.append(int(np.argmax(similarity)))
+
+res = confusion_matrix(label_list, predict)
+accu = accuracy_score(label_list, predict)
+print('test')
+print(res)
+print(accu)

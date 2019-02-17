@@ -70,17 +70,17 @@ parser.add_argument("--explicit_number", dest="explicit_number", type=int, defau
 parser.add_argument("--implicit_number", dest="implicit_number", type=int, default=0, help="the number of implicit symptoms of used sample")
 
 # agent to use.
-parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentWithGoalJoint', help="The agent to be used:[AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentHRLGoal]")
-# parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentDQN', help="The agent to be used:[AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentHRLGoal]")
+# parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentWithGoalJoint', help="The agent to be used:[AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentHRLGoal]")
+parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentWithGoal', help="The agent to be used:[AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentHRLGoal]")
 
 # goal set, slot set, action set.
 max_turn = 22
-parser.add_argument("--action_set", dest="action_set", type=str, default='./../../data/simulated/action_set.p',help='path and filename of the action set')
-parser.add_argument("--slot_set", dest="slot_set", type=str, default='./../../data/simulated/slot_set.p',help='path and filename of the slots set')
-parser.add_argument("--goal_set", dest="goal_set", type=str, default='./../../data/simulated/goal_set.p',help='path and filename of user goal')
-parser.add_argument("--disease_symptom", dest="disease_symptom", type=str,default="./../../data/simulated/disease_symptom.p",help="path and filename of the disease_symptom file")
+parser.add_argument("--action_set", dest="action_set", type=str, default='./../../data/real_world/action_set.p',help='path and filename of the action set')
+parser.add_argument("--slot_set", dest="slot_set", type=str, default='./../../data/real_world/slot_set.p',help='path and filename of the slots set')
+parser.add_argument("--goal_set", dest="goal_set", type=str, default='./../../data/real_world/goal_set_2.p',help='path and filename of user goal')
+parser.add_argument("--disease_symptom", dest="disease_symptom", type=str,default="./../../data/real_world/disease_symptom.p",help="path and filename of the disease_symptom file")
 parser.add_argument("--max_turn", dest="max_turn", type=int, default=max_turn, help="the max turn in one episode.")
-parser.add_argument("--input_size_dqn", dest="input_size_dqn", type=int, default=max_turn + 447, help="the input_size of DQN.")
+parser.add_argument("--input_size_dqn", dest="input_size_dqn", type=int, default=max_turn + 477, help="the input_size of DQN.")
 # parser.add_argument("--input_size_dqn", dest="input_size_dqn", type=int, default=2438, help="the input_size of DQN.")
 parser.add_argument("--reward_for_not_come_yet", dest="reward_for_not_come_yet", type=float,default=-1)
 parser.add_argument("--reward_for_success", dest="reward_for_success", type=float,default=2*max_turn)
@@ -137,7 +137,8 @@ def run(parameter):
     if warm_start == True and train_mode == True:
         print("warm starting...")
         agent = AgentRule(action_set=action_set,slot_set=slot_set,disease_symptom=disease_symptom,parameter=parameter)
-        steward.warm_start(agent=agent,epoch_number=warm_start_epoch_number)
+        steward.dialogue_manager.set_agent(agent=agent)
+        steward.warm_start(epoch_number=warm_start_epoch_number)
     # exit()
     if agent_id.lower() == 'agentdqn':
         agent = AgentDQN(action_set=action_set,slot_set=slot_set,disease_symptom=disease_symptom,parameter=parameter)
@@ -154,7 +155,12 @@ def run(parameter):
     else:
         raise ValueError('Agent id should be one of [AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentWithGoal, AgentWithGoalJoint].')
 
-    steward.simulate(agent=agent,epoch_number=simulate_epoch_number, train_mode=train_mode)
+    steward.dialogue_manager.set_agent(agent=agent)
+    if train_mode is True: # Train
+        steward.simulate(epoch_number=simulate_epoch_number, train_mode=train_mode)
+    else: # test
+        for index in range(simulate_epoch_number):
+            steward.evaluate_model(dataset='test', index=index)
 
 
 if __name__ == "__main__":

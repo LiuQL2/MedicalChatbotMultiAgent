@@ -181,10 +181,10 @@ if __name__ == "__main__":
     # slots_dumper.dump(slot_dump_file_name=slots_dump_file,disease_dump_file_name=disease_dump_file)
 
     # Goal
-    goal_file = "./../../src/data/simulated/synthetic_data"
-    goal_dump_file = "./../../src/data/simulated/goal_set.p"
-    slots_dump_file = "./../../src/data/simulated/slot_set.p"
-    disease_dump_file = "./../../src/data/simulated/disease_symptom.p"
+    goal_file = "./../../src/data/real_world/filter10_2/goal_normal_filter_10.json"
+    goal_dump_file = "./../../src/data/real_world/filter10_2//goal_set_2.p"
+    slots_dump_file = "./../../src/data/real_world/filter10_2//slot_set.p"
+    disease_dump_file = "./../../src/data/real_world/filter10_2/disease_symptom.p"
     goal_dumper = GoalDumper(goal_file=goal_file)
     goal_dumper.dump(dump_file_name=goal_dump_file)
     goal_dumper.dump_slot(slots_dump_file)

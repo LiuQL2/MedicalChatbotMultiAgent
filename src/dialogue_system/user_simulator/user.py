@@ -58,10 +58,10 @@ class User(object):
         self.max_turn = parameter["max_turn"]
         self.parameter = parameter
         self.disease_symptom = Agent.disease_symptom_clip(disease_symptom=disease_symptom,denominator=20,parameter=parameter)
-        self._init()
+        # self._init()
 
-    def initialize(self, train_mode=True, goal_index=None):
-        self._init(train_mode=train_mode,goal_index=goal_index)
+    def initialize(self, dataset, goal_index=None):
+        self._init(dataset=dataset, goal_index=goal_index)
 
         # Initialize rest slot for this user.
         # 初始的时候request slot里面必有disease，然后随机选择explicit_inform_slots里面的slot进行用户主诉的构建，若explicit里面没
@@ -102,9 +102,9 @@ class User(object):
         user_action = self._assemble_user_action()
         return user_action
 
-    def _init(self,train_mode=True,goal_index=None):
+    def _init(self,dataset, goal_index=None):
         """
-        used for initializing an instance or an episode.
+        Initializing an instance or an episode. Choosing one goal for a new dialogue session.
         :return: Nothing
         """
         self.state = {
@@ -117,16 +117,12 @@ class User(object):
             "implicit_inform_slots":{}, # For slots that belong to goal["implicit_inform_slots"]
             "rest_slots":{} # For slots that have not been informed.
         }
-        if train_mode == True:
-            if goal_index is None: self.goal = random.choice(self.goal_set["train"])
-            else: self.goal = self.goal_set["train"][goal_index]
+
+        if goal_index is None:
+            self.goal = random.choice(self.goal_set[dataset])
         else:
-            if goal_index is None:
-                self.goal = random.choice(self.goal_set["test"])
-                # assert (epoch_index != None), "epoch index is None when evaluating."
-                # self.goal = self.goal_set["test"][epoch_index]
-            else:
-                self.goal = self.goal_set["test"][goal_index]
+            self.goal = self.goal_set[dataset][goal_index]
+
         self.episode_over = False
         self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_NOT_COME_YET
         self.constraint_check = dialogue_configuration.CONSTRAINT_CHECK_FAILURE
@@ -246,6 +242,7 @@ class User(object):
                     if slot in self.state["rest_slots"].keys(): self.state["rest_slots"].pop(slot)
                 # The requested slots not in the user goals.
                 else:
+                    # All the symptom in the user goal are mentioned and the diseased is also informed by the agent.
                     if len(self.state["request_slots"].keys()) == 0 and len(self.state["rest_slots"].keys()) == 0:
                         self.state["action"] = dialogue_configuration.THANKS
                     else:
@@ -311,10 +308,11 @@ class User(object):
         if "disease" in rest_slot_set:
             rest_slot_set.remove("disease")
 
-        # The dialogue is failed if there are still slots in rest_slots and request_slots.
+        # The dialogue is failed if there are still slots in rest_slots or request_slots.
         if len(request_slot_set) > 0 or len(rest_slot_set) > 0:
             self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_FAILED
 
+        # The dialogue is failed if the value for any slot is wrong.
         for slot in self.state["history"].keys():
             if slot in self.goal["goal"]["explicit_inform_slots"].keys() and \
                 self.state["history"][slot] != self.goal["goal"]["explicit_inform_slots"][slot]:
@@ -322,11 +320,10 @@ class User(object):
             elif slot in self.goal["goal"]["implicit_inform_slots"].keys() and \
                 self.state["history"][slot] != self.goal["goal"]["implicit_inform_slots"][slot]:
                 self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_FAILED
+        # The dialogue is failed if wrong disease is informed.
         if "disease" in agent_action["inform_slots"].keys():
             if agent_action["inform_slots"]["disease"] != self.goal["disease_tag"]:
                 self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_FAILED
-        if self.constraint_check == dialogue_configuration.CONSTRAINT_CHECK_FAILURE:
-            self.dialogue_status = dialogue_configuration.DIALOGUE_STATUS_FAILED
 
     ##########################################
     # Response for inform where explicit_inform_slots and implicit_inform_slots are handled in the same way.
@@ -499,7 +496,7 @@ class User(object):
         if len(self.state["rest_slots"].keys()) > 0:
             return False
         else:
-            return False
+            return True
 
     def _reward_function(self):
         """

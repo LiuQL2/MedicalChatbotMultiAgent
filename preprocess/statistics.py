@@ -42,8 +42,8 @@ class StatisticsOfUserGoal(object):
 
         for goal in self.goal_set:
             print(json.dumps(goal,indent=2))
-            # disease = goal["disease_tag"]
-            disease = goal["group_id"]
+            disease = goal["disease_tag"]
+            # disease = goal["group_id"]
             if disease not in self.information.keys():
                 self.information[disease] = {}
                 self.information[disease]["user_number"] = 0
@@ -52,8 +52,8 @@ class StatisticsOfUserGoal(object):
                 self.information[disease]["symptom_number"] = list()
 
         for goal in self.goal_set:
-            # disease = goal["disease_tag"]
-            disease = goal["group_id"]
+            disease = goal["disease_tag"]
+            # disease = goal["group_id"]
             explicit_inform_slots = goal["goal"]["explicit_inform_slots"]
             implicit_inform_slots = goal["goal"]["implicit_inform_slots"]
             if len(goal["goal"]["explicit_inform_slots"].keys()) >= 0 and \
@@ -122,9 +122,9 @@ if __name__ == "__main__":
     # statics for the goal set, e.g., average number of explicit symptoms, average of number of implicit symptoms and the
     # number of user goal of each disease.
 
-    data_file = "./../src/data/simulated/goal_set.p"
+    data_file = "./../src/data/real_world/goal_set_2.p"
     save_file = "./../resources/goal_set_statistics.csv"
-    save_file = "./../src/data/simulated/goal_set_statistics_simulated.csv"
+    save_file = "./../src/data/real_world/goal_set_statistics_simulated.csv"
 
     stata = StatisticsOfUserGoal(data_file=data_file)
     stata.statistics()

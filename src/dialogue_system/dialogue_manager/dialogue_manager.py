@@ -22,7 +22,7 @@ class DialogueManager(object):
         self.dialogue_output_file = parameter.get("dialogue_file")
         self.save_dialogue = parameter.get("save_dialogue")
 
-    def next(self,train_mode, greedy_strategy):
+    def next(self, greedy_strategy, save_record):
         """
         The next two turn of this dialogue session. The agent will take action first and then followed by user simulator.
         :param save_record: bool, save record?
@@ -32,7 +32,10 @@ class DialogueManager(object):
         """
         # Agent takes action.
         state = self.state_tracker.get_state()
-        agent_action, action_index = self.state_tracker.agent.next(state=state,turn=self.state_tracker.turn,greedy_strategy=greedy_strategy, train_mode=train_mode)
+        agent_action, action_index = self.state_tracker.agent.next(state=state,turn=self.state_tracker.turn,
+                                                                   greedy_strategy=greedy_strategy,
+                                                                   disease_tag=self.state_tracker.user.goal["disease_tag"])
+        # agent_action, action_index = self.state_tracker.agent.next(state=state,turn=self.state_tracker.turn,greedy_strategy=greedy_strategy, train_mode=train_mode)
         self.state_tracker.state_updater(agent_action=agent_action)
         # print("turn:%2d, state for agent:\n" % (state["turn"]) , json.dumps(state))
 
@@ -56,27 +59,27 @@ class DialogueManager(object):
         # if len(self.state_tracker.user.state["rest_slots"].keys()) ==0:
         #     print(self.state_tracker.user.goal)
         #     print(dialogue_status,self.state_tracker.user.state)
-
-        self.record_training_sample(
+        if save_record is True:
+            self.record_training_sample(
                 state=state,
                 agent_action=action_index,
                 next_state=self.state_tracker.get_state(),
                 reward=reward,
                 episode_over=episode_over
-            )
+                )
 
         # Output the dialogue.
-        if episode_over == True and self.save_dialogue == True and train_mode == False:
+        if episode_over == True and self.save_dialogue == True:
             state = self.state_tracker.get_state()
             goal = self.state_tracker.user.get_goal()
             self.__output_dialogue(state=state, goal=goal)
 
         return reward, episode_over,dialogue_status
 
-    def initialize(self, train_mode=True, goal_index=None):
+    def initialize(self, dataset, goal_index=None):
         self.state_tracker.initialize()
         self.inform_wrong_disease_count = 0
-        user_action = self.state_tracker.user.initialize(train_mode = train_mode, goal_index=goal_index)
+        user_action = self.state_tracker.user.initialize(dataset=dataset, goal_index=goal_index)
         self.state_tracker.state_updater(user_action=user_action)
         self.state_tracker.agent.initialize()
         # print("#"*30 + "\n" + "user goal:\n", json.dumps(self.state_tracker.user.goal))

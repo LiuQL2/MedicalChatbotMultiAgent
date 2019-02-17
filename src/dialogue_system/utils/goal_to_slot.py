@@ -19,6 +19,6 @@ class Goal2Slot(object):
 
 
 if __name__ == "__main__":
-    goal_file = "./../data/dataset/1200/1/goal_set.p"
+    goal_file = "./../data/dataset/1200/1/goal_set_2.p"
     goal2slot = Goal2Slot()
     goal2slot.load_goal(goal_file)
