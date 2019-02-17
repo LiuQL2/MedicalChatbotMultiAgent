@@ -91,7 +91,6 @@ class AgentWithGoal(object):
         self.sub_task_terminal = True
         self.inform_disease = False
         self.master_action_index = None
-        self.is_master_takes_action = False
         self.intrinsic_reward = 0.0
         self.sub_task_turn = 0
         self.lower_agent.initialize()
@@ -109,12 +108,7 @@ class AgentWithGoal(object):
         :return: the agent action, a tuple consists of the selected agent action and action index.
         """
         self.disease_tag = kwargs.get("disease_tag")
-        # Internal critic.
-        self.sub_task_terminal, self.inform_disease, self.intrinsic_reward, similar_score = self.intrinsic_critic(state, self.master_action_index, disease_tag=kwargs.get("disease_tag"))
-
-        # if self.master_action_index is None:
-        #     self.is_master_takes_action = False
-        #     self.master_action_index = self.__master_next__(state, greedy_strategy)
+        self.sub_task_terminal, self.inform_disease, _, _ = self.intrinsic_critic(state, self.master_action_index, disease_tag=kwargs.get("disease_tag"))
 
         # Inform disease.
         if self.inform_disease is True:
@@ -132,8 +126,7 @@ class AgentWithGoal(object):
             self.master_action_index = self.__master_next__(state, greedy_strategy)
         else:
             pass
-        # print('turn: {}, goal: {}, sub-task finish: {}, inform disease: {}, intrinsic reward: {}, similar score: {}'.format(
-        #     turn, self.master_action_index,self.sub_task_terminal, self.inform_disease, self.intrinsic_reward, similar_score))
+        # print('turn: {}, goal: {}, sub-task finish: {}, inform disease: {}, intrinsic reward: {}, similar score: {}'.format(turn, self.master_action_index,self.sub_task_terminal, self.inform_disease, self.intrinsic_reward, similar_score))
 
         # Lower agent takes an agent. Not inform disease.
         goal = np.zeros(self.output_size)
@@ -222,7 +215,7 @@ class AgentWithGoal(object):
         next_state_rep = state_to_representation_last(state=next_state, action_set=self.action_set,slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter['max_turn'])
         master_state_rep = state_to_representation_last(state=self.master_state, action_set=self.action_set,slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter['max_turn'])
         # samples of master agent.
-        sub_task_terminal, inform_disease, intrinsic_reward,_ = self.intrinsic_critic(next_state, self.master_action_index,disease_tag=self.disease_tag)
+        sub_task_terminal, inform_disease, intrinsic_reward, _ = self.intrinsic_critic(next_state, self.master_action_index,disease_tag=self.disease_tag)
 
         self.master_reward += reward
         if self.sub_task_terminal is True and sub_task_terminal is True:
@@ -233,15 +226,15 @@ class AgentWithGoal(object):
             goal[self.master_action_index] = 1
             state_rep = np.concatenate((state_rep, goal), axis=0)
             next_state_rep = np.concatenate((next_state_rep, goal), axis=0)
+            self.lower_agent.experience_replay_pool.append((state_rep, agent_action, intrinsic_reward,
+                                                            next_state_rep, sub_task_terminal,
+                                                            self.master_action_index))
 
             # 如果达到固定长度，同时去掉即将删除transition的计数。
             self.visitation_count[self.master_action_index, agent_action] += 1
             if len(self.lower_agent.experience_replay_pool) == self.lower_agent.experience_replay_pool.maxlen:
                 _, pre_agent_action, _, _, _, pre_master_action = self.lower_agent.experience_replay_pool.popleft()
                 self.visitation_count[pre_master_action, pre_agent_action] -= 1
-            self.lower_agent.experience_replay_pool.append((state_rep, agent_action, intrinsic_reward,
-                                                            next_state_rep, sub_task_terminal,
-                                                            self.master_action_index))
 
     def flush_pool(self):
         self.experience_replay_pool = deque(maxlen=self.parameter.get("experience_replay_pool_size"))
@@ -266,7 +259,7 @@ class AgentWithGoal(object):
             # inform_disease = True
             intrinsic_reward = 1
 
-        if similarity_score < 1e-2:
+        if similarity_score < 1e-1:
             sub_task_terminate = True
             inform_disease = False
             intrinsic_reward = 1
