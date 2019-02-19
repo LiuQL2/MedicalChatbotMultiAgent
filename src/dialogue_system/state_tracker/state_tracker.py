@@ -107,7 +107,6 @@ class StateTracker(object):
 
     def _state_update_with_agent_action(self, agent_action):
         # Updating dialog state with agent_action.
-
         explicit_implicit_slot_value = copy.deepcopy(self.user.goal["goal"]["explicit_inform_slots"])
         explicit_implicit_slot_value.update(self.user.goal["goal"]["implicit_inform_slots"])
 

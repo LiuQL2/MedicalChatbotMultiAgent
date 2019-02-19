@@ -61,7 +61,7 @@ class AgentDQN(Agent):
         if self.agent_id.lower() == 'agentwithgoal':
             state_rep = np.concatenate((state_rep, goal),axis=0)
 
-        if greedy_strategy == True:
+        if greedy_strategy is True:
             greedy = random.random()
             if greedy < self.parameter.get("epsilon"):
                 action_index = random.randint(0, len(self.action_space) - 1)

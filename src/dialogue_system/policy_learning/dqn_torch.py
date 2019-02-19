@@ -221,7 +221,11 @@ class DQN(object):
             saved_model (str): the file name which is the trained model.
         """
         print("loading trained model", saved_model)
-        self.current_net.load_state_dict(torch.load(saved_model))
+        if torch.cuda.is_available() is False:
+            map_location = 'cpu'
+        else:
+            map_location = None
+        self.current_net.load_state_dict(torch.load(saved_model,map_location=map_location))
         self.target_net.load_state_dict(self.current_net.state_dict())
 
     def update_target_network(self):

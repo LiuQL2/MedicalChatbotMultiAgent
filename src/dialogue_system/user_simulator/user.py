@@ -49,8 +49,6 @@ sys.path.append(os.getcwd().replace("src/dialogue_system",""))
 from src.dialogue_system import dialogue_configuration
 from src.dialogue_system.agent.agent import Agent
 
-random.seed(12345)
-
 
 class User(object):
     def __init__(self, goal_set, disease_symptom, parameter):

@@ -40,6 +40,7 @@ def construct_info(params):
     max_turn = params.get("max_turn")
     minus_left_slots = params.get("minus_left_slots")
     gamma = params.get("gamma")
+    gamma_worker = params.get('gamma_worker')
     epsilon = params.get("epsilon")
     data_set_name = params.get("goal_set").split("/")[-2]
     run_id = params.get('run_id')
@@ -50,7 +51,7 @@ def construct_info(params):
     value_as_reward = params["value_as_reward"]
     symptom_dist_as_input = params["symptom_dist_as_input"]
     weight_for_reward_shaping = params["weight_for_reward_shaping"]
-
+    disease_tag_for_terminating = params["disease_tag_for_terminating"]
     run_time = time.strftime('%m%d%H%M%S', time.localtime(time.time()))
     info = run_time + \
            "_" + agent_id + \
@@ -62,6 +63,7 @@ def construct_info(params):
            "_RFIRS" + str(reward_for_inform_right_symptom) +\
            "_mls" + str(int(minus_left_slots)) + \
            "_gamma" + str(gamma) + \
+           "_gammaW" + str(gamma_worker) + \
            "_epsilon" + str(epsilon) + \
            "_awd" + str(int(allow_wrong_disease)) + \
            "_crs" + str(int(check_related_symptoms)) + \
@@ -70,6 +72,7 @@ def construct_info(params):
            "_var" + str(int(value_as_reward)) + \
            "_sdai" + str(int(symptom_dist_as_input)) + \
            "_wfrs" + str(weight_for_reward_shaping) + \
+           "_dtft" + str(int(disease_tag_for_terminating)) + \
            "_data" + str(data_set_name.title()) + \
            "_RID" + str(run_id) + \
            "_" + dqn_type

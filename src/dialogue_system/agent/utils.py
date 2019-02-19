@@ -95,20 +95,23 @@ def state_to_representation_last(state, action_set, slot_set, disease_symptom, m
     current_slots.update(state["current_slots"]["explicit_inform_slots"])
     current_slots.update(state["current_slots"]["implicit_inform_slots"])
     current_slots.update(state["current_slots"]["proposed_slots"])
-    current_slots.update(state["current_slots"]["agent_request_slots"])
+    current_slots.update(state["current_slots"]["agent_request_slots"]) # request slot is represented in the following part.
+
     # Not one hot
     current_slots_rep = np.zeros(len(slot_set.keys()))
     for slot in current_slots.keys():
         current_slots_rep[slot_set[slot]] = 1.0
         # different values for different slot values.
-        if current_slots[slot] == True:
+        if current_slots[slot] is True:
             current_slots_rep[slot_set[slot]] = 1.0
-        elif current_slots[slot] == False:
+        elif current_slots[slot] is False:
             current_slots_rep[slot_set[slot]] = -1.0
-        elif current_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
+        elif current_slots[slot] == 'UNK':
             current_slots_rep[slot_set[slot]] = 2.0
-        elif current_slots[slot] == dialogue_configuration.I_DENY:
+        elif current_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
             current_slots_rep[slot_set[slot]] = -2.0
+        elif current_slots[slot] == dialogue_configuration.I_DENY:
+            current_slots_rep[slot_set[slot]] = -3.0
         elif current_slots[slot] == dialogue_configuration.I_DO_NOT_CARE:
             current_slots_rep[slot_set[slot]] = 3.0
 
@@ -158,14 +161,16 @@ def state_to_representation_last(state, action_set, slot_set, disease_symptom, m
     for slot in user_inform_slots.keys():
         # user_inform_slots_rep[slot_set[slot]] = 1.0
         # different values for different slot values.
-        if user_inform_slots[slot] == True:
+        if user_inform_slots[slot] is True:
             user_inform_slots_rep[slot_set[slot]] = 1.0
-        elif user_inform_slots[slot] == False:
+        elif user_inform_slots[slot] is False:
             user_inform_slots_rep[slot_set[slot]] = -1.0
-        elif user_inform_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
+        elif user_inform_slots[slot] == 'UNK':
             user_inform_slots_rep[slot_set[slot]] = 2.0
-        elif user_inform_slots[slot] == dialogue_configuration.I_DENY:
+        elif user_inform_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
             user_inform_slots_rep[slot_set[slot]] = -2.0
+        elif user_inform_slots[slot] == dialogue_configuration.I_DENY:
+            user_inform_slots_rep[slot_set[slot]] = -3.0
         elif user_inform_slots[slot] == dialogue_configuration.I_DO_NOT_CARE:
             user_inform_slots_rep[slot_set[slot]] = 3.0
 

@@ -18,7 +18,6 @@ from src.dialogue_system.agent import AgentWithGoal
 from src.dialogue_system.run.utils import verify_params
 
 from src.dialogue_system.run import RunningSteward
-random.seed(12345)
 
 
 def boolean_string(s):
@@ -33,7 +32,6 @@ disease_number = 4
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--disease_number", dest="disease_number", type=int,default=disease_number,help="the number of disease.")
-parser.add_argument("--device_for_tf", dest="device_for_tf", type=str, default="/device:GPU:3", help="the device for tensorflow running on.")
 
 # simulation configuration
 parser.add_argument("--simulate_epoch_number", dest="simulate_epoch_number", type=int, default=2000, help="The number of simulate epoch.")
@@ -47,13 +45,14 @@ parser.add_argument("--batch_size", dest="batch_size", type=int, default=30, hel
 parser.add_argument("--log_dir", dest="log_dir", type=str, default="./../../../log/", help="directory where event file of training will be written, ending with /")
 parser.add_argument("--epsilon", dest="epsilon", type=float, default=0.1, help="The greedy probability of DQN")
 parser.add_argument("--gamma", dest="gamma", type=float, default=0.95, help="The discount factor of immediate reward in RL.")
-parser.add_argument("--train_mode", dest="train_mode", type=boolean_string, default=True, help="Runing this code in training mode? [True, False]")
+parser.add_argument("--gamma_worker", dest="gamma_worker", type=float, default=0.95, help="The discount factor of immediate reward of the lower agent in HRL.")
+parser.add_argument("--train_mode", dest="train_mode", type=boolean_string, default=False, help="Runing this code in training mode? [True, False]")
 
 #  Save model, performance and dialogue content ? And what is the path if yes?
 parser.add_argument("--save_performance",dest="save_performance", type=boolean_string, default=False, help="save the performance? [True, False]")
 parser.add_argument("--save_model", dest="save_model", type=boolean_string, default=False,help="Save model during training? [True, False]")
 parser.add_argument("--save_dialogue", dest="save_dialogue", type=boolean_string, default=False, help="Save the dialogue? [True, False]")
-parser.add_argument("--saved_model", dest="saved_model", type=str, default="./../../model/dqn/checkpoint/0127150250_AgentDQN_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dataReal_World_RID0_DQN/model_d4_agentAgentDQN_s0.681_r22.668_t3.611_wd0.0_e-1241.pkl")
+parser.add_argument("--saved_model", dest="saved_model", type=str, default="./../../model/DQN/checkpoint/0219224706_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.99_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs1.0_dataReal_World_RID1_DQN/model_d4_agentAgentWithGoal_s0.938_r37.368_t8.143_wd0.0_e-252.pkl")
 parser.add_argument("--dialogue_file", dest="dialogue_file", type=str, default="./../../data/dialogue_output/dialogue_file.txt", help="the file that used to save dialogue content.")
 
 parser.add_argument("--run_id", dest='run_id', type=int, default=0, help='the id of this running.')
@@ -77,7 +76,7 @@ parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentWithG
 max_turn = 22
 parser.add_argument("--action_set", dest="action_set", type=str, default='./../../data/real_world/action_set.p',help='path and filename of the action set')
 parser.add_argument("--slot_set", dest="slot_set", type=str, default='./../../data/real_world/slot_set.p',help='path and filename of the slots set')
-parser.add_argument("--goal_set", dest="goal_set", type=str, default='./../../data/real_world/goal_set_2.p',help='path and filename of user goal')
+parser.add_argument("--goal_set", dest="goal_set", type=str, default='./../../data/real_world/goal_set.p',help='path and filename of user goal')
 parser.add_argument("--disease_symptom", dest="disease_symptom", type=str,default="./../../data/real_world/disease_symptom.p",help="path and filename of the disease_symptom file")
 parser.add_argument("--max_turn", dest="max_turn", type=int, default=max_turn, help="the max turn in one episode.")
 parser.add_argument("--input_size_dqn", dest="input_size_dqn", type=int, default=max_turn + 477, help="the input_size of DQN.")
@@ -102,9 +101,11 @@ parser.add_argument("--hrl_with_goal", dest="hrl_with_goal", type=boolean_string
 parser.add_argument("--weight_correction", dest="weight_correction", type=boolean_string, default=False, help="weight corrention for the master agent in HRL? {True, False}")
 parser.add_argument("--value_as_reward", dest="value_as_reward", type=boolean_string, default=False, help="The state value of lower agent is the reward for the higher agent? {True, False}")
 parser.add_argument("--symptom_dist_as_input", dest="symptom_dist_as_input", type=boolean_string, default=False, help="The distribution over symptoms of each disease is taken as input to the lower agent? {True, False}")
+parser.add_argument("--disease_tag_for_terminating", dest="disease_tag_for_terminating", type=boolean_string, default=True, help="using the disease tag for inform disease ? {True, False}")
 
 # reward shapping
 parser.add_argument("--weight_for_reward_shaping", dest='weight_for_reward_shaping', type=float, default=0.0, help="weight for reward shaping. 0 means no reward shaping.")
+
 
 args = parser.parse_args()
 parameter = vars(args)

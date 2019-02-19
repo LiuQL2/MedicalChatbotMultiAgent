@@ -6,8 +6,6 @@ User simulator which is based on rules.
 import sys, os
 sys.path.append(os.getcwd().replace("src/dialogue_system/user_simulator",""))
 from src.dialogue_system.user_simulator.user import User
-import random
-random.seed(12345)
 
 class UserRule(User):
     def __init__(self, goal_set, disease_syptom, parameter):

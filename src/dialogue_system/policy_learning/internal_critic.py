@@ -7,17 +7,21 @@ import torch
 import numpy as np
 import sys, os
 import pickle
+import random
 import copy
 from collections import deque
+from collections import namedtuple
 from src.dialogue_system import dialogue_configuration
 
 
-def state_vec(slot_set, state):
+def state_to_vec(slot_set, state):
     current_slots = copy.deepcopy(state["current_slots"]["inform_slots"])
     current_slots.update(state["current_slots"]["explicit_inform_slots"])
     current_slots.update(state["current_slots"]["implicit_inform_slots"])
     current_slots.update(state["current_slots"]["proposed_slots"])
     current_slots.update(state["current_slots"]["agent_request_slots"])
+    if 'disease' in current_slots.keys():
+        current_slots.pop('disease')
     # one-hot vector for each symptom.
     current_slots_rep = np.zeros((len(slot_set.keys()),3))
     for slot in current_slots.keys():
@@ -31,6 +35,25 @@ def state_vec(slot_set, state):
         # elif current_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
         #     current_slots_rep[slot_set[slot]][3] = 1.0
     current_slots_rep = np.reshape(current_slots_rep, (len(slot_set.keys())*3))
+
+    # # Not one hot
+    # current_slots_rep = np.zeros(len(slot_set.keys()))
+    # for slot in current_slots.keys():
+    #     current_slots_rep[slot_set[slot]] = 1.0
+    #     # different values for different slot values.
+    #     if current_slots[slot] is True:
+    #         current_slots_rep[slot_set[slot]] = 1.0
+    #     elif current_slots[slot] is False:
+    #         current_slots_rep[slot_set[slot]] = -1.0
+    #     elif current_slots[slot] == 'UNK':
+    #         current_slots_rep[slot_set[slot]] = 2.0
+    #     # elif current_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
+    #     #     current_slots_rep[slot_set[slot]] = -2.0
+    #     # elif current_slots[slot] == dialogue_configuration.I_DENY:
+    #     #     current_slots_rep[slot_set[slot]] = -3.0
+    #     # elif current_slots[slot] == dialogue_configuration.I_DO_NOT_CARE:
+    #     #     current_slots_rep[slot_set[slot]] = 3.0
+
     return current_slots_rep
 
 
@@ -67,7 +90,7 @@ class CriticModel(torch.nn.Module):
 class InternalCritic(object):
     def __init__(self, input_size, hidden_size, output_size, goal_num,goal_embedding_value, slot_set, parameter):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+        self.params = parameter
         self.critic = CriticModel(input_size, hidden_size, output_size, goal_num, goal_embedding_value)
         if torch.cuda.is_available():
             if parameter["multi_GPUs"] == True: # multi GPUs
@@ -77,6 +100,8 @@ class InternalCritic(object):
         self.slot_set = slot_set
         self.positive_sample_buffer = deque(maxlen=2000)
         self.negative_sample_buffer = deque(maxlen=2000)
+        self.sample = namedtuple('Transition', ('data','label'))
+
         self.optimizer = torch.optim.Adam(params=self.critic.parameters(),lr=parameter.get("dqn_learning_rate"))
 
     def train(self, positive_data_batch, positive_goal, negative_data_batch, negative_goal,
@@ -105,12 +130,38 @@ class InternalCritic(object):
         return similarity.detach().cpu().numpy()
 
     def get_similarity_state_dict(self, batch, goal):
-        new_batch = [state_vec(self.slot_set, state) for state in batch]
+        new_batch = [state_to_vec(self.slot_set, state) for state in batch]
         return self.get_similarity(new_batch, goal)
 
     def restore_model(self, saved_model):
         print('loading model from {}'.format(saved_model))
         self.critic.load_state_dict(torch.load(saved_model))
+
+    def buffer_replay(self):
+        batch_size = self.params['batch_size']
+        batch_num = min(int(len(self.positive_sample_buffer)/batch_size), int(len(self.negative_sample_buffer)/batch_size))
+        for index in range(batch_num):
+            positive_batch = random.sample(self.positive_sample_buffer,batch_size)
+            positive_batch = self.sample(*zip(*positive_batch))
+            negative_batch = random.sample(self.negative_sample_buffer,batch_size)
+            negative_batch = self.sample(*zip(*negative_batch))
+            self.train(positive_batch.data, positive_batch.label, negative_batch.data, negative_batch.label)
+
+    def record_training_positive_sample(self, state_dict, goal):
+        """
+        Args:
+            state_dict: dict, state returned by state_tracker.
+            goal: int, the action of master agent.
+        """
+        self.positive_sample_buffer.append((state_to_vec(self.slot_set, state_dict), goal))
+
+    def record_training_negative_sample(self, state_dict, goal):
+        """
+        Args:
+            state_dict: dict, state returned by state_tracker.
+            goal: int, the action of master agent.
+        """
+        self.negative_sample_buffer.append((state_to_vec(self.slot_set, state_dict), goal))
 
 
 
@@ -170,7 +221,7 @@ class InternalCritic(object):
 #         return similarity.detach().cpu().numpy()
 #
 #     def get_similarity_state_dict(self, batch, goal):
-#         new_batch = [state_vec(self.slot_set, state) for state in batch]
+#         new_batch = [state_to_vec(self.slot_set, state) for state in batch]
 #         return self.get_similarity(new_batch, goal)
 #
 #     def restore_model(self, saved_model):
@@ -238,7 +289,7 @@ class MultiClassifier(object):
         return class_prob.detach().cpu().numpy()
 
     def get_similarity_state_dict(self, batch, goal):
-        new_batch = [state_vec(self.slot_set, state) for state in batch]
+        new_batch = [state_to_vec(self.slot_set, state) for state in batch]
         return self.get_similarity(new_batch, goal)
 
     def restore_model(self, saved_model):

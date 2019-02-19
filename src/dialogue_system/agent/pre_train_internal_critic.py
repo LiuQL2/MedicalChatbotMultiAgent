@@ -15,9 +15,6 @@ from src.dialogue_system.policy_learning.internal_critic import InternalCritic
 # from src.dialogue_system.policy_learning.internal_critic import MultiClassifier as InternalCritic
 import random
 
-random.seed(12345)
-torch.manual_seed(12345)
-
 
 slot_set = pickle.load(file=open('./../../data/real_world/slot_set.p', "rb"))
 print(len(slot_set))
@@ -164,7 +161,7 @@ for epoch_index in range(epoch_num):
     print(epoch_index, 'positive', total_loss_positive/batch_num, 'negative', total_loss_negative/batch_num)
 
 
-# model.restore_model('pre_trained_internal_critic_dropout.pkl')
+# model.restore_model('pre_trained_internal_critic_dropout_one_hot.pkl')
 
 # model.critic.eval()
 print('validate')
@@ -176,7 +173,7 @@ for one_data in data_ex:
     label = [0, 1,2,3]
     # similarity = model.get_similarity(batch, label)[0]
     similarity = model.get_similarity(batch, label)
-    # print(label_list[index], np.argmax(similarity), min(similarity), similarity)
+    print(label_list[index], np.argmax(similarity), min(similarity), max(similarity),similarity)
     predict.append(int(np.argmax(similarity)))
     index += 1
 
@@ -201,7 +198,7 @@ accu = accuracy_score(label_list, predict)
 print('validate')
 print(res)
 print(accu)
-model.save_model('pre_trained_internal_critic_dropout.pkl')
+model.save_model('pre_trained_internal_critic_dropout_one_hot.pkl')
 
 
 
@@ -214,7 +211,7 @@ for one_data in data_ex:
     label = [0, 1,2,3]
     # similarity = model.get_similarity(batch, label)[0]
     similarity = model.get_similarity(batch, label)
-    # print(label_list[index], np.argmax(similarity), min(similarity), similarity)
+    print(label_list[index], np.argmax(similarity), min(similarity), max(similarity), similarity)
     predict.append(int(np.argmax(similarity)))
     index += 1
 

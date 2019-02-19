@@ -17,8 +17,6 @@ from src.dialogue_system.agent.utils import state_to_representation_last
 from src.dialogue_system import dialogue_configuration
 from src.dialogue_system.policy_learning.internal_critic import InternalCritic
 
-random.seed(12345)
-
 
 class AgentWithGoal(object):
     def __init__(self, action_set, slot_set, disease_symptom, parameter):
@@ -32,13 +30,17 @@ class AgentWithGoal(object):
         input_size = parameter.get("input_size_dqn")
         hidden_size = parameter.get("hidden_size_dqn", 100)
         self.output_size = parameter.get('goal_dim', 4)
-        self.dqn = DQN(input_size=input_size,
+        self.dqn = DQN(input_size=input_size + self.output_size,
                        hidden_size=hidden_size,
                        output_size=self.output_size,
                        parameter=parameter,
                        named_tuple=('state', 'agent_action', 'reward', 'next_state', 'episode_over'))
         self.parameter = parameter
         self.experience_replay_pool = deque(maxlen=parameter.get("experience_replay_pool_size"))
+        if parameter.get("train_mode") is False :
+            self.dqn.restore_model(parameter.get("saved_model"))
+            self.dqn.current_net.eval()
+            self.dqn.target_net.eval()
 
         ###############################
         # Internal critic
@@ -69,17 +71,25 @@ class AgentWithGoal(object):
                                               goal_embedding_value=goal_embed_value, slot_set=temp_slot_set,
                                               parameter=parameter)
         print(os.getcwd())
-        self.internal_critic.restore_model('../agent/pre_trained_internal_critic_dropout.pkl')
+        self.internal_critic.restore_model('../agent/pre_trained_internal_critic_dropout_one_hot.pkl')
 
         #################
         # Lower agent.
         ##############
         temp_parameter = copy.deepcopy(parameter)
         temp_parameter['input_size_dqn'] = input_size + self.output_size
+        path_list = parameter['saved_model'].split('/')
+        path_list.insert(-1, 'lower')
+        temp_parameter['saved_model'] = '/'.join(path_list)
+        temp_parameter['gamma'] = temp_parameter['gamma_worker'] # discount factor for the lower agent.
         self.lower_agent = LowerAgent(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=temp_parameter,disease_as_action=False)
         named_tuple = ('state', 'agent_action', 'reward', 'next_state', 'episode_over','goal')
         self.lower_agent.dqn.Transition = namedtuple('Transition', named_tuple)
         self.visitation_count = np.zeros(shape=(self.output_size, len(self.lower_agent.action_space))) # [goal_num, lower_action_num]
+        if temp_parameter.get("train_mode") is False:
+            self.lower_agent.dqn.restore_model(temp_parameter.get("saved_model"))
+            self.lower_agent.dqn.current_net.eval()
+            self.lower_agent.dqn.target_net.eval()
 
     def initialize(self):
         """
@@ -91,8 +101,10 @@ class AgentWithGoal(object):
         self.sub_task_terminal = True
         self.inform_disease = False
         self.master_action_index = None
+        self.last_master_action_index = None
         self.intrinsic_reward = 0.0
         self.sub_task_turn = 0
+        self.states_of_one_session = []
         self.lower_agent.initialize()
         self.action = {'action': 'inform',
                        'inform_slots': {"disease": 'UNK'},
@@ -108,7 +120,7 @@ class AgentWithGoal(object):
         :return: the agent action, a tuple consists of the selected agent action and action index.
         """
         self.disease_tag = kwargs.get("disease_tag")
-        self.sub_task_terminal, self.inform_disease, _, _ = self.intrinsic_critic(state, self.master_action_index, disease_tag=kwargs.get("disease_tag"))
+        self.sub_task_terminal, self.inform_disease, _, similar_score = self.intrinsic_critic(state, self.master_action_index, disease_tag=kwargs.get("disease_tag"))
 
         # Inform disease.
         if self.inform_disease is True:
@@ -123,20 +135,21 @@ class AgentWithGoal(object):
             self.master_reward = 0.0
             self.master_state = state
             self.sub_task_turn = 0
-            self.master_action_index = self.__master_next__(state, greedy_strategy)
+            self.last_master_action_index = copy.deepcopy(self.master_action_index)
+            self.master_action_index = self.__master_next__(state, self.master_action_index, greedy_strategy)
         else:
             pass
-        # print('turn: {}, goal: {}, sub-task finish: {}, inform disease: {}, intrinsic reward: {}, similar score: {}'.format(turn, self.master_action_index,self.sub_task_terminal, self.inform_disease, self.intrinsic_reward, similar_score))
+        print('turn: {}, goal: {}, label: {}, sub-task finish: {}, inform disease: {}, intrinsic reward: {}, similar score: {}'.format(turn, self.master_action_index, self.disease_symptom[self.disease_tag]['index'], self.sub_task_terminal, self.inform_disease, self.intrinsic_reward, similar_score))
 
         # Lower agent takes an agent. Not inform disease.
         goal = np.zeros(self.output_size)
         self.sub_task_turn += 1
         goal[self.master_action_index] = 1
         agent_action, action_index = self.lower_agent.next(state, turn, greedy_strategy, goal=goal)
-        # print('action', agent_action)
+        print('action', agent_action)
         return agent_action, action_index
 
-    def __master_next__(self, state, greedy_strategy):
+    def __master_next__(self, state, last_master_action, greedy_strategy):
         # disease_symptom are not used in state_rep.
         epsilon = self.parameter.get("epsilon")
         state_rep = state_to_representation_last(state=state,
@@ -144,8 +157,12 @@ class AgentWithGoal(object):
                                                  slot_set=self.slot_set,
                                                  disease_symptom=self.disease_symptom,
                                                  max_turn=self.parameter["max_turn"])  # sequence representation.
+        last_action_rep = np.zeros(self.output_size)
+        if last_master_action is not None:
+            last_action_rep[last_master_action] = 1
+        state_rep = np.concatenate((state_rep, last_action_rep), axis=0)
         # Master agent takes an action, i.e., selects a goal.
-        if greedy_strategy == True:
+        if greedy_strategy is True:
             greedy = random.random()
             if greedy < epsilon:
                 master_action_index = random.randint(0, self.output_size - 1)
@@ -194,11 +211,30 @@ class AgentWithGoal(object):
         print("[Master agent] cur bellman err %.4f, experience replay pool %s" % (float(cur_bellman_err) / (len(self.experience_replay_pool) + 1e-10), len(self.experience_replay_pool)))
         # Training of lower agents.
         self.lower_agent.train_dqn()
+        # Training of internal critic.
+        # self.internal_critic.buffer_replay()
 
     def record_training_sample(self, state, agent_action, reward, next_state, episode_over):
         """
         这里lower agent和master agent的sample都是在这里直接保存的，没有再另外调用函数。
         """
+        # samples of internal critic.
+        self.states_of_one_session.append(state)
+        if episode_over is True:
+            # current session is successful.
+            if reward == self.parameter.get('reward_for_success'):
+                for one_state in self.states_of_one_session:
+                    # positive samples.
+                    self.internal_critic.record_training_positive_sample(one_state, self.master_action_index)
+                    # negative samples.
+                    for index in range(self.output_size):
+                        if index != self.master_action_index:
+                            self.internal_critic.record_training_negative_sample(one_state, index)
+            # current session is failed.
+            elif reward == self.parameter.get('reward_for_fail') and state['turn'] <= self.parameter.get('max_turn') - 2:
+                for one_state in self.states_of_one_session:
+                    self.internal_critic.record_training_negative_sample(one_state, self.master_action_index)
+
         # reward shaping
         alpha = self.parameter.get("weight_for_reward_shaping")
         # if episode_over is True: shaping = self.reward_shaping(agent_action, self.master_action_index)
@@ -214,18 +250,28 @@ class AgentWithGoal(object):
         state_rep = state_to_representation_last(state=state, action_set=self.action_set, slot_set=self.slot_set,disease_symptom=self.disease_symptom, max_turn=self.parameter['max_turn'])
         next_state_rep = state_to_representation_last(state=next_state, action_set=self.action_set,slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter['max_turn'])
         master_state_rep = state_to_representation_last(state=self.master_state, action_set=self.action_set,slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter['max_turn'])
+
         # samples of master agent.
         sub_task_terminal, inform_disease, intrinsic_reward, _ = self.intrinsic_critic(next_state, self.master_action_index,disease_tag=self.disease_tag)
-
         self.master_reward += reward
         if self.sub_task_terminal is True and sub_task_terminal is True:
-            self.experience_replay_pool.append((master_state_rep, self.master_action_index, self.master_reward, next_state_rep, episode_over))
+            last_master_action_rep = np.zeros(self.output_size)
+            current_master_action_rep = np.zeros(self.output_size)
+            if self.last_master_action_index is not None: last_master_action_rep[self.last_master_action_index] = 1
+            if self.master_action_index is not None: current_master_action_rep[self.master_action_index] = 1
+            master_state_rep = np.concatenate((master_state_rep, last_master_action_rep), axis=0)
+            next_master_state_rep = np.concatenate((next_state_rep, current_master_action_rep), axis=0)
+            self.experience_replay_pool.append((master_state_rep, self.master_action_index, self.master_reward, next_master_state_rep, episode_over))
 
+        # samples of lower agent.
         if agent_action is not None: # session is not over. Otherwise the agent_action is not one of the lower agent's actions.
             goal = np.zeros(self.output_size)
             goal[self.master_action_index] = 1
             state_rep = np.concatenate((state_rep, goal), axis=0)
             next_state_rep = np.concatenate((next_state_rep, goal), axis=0)
+            # reward shaping for lower agent on intrinsic reward.
+            shaping = self.reward_shaping(state, next_state)
+            intrinsic_reward += alpha * shaping
             self.lower_agent.experience_replay_pool.append((state_rep, agent_action, intrinsic_reward,
                                                             next_state_rep, sub_task_terminal,
                                                             self.master_action_index))
@@ -254,10 +300,17 @@ class AgentWithGoal(object):
         state_batch = [state] * self.output_size
         similarity_score = self.internal_critic.get_similarity_state_dict(state_batch, goal_list)[master_action_index]
 
-        if similarity_score > 0.97:
-            sub_task_terminate = True
-            # inform_disease = True
-            intrinsic_reward = 1
+        disease_tag_for_terminating = self.parameter.get('disease_tag_for_terminating')
+        if disease_tag_for_terminating is False:
+            if similarity_score > 0.97:
+                sub_task_terminate = True
+                inform_disease = True
+                intrinsic_reward = 1
+        else:
+            if self.id2disease[self.master_action_index] == disease_tag:
+                inform_disease = True
+                sub_task_terminate = True
+                intrinsic_reward = 1
 
         if similarity_score < 1e-1:
             sub_task_terminate = True
@@ -268,21 +321,45 @@ class AgentWithGoal(object):
             sub_task_terminate = True
             intrinsic_reward = -1
 
-        if self.id2disease[self.master_action_index] == disease_tag:
-            inform_disease = True
         self.internal_critic.critic.train()
         return sub_task_terminate, inform_disease, intrinsic_reward, similarity_score
 
-    def reward_shaping(self, lower_agent_action, goal):
+    def reward_shaping1(self, lower_agent_action, goal):
         prob_action_goal = self.visitation_count[goal, lower_agent_action] / (self.visitation_count.sum() + 1e-8)
         prob_goal = self.visitation_count.sum(1)[goal] / (self.visitation_count.sum() + 1e-8)
         prob_action = self.visitation_count.sum(0)[lower_agent_action] / (self.visitation_count.sum() + 1e-8)
         return np.log(prob_action_goal / (prob_action * prob_goal + 1e-8))
 
+    def reward_shaping(self, state, next_state):
+        def delete_item_from_dict(item, value):
+            new_item = {}
+            for k, v in item.items():
+                if v != value: new_item[k] = v
+            return new_item
+
+        # slot number in state.
+        slot_dict = copy.deepcopy(state["current_slots"]["inform_slots"])
+        slot_dict.update(state["current_slots"]["explicit_inform_slots"])
+        slot_dict.update(state["current_slots"]["implicit_inform_slots"])
+        slot_dict.update(state["current_slots"]["proposed_slots"])
+        slot_dict.update(state["current_slots"]["agent_request_slots"])
+        slot_dict = delete_item_from_dict(slot_dict, dialogue_configuration.I_DO_NOT_KNOW)
+
+        next_slot_dict = copy.deepcopy(next_state["current_slots"]["inform_slots"])
+        next_slot_dict.update(next_state["current_slots"]["explicit_inform_slots"])
+        next_slot_dict.update(next_state["current_slots"]["implicit_inform_slots"])
+        next_slot_dict.update(next_state["current_slots"]["proposed_slots"])
+        next_slot_dict.update(next_state["current_slots"]["agent_request_slots"])
+        next_slot_dict = delete_item_from_dict(next_slot_dict, dialogue_configuration.I_DO_NOT_KNOW)
+        gamma = self.parameter.get("gamma")
+        return gamma * len(next_slot_dict) - len(slot_dict)
+
     def train_mode(self):
         self.dqn.current_net.train()
         self.lower_agent.dqn.current_net.train()
+        self.internal_critic.critic.train()
 
     def eval_mode(self):
         self.dqn.current_net.eval()
         self.lower_agent.dqn.current_net.eval()
+        self.internal_critic.critic.eval()

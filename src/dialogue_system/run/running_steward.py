@@ -60,18 +60,21 @@ class RunningSteward(object):
                 self.simulation_epoch(epoch_size=self.epoch_size)
 
             # Evaluating the model.
-            result = self.evaluate_model(dataset="validate", index=index)
+            result = self.evaluate_model(dataset="train", index=index)
             if result["success_rate"] > self.best_result["success_rate"] and \
                     result["success_rate"] > dialogue_configuration.SUCCESS_RATE_THRESHOLD and \
                     result["average_wrong_disease"] <= self.best_result["average_wrong_disease"] and train_mode==True:
                 self.dialogue_manager.state_tracker.agent.flush_pool()
                 self.simulation_epoch(epoch_size=self.epoch_size)
-                if save_model == True:
+                if save_model is True:
                     self.dialogue_manager.state_tracker.agent.save_model(model_performance=result, episodes_index = index, checkpoint_path=self.checkpoint_path)
                     print("The model was saved.")
                 else:
                     pass
                 self.best_result = copy.deepcopy(result)
+        # The training is over and save the model of the last training epoch.
+        if save_model is True and train_mode is True and epoch_number > 0:
+            self.dialogue_manager.state_tracker.agent.save_model(model_performance=result, episodes_index=index, checkpoint_path=self.checkpoint_path)
 
     def simulation_epoch(self, epoch_size):
         """
@@ -88,7 +91,7 @@ class RunningSteward(object):
         for epoch_index in range(0,epoch_size, 1):
             self.dialogue_manager.initialize(dataset="train")
             episode_over = False
-            while episode_over == False:
+            while episode_over is False:
                 reward, episode_over, dialogue_status = self.dialogue_manager.next(greedy_strategy=True, save_record=True)
                 total_reward += reward
             total_turns += self.dialogue_manager.state_tracker.turn

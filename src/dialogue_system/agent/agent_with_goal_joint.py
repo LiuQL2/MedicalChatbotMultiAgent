@@ -17,8 +17,6 @@ from src.dialogue_system.policy_learning.dqn_with_goal_joint import DQNWithGoalJ
 from src.dialogue_system.agent.utils import state_to_representation_last
 from src.dialogue_system import dialogue_configuration
 
-random.seed(12345)
-
 
 class AgentWithGoalJoint(AgentDQN):
     def __init__(self, action_set, slot_set, disease_symptom, parameter):
