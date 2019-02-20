@@ -80,7 +80,7 @@ class DrawCurve(object):
 
 
         no_key_word_list = ['.DS_Store','.pdf','RID9']
-        key_word_list = ['AgentWithGoal', '1999.p', 'RFIRS-1', 'RFNCY-1','0218']
+        key_word_list = ['AgentWithGoal', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN', 'RFNCY-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','0218']
         mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
                                                key_word_list=key_word_list,
                                                no_key_word_list=no_key_word_list)
@@ -100,7 +100,7 @@ class DrawCurve(object):
         ave_result['HRL-agent(var0, wc0, sdai0)'] = mean_point
         #
         # no_key_word_list = ['.DS_Store','.pdf']
-        # key_word_list = ['AgentDQN', '1999.p', 'RFIRS-1','wfrs0.2' ]
+        # key_word_list = ['AgentDQN', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','wfrs0.2' ]
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)
@@ -111,7 +111,7 @@ class DrawCurve(object):
         #
         #
         # no_key_word_list = ['.DS_Store','.pdf']
-        # key_word_list = ['AgentDQN', '1999.p', 'RFIRS-1','wfrs0.5' ]
+        # key_word_list = ['AgentDQN', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','wfrs0.5' ]
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)
@@ -121,7 +121,7 @@ class DrawCurve(object):
         # ave_result['HRL-agent(var1, wc1, sdai0)'] = mean_point
         #
         # no_key_word_list = ['.DS_Store','.pdf']
-        # key_word_list = ['AgentDQN', '1999.p', 'RFIRS-1','wfrs1.0' ]
+        # key_word_list = ['AgentDQN', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','wfrs1.0' ]
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)
@@ -132,7 +132,7 @@ class DrawCurve(object):
         #
         #
         # no_key_word_list = ['.DS_Store','.pdf']
-        # key_word_list = ['AgentDQN', '1999.p', 'RFIRS-1','wfrs2.0' ]
+        # key_word_list = ['AgentDQN', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','wfrs2.0' ]
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)
@@ -146,7 +146,7 @@ class DrawCurve(object):
         #
 
         # no_key_word_list = ['.DS_Store','.pdf','RID9']
-        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-1', 'RFNCY-1','wfrs0.0_']
+        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN', 'RFNCY-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','wfrs0.0_']
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)
@@ -156,17 +156,17 @@ class DrawCurve(object):
         # ave_result['RL-agent'] = mean_point
         #
         # no_key_word_list = ['.DS_Store','.pdf','RID9']
-        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'wfrs0.1']
+        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'wfrs0.0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN']
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)
         # min_len_list.append(min_len)
-        # l2, = plt.plot(range(mean.shape[0]), mean, colors[8], label='AgentGoal, wfrs0.1', linewidth=linewidth)
+        # l2, = plt.plot(range(mean.shape[0]), mean, colors[8], label='AgentGoal, wfrs0.0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN', linewidth=linewidth)
         # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[8], alpha=0.2)
         # ave_result['HRL-agent(var0, wc0, sdai0)'] = mean_point
         #
         # no_key_word_list = ['.DS_Store','.pdf','RID9']
-        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-1','wfrs0.2' ]
+        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','wfrs0.2' ]
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)
@@ -177,7 +177,7 @@ class DrawCurve(object):
         #
         #
         # no_key_word_list = ['.DS_Store','.pdf']
-        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-1','wfrs0.5' ]
+        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','wfrs0.5' ]
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)
@@ -187,7 +187,7 @@ class DrawCurve(object):
         # ave_result['HRL-agent(var1, wc1, sdai0)'] = mean_point
         #
         # no_key_word_list = ['.DS_Store','.pdf']
-        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-1','wfrs1.0' ]
+        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','wfrs1.0' ]
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)
@@ -198,7 +198,7 @@ class DrawCurve(object):
         # #
         # #
         # no_key_word_list = ['.DS_Store','.pdf']
-        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-1','wfrs2.0' ]
+        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','wfrs2.0' ]
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)
@@ -212,7 +212,7 @@ class DrawCurve(object):
 
         #
         # no_key_word_list = ['.DS_Store','.pdf']
-        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-1', 'RFNCY-1','wfrs0.0_','RID9']
+        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN', 'RFNCY-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','wfrs0.0_','RID9']
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)
@@ -222,17 +222,17 @@ class DrawCurve(object):
         # ave_result['RL-agent'] = mean_point
 
         # no_key_word_list = ['.DS_Store','.pdf']
-        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'wfrs0.1','RID9']
+        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'wfrs0.0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','RID9']
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)
         # min_len_list.append(min_len)
-        # l2, = plt.plot(range(mean.shape[0]), mean, colors[4], label='AgentGoal, wfrs0.1', linewidth=linewidth)
+        # l2, = plt.plot(range(mean.shape[0]), mean, colors[4], label='AgentGoal, wfrs0.0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN', linewidth=linewidth)
         # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[4], alpha=0.2)
         # ave_result['HRL-agent(var0, wc0, sdai0)'] = mean_point
         #
         # no_key_word_list = ['.DS_Store','.pdf']
-        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-1','wfrs0.2','RID9' ]
+        # key_word_list = ['AgentWithGoalJoint', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','wfrs0.2','RID9' ]
         # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
         #                                        key_word_list=key_word_list,
         #                                        no_key_word_list=no_key_word_list)

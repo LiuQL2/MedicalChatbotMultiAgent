@@ -145,7 +145,7 @@ for wfrs in wfrs_list:
 
     # user configuration.
     parser.add_argument("--allow_wrong_disease", dest="allow_wrong_disease", type=boolean_string, default=False,
-                        help="Allow the agent to inform wrong disease? 1:Yes, 0:No")
+                        help="Allow the agent to inform wrong disease? 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN:Yes, 0:No")
 
     # Learning rate for dqn.
     parser.add_argument("--dqn_learning_rate", dest="dqn_learning_rate", type=float, default=0.0001,
@@ -154,7 +154,7 @@ for wfrs in wfrs_list:
     # the number condition of explicit symptoms and implicit symptoms in each user goal.
     parser.add_argument("--explicit_number", dest="explicit_number", type=int, default=0,
                         help="the number of explicit symptoms of used sample")
-    # parser.add_argument("--implicit_number", dest="implicit_number", type=int, default=1, help="the number of implicit symptoms of used sample")
+    # parser.add_argument("--implicit_number", dest="implicit_number", type=int, default=0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN, help="the number of implicit symptoms of used sample")
     parser.add_argument("--implicit_number", dest="implicit_number", type=int, default=0,
                         help="the number of implicit symptoms of used sample")
 
@@ -219,7 +219,7 @@ for wfrs in wfrs_list:
 
     params = verify_params(parameter)
     gpu_str = params["gpu"]
-    os.environ['CUDA_VISIBLE_DEVICES'] = gpu_str  # '0,1,2'
+    os.environ['CUDA_VISIBLE_DEVICES'] = gpu_str  # '0,0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN,2'
     torch.cuda.manual_seed(12345)
     torch.manual_seed(12345)
     params["run_info"] = params["run_info"] + '_params'

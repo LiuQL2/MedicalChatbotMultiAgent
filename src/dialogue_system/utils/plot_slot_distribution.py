@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import pickle
 
 # name_list = ['Monday', 'Tuesday', 'Friday', 'Sunday']
-# num_list = [1.5, 0.6, 7.8, 6]
-# num_list1 = [1, 2, 3, 1]
+# num_list = [0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.5, 0.6, 7.8, 6]
+# num_list1 = [0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN, 2, 3, 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN]
 # x = list(range(len(num_list)))
 # total_width, n = 0.8, 3
 # width = total_width / n
@@ -24,8 +24,8 @@ import pickle
 #
 #
 # name_list = ['Monday','Tuesday','Friday','Sunday'] * 20
-# num_list = [1.5,0.6,7.8,6] * 20
-# num_list1 = [1,2,3,1] * 20
+# num_list = [0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.5,0.6,7.8,6] * 20
+# num_list1 = [0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN,2,3,0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN] * 20
 # plt.bar(range(len(num_list)), num_list, label='boy',fc = 'y')
 # plt.bar(range(len(num_list)), num_list1, bottom=num_list, label='girl',tick_label = name_list,fc = 'r')
 # bottom = [num_list[i] + num_list1[i] for i in range(len(num_list))]

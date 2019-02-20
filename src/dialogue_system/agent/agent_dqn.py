@@ -58,7 +58,7 @@ class AgentDQN(Agent):
 
         # HRL with goal (not joint training one.)
         goal = kwargs.get('goal')
-        if self.agent_id.lower() == 'agentwithgoal':
+        if self.agent_id.lower() in ['agentwithgoal', 'agentwithgoal2' ]:
             state_rep = np.concatenate((state_rep, goal),axis=0)
 
         if greedy_strategy is True:

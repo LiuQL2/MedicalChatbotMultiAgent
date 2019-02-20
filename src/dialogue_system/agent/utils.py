@@ -19,7 +19,7 @@ def state_to_representation_history(state, action_set, slot_set, disease_symptom
     """
     # TODO (Qianlong): mapping state to representation using one-hot. Including state["history"] and
     # TODO (Qianlong): state["current_slots"] of each turn.
-    # （1）考虑生成一个sequence，每一个元素包含（action_rep, request_slots_rep,inform_slots_rep, explicit_inform_slots_rep,
+    # （0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN）考虑生成一个sequence，每一个元素包含（action_rep, request_slots_rep,inform_slots_rep, explicit_inform_slots_rep,
     # implicit_slots_rep, turn_rep, current_slots_rep )
     # （2）与定电影票相同，并不考虑state中的history，只用user_action, agent_action, current_slots, 数据库查询结果，turn来
     # 生成当前的state_rep.
@@ -86,7 +86,7 @@ def state_to_representation_last(state, action_set, slot_set, disease_symptom, m
     vector so that it can be fed into the model.
     This mapping function uses informed/requested slots that user has informed and requested up to this turn .
     :param state: Dialogue state
-    :return: Dialogue state representation with 1-rank, which is a vector representing dialogue state.
+    :return: Dialogue state representation with 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN-rank, which is a vector representing dialogue state.
     """
     ######################
     # Current_slots rep.
@@ -100,7 +100,6 @@ def state_to_representation_last(state, action_set, slot_set, disease_symptom, m
     # Not one hot
     current_slots_rep = np.zeros(len(slot_set.keys()))
     for slot in current_slots.keys():
-        current_slots_rep[slot_set[slot]] = 1.0
         # different values for different slot values.
         if current_slots[slot] is True:
             current_slots_rep[slot_set[slot]] = 1.0
@@ -120,13 +119,13 @@ def state_to_representation_last(state, action_set, slot_set, disease_symptom, m
     # for slot in current_slots.keys():
     #     # different values for different slot values.
     #     if current_slots[slot] == True:
-    #         current_slots_rep[slot_set[slot]][0] = 1.0
+    #         current_slots_rep[slot_set[slot]][0] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     #     elif current_slots[slot] == False:
-    #         current_slots_rep[slot_set[slot]][1] = 1.0
+    #         current_slots_rep[slot_set[slot]][0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     #     elif current_slots[slot] == 'UNK':
-    #         current_slots_rep[slot_set[slot]][2] = 1.0
+    #         current_slots_rep[slot_set[slot]][2] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     #     elif current_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
-    #         current_slots_rep[slot_set[slot]][3] = 1.0
+    #         current_slots_rep[slot_set[slot]][3] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     # current_slots_rep = np.reshape(current_slots_rep, (len(slot_set.keys())*4))
 
     ######################
@@ -135,7 +134,7 @@ def state_to_representation_last(state, action_set, slot_set, disease_symptom, m
     # wrong_diseases = state["current_slots"]["wrong_diseases"]
     # wrong_diseases_rep = np.zeros(len(disease_symptom.keys()))
     # for disease in wrong_diseases:
-    #     wrong_diseases_rep[disease_symptom[disease]["index"]] = 1.0
+    #     wrong_diseases_rep[disease_symptom[disease]["index"]] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
 
     #############
     # Turn rep.
@@ -159,7 +158,7 @@ def state_to_representation_last(state, action_set, slot_set, disease_symptom, m
     # not one-hot
     user_inform_slots_rep = np.zeros(len(slot_set.keys()))
     for slot in user_inform_slots.keys():
-        # user_inform_slots_rep[slot_set[slot]] = 1.0
+        # user_inform_slots_rep[slot_set[slot]] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
         # different values for different slot values.
         if user_inform_slots[slot] is True:
             user_inform_slots_rep[slot_set[slot]] = 1.0
@@ -179,17 +178,17 @@ def state_to_representation_last(state, action_set, slot_set, disease_symptom, m
     # for slot in user_inform_slots.keys():
     #     # different values for different slot values.
     #     if user_inform_slots[slot] == True:
-    #         user_inform_slots_rep[slot_set[slot]][0] = 1.0
+    #         user_inform_slots_rep[slot_set[slot]][0] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     #     elif user_inform_slots[slot] == False:
-    #         user_inform_slots_rep[slot_set[slot]][1] = 1.0
+    #         user_inform_slots_rep[slot_set[slot]][0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     #     elif user_inform_slots[slot] == 'UNK':
-    #         user_inform_slots_rep[slot_set[slot]][2] = 1.0
+    #         user_inform_slots_rep[slot_set[slot]][2] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     #     elif user_inform_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
-    #         user_inform_slots_rep[slot_set[slot]][3] = 1.0
+    #         user_inform_slots_rep[slot_set[slot]][3] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     #     # elif user_inform_slots[slot] == dialogue_configuration.I_DENY:
-    #     #     user_inform_slots_rep[slot_set[slot]][3] = 1.0
+    #     #     user_inform_slots_rep[slot_set[slot]][3] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     #     # elif user_inform_slots[slot] == dialogue_configuration.I_DO_NOT_CARE:
-    #     #     user_inform_slots_rep[slot_set[slot]][4] = 1.0
+    #     #     user_inform_slots_rep[slot_set[slot]][4] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     # user_inform_slots_rep = np.reshape(user_inform_slots_rep, (len(slot_set.keys())*4))
 
     ##############################

@@ -43,16 +43,16 @@ class Ploter(object):
 
 
     def plot(self, save_name, label_list):
-        # epoch_index = [i for i in range(0, 500, 1)]
+        # epoch_index = [i for i in range(0, 500, 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN)]
 
         for label in self.success_rate.keys():
             epoch_index = [i for i in range(0, len(self.success_rate[label]), 1)]
 
             plt.plot(epoch_index,self.success_rate[label][0:max(epoch_index)+1], label=label, linewidth=1)
-            # plt.plot(epoch_index,self.average_turn[label][0:max(epoch_index)+1], label=label+"at", linewidth=1)
+            # plt.plot(epoch_index,self.average_turn[label][0:max(epoch_index)+0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN], label=label+"at", linewidth=0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN)
 
-        # plt.hlines(0.11,0,epoch_index,label="Random Agent", linewidth=1, colors="r")
-        # plt.hlines(0.38,0,epoch_index,label="Rule Agent", linewidth=1, colors="purple")
+        # plt.hlines(0.11,0,epoch_index,label="Random Agent", linewidth=0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN, colors="r")
+        # plt.hlines(0.38,0,epoch_index,label="Rule Agent", linewidth=0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN, colors="purple")
 
         plt.xlabel("Simulation Epoch")
         plt.ylabel("Success Rate")

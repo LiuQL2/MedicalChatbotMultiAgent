@@ -33,18 +33,18 @@ def state_to_vec(slot_set, state):
         elif current_slots[slot] == 'UNK':
             current_slots_rep[slot_set[slot]][2] = 1.0
         # elif current_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
-        #     current_slots_rep[slot_set[slot]][3] = 1.0
+        #     current_slots_rep[slot_set[slot]][3] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     current_slots_rep = np.reshape(current_slots_rep, (len(slot_set.keys())*3))
 
     # # Not one hot
     # current_slots_rep = np.zeros(len(slot_set.keys()))
     # for slot in current_slots.keys():
-    #     current_slots_rep[slot_set[slot]] = 1.0
+    #     current_slots_rep[slot_set[slot]] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     #     # different values for different slot values.
     #     if current_slots[slot] is True:
-    #         current_slots_rep[slot_set[slot]] = 1.0
+    #         current_slots_rep[slot_set[slot]] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     #     elif current_slots[slot] is False:
-    #         current_slots_rep[slot_set[slot]] = -1.0
+    #         current_slots_rep[slot_set[slot]] = -0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0
     #     elif current_slots[slot] == 'UNK':
     #         current_slots_rep[slot_set[slot]] = 2.0
     #     # elif current_slots[slot] == dialogue_configuration.I_DO_NOT_KNOW:
@@ -200,7 +200,7 @@ class InternalCritic(object):
 #         self.criteria = torch.nn.CrossEntropyLoss()
 #
 #     def train(self, positive_data_batch, positive_goal, negative_data_batch, negative_goal,
-#               positive_weight=1, negative_weight=1):
+#               positive_weight=0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN, negative_weight=0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN):
 #         positive_data_batch = torch.Tensor(positive_data_batch).to(self.device)
 #         positive_goal = torch.Tensor(positive_goal).to(self.device)
 #         positive_logits, positive_similarity = self.critic(positive_data_batch, positive_goal)

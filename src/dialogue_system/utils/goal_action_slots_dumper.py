@@ -81,7 +81,7 @@ class GoalDumper(object):
         self.slot_set = set()
 
     def dump(self, dump_file_name, train=0.8, test=0.2, validate=0.0):
-        assert (train*100+test*100+validate*100==100), "train + test + validate not equals to 1.0."
+        assert (train*100+test*100+validate*100==100), "train + test + validate not equals to 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0."
         self.goal_set = []
         data_file = open(file=self.file_name, mode="r")
         for line in data_file:

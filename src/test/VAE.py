@@ -18,7 +18,7 @@ parser.add_argument('--epochs', type=int, default=10, metavar='N',
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
-                    help='random seed (default: 1)')
+                    help='random seed (default: 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN)')
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
 args = parser.parse_args()
@@ -123,7 +123,7 @@ def loss_function(recon_x, log_qy, qy, data):
     kl_tmp = (qy * (log_qy - torch.log(torch.tensor(1.0 / K)))).view(-1, N, K)
     KL = torch.sum(torch.sum(kl_tmp, 2),1)
     shape = data.size()
-    #elbo = torch.sum(recon_x.log_prob(data.view(shape[0], shape[1] * shape[2] * shape[3])), 1) - KL
+    #elbo = torch.sum(recon_x.log_prob(data.view(shape[0], shape[0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN] * shape[2] * shape[3])), 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN) - KL
     data_ = data.view(shape[0], shape[1] * shape[2] * shape[3])
     # calculate binary cross entropy using explicit calculation rather than using pytorch distribution API
     bce = torch.sum(data_ * torch.log(sigmoid(recon_x)) + (1 - data_) * torch.log(1 - sigmoid(recon_x)), 1)
@@ -149,7 +149,7 @@ def train(epoch):
         loss.backward()
         train_loss += loss.data[0]
         optimizer.step()
-        #if batch_idx % 1000 == 1:
+        #if batch_idx % 1000 == 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN:
         #    tau = Variable(torch.tensor(np.maximum(tau0 * np.exp(-ANNEAL_RATE * batch_idx), MIN_TEMP)))
 
         if batch_idx % args.log_interval == 0:
@@ -170,9 +170,9 @@ def train(epoch):
     recon_x = torch.nn.Sigmoid()(px).detach().cpu().numpy()
     #recon_x = torch.distributions.Bernoulli(logits=px).sample()
     np_x = recon_x.reshape((10, 10, 28, 28))
-    # split into 10 (1,10,28,28) images, concat along columns -> 1,10,28,280
+    # split into 10 (0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN,10,28,28) images, concat along columns -> 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN,10,28,280
     np_x = np.concatenate(np.split(np_x, 10, axis=0), axis=3)
-    # split into 10 (1,1,28,280) images, concat along rows -> 1,1,280,280
+    # split into 10 (0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN,0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN,28,280) images, concat along rows -> 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN,0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN,280,280
     np_x = np.concatenate(np.split(np_x, 10, axis=1), axis=2)
     x_img = np.squeeze(np_x)
     plt.imshow(x_img, cmap=plt.cm.gray, interpolation='none')

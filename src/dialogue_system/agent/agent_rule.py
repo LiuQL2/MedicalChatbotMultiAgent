@@ -86,7 +86,7 @@ class AgentRule(Agent):
             if disease[0] not in wrong_diseases:
                 match_disease = disease[0]
                 break
-        # match_disease = max(disease_score.items(), key=lambda x: x[1])[0] # Get the most probable disease that the user have.
+        # match_disease = max(disease_score.items(), key=lambda x: x[0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN])[0] # Get the most probable disease that the user have.
         # Candidate symptom list of symptoms that belong to the most probable disease but have't been informed yet.
         candidate_symptoms = []
         for symptom in self.disease_symptom[match_disease]["symptom"]:

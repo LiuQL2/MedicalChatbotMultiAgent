@@ -50,7 +50,7 @@ policy = Policy()
 optimizer = optim.Adam(policy.parameters(), lr=learning_rate)
 
 def select_action(state):
-    # Select an action (0 or 1) by running policy model and choosing based on the probabilities in state
+    # Select an action (0 or 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN) by running policy model and choosing based on the probabilities in state
     state = torch.from_numpy(state).type(torch.FloatTensor)
     state = policy(torch.Tensor(state))
     print('state', state)

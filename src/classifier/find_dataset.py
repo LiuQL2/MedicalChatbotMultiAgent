@@ -80,7 +80,7 @@ class Finder(object):
         if save_set:
             file_name = save_path + "goal_set_gap" + str(gap) + "_ex&im" + str(ex_im) + "_im" + str(ex) + ".p"
             print("saving...",file_name)
-            self.dump_goal_set(dump_file_name=file_name)
+            # self.dump_goal_set(dump_file_name=file_name)
         return gap,save_set
 
     def __goal_by_disease__(self):
@@ -161,11 +161,11 @@ class Finder(object):
                 # # explicit
                 # for symptom, value in goal["goal"]["explicit_inform_slots"].items():
                 #     if value == True:
-                #         symptom_rep_ex[self.symptom_to_index[symptom]] = 1
-                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = 1
+                #         symptom_rep_ex[self.symptom_to_index[symptom]] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
+                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
                 #     elif value == False:
-                #         symptom_rep_ex[self.symptom_to_index[symptom]] = -1
-                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = -1
+                #         symptom_rep_ex[self.symptom_to_index[symptom]] = -0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
+                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = -0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
                 #
                 #     elif value == 'UNK':
                 #         symptom_rep_ex[self.symptom_to_index[symptom]] = 2
@@ -174,11 +174,11 @@ class Finder(object):
                 # # implicit
                 # for symptom, value in goal["goal"]["implicit_inform_slots"].items():
                 #     if value == True:
-                #         symptom_rep_im[self.symptom_to_index[symptom]] = 1
-                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = 1
+                #         symptom_rep_im[self.symptom_to_index[symptom]] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
+                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
                 #     elif value == False:
-                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = -1
-                #         symptom_rep_im[self.symptom_to_index[symptom]] = -1
+                #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = -0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
+                #         symptom_rep_im[self.symptom_to_index[symptom]] = -0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
                 #     elif value == 'UNK':
                 #         symptom_rep_ex_im[self.symptom_to_index[symptom]] = 2
                 #         symptom_rep_im[self.symptom_to_index[symptom]] = 2
@@ -323,7 +323,7 @@ class Finder(object):
 
 
     def dump_goal_set(self, dump_file_name, train=0.6, test=0.2, validate=0.2):
-        assert (train*100+test*100+validate*100==100), "train + test + validate not equals to 1.0."
+        assert (train*100+test*100+validate*100==100), "train + test + validate not equals to 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0."
         data_set = {
             "train":[],
             "test":[],
@@ -408,12 +408,12 @@ class Finder(object):
 if __name__ == "__main__":
     # goal_set,symptom_set, disease_symptom
     filter_path = 'filter10_2'
-    goal_set_file = './../data/real_world/' + filter_path + '/goal_set_2.p'
+    goal_set_file = './../data/real_world/' + filter_path + '/goal_set.p'
     slot_set_file = './../data/real_world/' + filter_path + '/slot_set.p'
     disease_symptom_file = './../data/real_world/' + filter_path + '/disease_symptom.p'
     save_path = "./../data/real_world/found_dataset_" + filter_path + '/'
 
-    goal_set_file = './../data/real_world/goal_set_2.p'
+    goal_set_file = './../data/real_world/goal_set.p'
     slot_set_file = './../data/real_world/slot_set.p'
     disease_symptom_file = './../data/real_world/disease_symptom.p'
     save_path = "./../data/real_world/"
@@ -429,7 +429,7 @@ if __name__ == "__main__":
     save_set = False
     save_count = 0
     index = 0
-    while save_count <= 0:
+    while save_count <= 5:
         index += 1
         gap, save_set = finder.find(save_path=save_path)
         print("finding...", index, "gap:",gap)

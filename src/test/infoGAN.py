@@ -37,7 +37,7 @@ class ANFIS:
                              initializer=tf.random_normal_initializer(0, 1))  # Means of Gaussian MFS
         sigma = tf.get_variable("sigma", [n_rules * n_inputs_2],
                                 initializer=tf.random_normal_initializer(0, 1))  # Standard deviations of Gaussian MFS
-        # y = tf.get_variable("y", [1, n_rules], initializer=tf.random_normal_initializer(0, 1))  # Sequent centers
+        # y = tf.get_variable("y", [0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN, n_rules], initializer=tf.random_normal_initializer(0, 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN))  # Sequent centers
 
 
 
@@ -53,7 +53,7 @@ class ANFIS:
         self.bias = tf.get_variable(name='bias', shape=(self.m), initializer=tf.random_normal_initializer(0, 1))
         print('bias', self.bias)
         self.params = tf.trainable_variables()
-        # w=tf.reduce_sum(tf.multiply( self.inputs,self.p), axis=1)
+        # w=tf.reduce_sum(tf.multiply( self.inputs,self.p), axis=0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN)
         w=tf.matmul(self.inputs, self.p, transpose_b=True)
         print('w',w)
         temp=w+self.bias
@@ -101,7 +101,7 @@ class ANFIS:
                     plt.plot(xn, np.exp(-0.5 * ((xn - mus[r, i]) ** 2) / (sigmas[r, i] ** 2)))
                     print('mu:{},sigma:{}'.format(mus[r, i], sigmas[r, i]))
         plt.show()
-        # plt.savefig('rule{}.png'.format(r+1))
+        # plt.savefig('rule{}.png'.format(r+0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN))
 
 
 # 多次实验
@@ -151,8 +151,8 @@ for t in range(1):
                         print("Elapsed time: %f" % (time_end - time_start))
                         print("Validation loss: %f" % val_loss)
                         # Plot real vs. predicted
-                        # pred = np.vstack((np.expand_dims(trn_pred, 1), np.expand_dims(val_pred, 1)))
-                        # plt.figure(1)
+                        # pred = np.vstack((np.expand_dims(trn_pred, 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN), np.expand_dims(val_pred, 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN)))
+                        # plt.figure(0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN)
                         # plt.plot(mg_series)
                         # plt.plot(pred)
                     trn_costs.append(trn_loss)

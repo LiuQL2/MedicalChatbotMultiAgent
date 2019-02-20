@@ -71,7 +71,7 @@ class AgentWithGoal(object):
                                               goal_embedding_value=goal_embed_value, slot_set=temp_slot_set,
                                               parameter=parameter)
         print(os.getcwd())
-        self.internal_critic.restore_model('../agent/pre_trained_internal_critic_dropout_one_hot.pkl')
+        self.internal_critic.restore_model('../agent/pre_trained_internal_critic_dropout_both_one_hot.pkl')
 
         #################
         # Lower agent.
@@ -97,14 +97,19 @@ class AgentWithGoal(object):
         :return: nothing to return.
         """
         # print('{} new session {}'.format('*'*20, '*'*20))
+        print('***' * 20)
         self.master_reward = 0.
         self.sub_task_terminal = True
         self.inform_disease = False
         self.master_action_index = None
         self.last_master_action_index = None
+        self.worker_action_index = None
+        self.last_worker_action_index = None
         self.intrinsic_reward = 0.0
         self.sub_task_turn = 0
         self.states_of_one_session = []
+        self.master_previous_actions = set()
+        self.worker_previous_actions = set()
         self.lower_agent.initialize()
         self.action = {'action': 'inform',
                        'inform_slots': {"disease": 'UNK'},
@@ -136,6 +141,7 @@ class AgentWithGoal(object):
             self.master_state = state
             self.sub_task_turn = 0
             self.last_master_action_index = copy.deepcopy(self.master_action_index)
+            self.master_previous_actions.add(self.last_master_action_index)
             self.master_action_index = self.__master_next__(state, self.master_action_index, greedy_strategy)
         else:
             pass
@@ -145,7 +151,10 @@ class AgentWithGoal(object):
         goal = np.zeros(self.output_size)
         self.sub_task_turn += 1
         goal[self.master_action_index] = 1
+        self.last_worker_action_index = self.worker_action_index
+        self.worker_previous_actions.add(self.last_worker_action_index)
         agent_action, action_index = self.lower_agent.next(state, turn, greedy_strategy, goal=goal)
+        self.worker_action_index = action_index
         print('action', agent_action)
         return agent_action, action_index
 
@@ -251,17 +260,27 @@ class AgentWithGoal(object):
         next_state_rep = state_to_representation_last(state=next_state, action_set=self.action_set,slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter['max_turn'])
         master_state_rep = state_to_representation_last(state=self.master_state, action_set=self.action_set,slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter['max_turn'])
 
+
         # samples of master agent.
         sub_task_terminal, inform_disease, intrinsic_reward, _ = self.intrinsic_critic(next_state, self.master_action_index,disease_tag=self.disease_tag)
         self.master_reward += reward
         if self.sub_task_terminal is True and sub_task_terminal is True:
             last_master_action_rep = np.zeros(self.output_size)
             current_master_action_rep = np.zeros(self.output_size)
+            # 将master所有已经选择的动作加入到状态表示中
             if self.last_master_action_index is not None: last_master_action_rep[self.last_master_action_index] = 1
             if self.master_action_index is not None: current_master_action_rep[self.master_action_index] = 1
             master_state_rep = np.concatenate((master_state_rep, last_master_action_rep), axis=0)
             next_master_state_rep = np.concatenate((next_state_rep, current_master_action_rep), axis=0)
+
             self.experience_replay_pool.append((master_state_rep, self.master_action_index, self.master_reward, next_master_state_rep, episode_over))
+
+            # # master repeated action.
+            # if self.master_action_index in self.master_previous_actions:
+            #     temp_reward = - self.parameter.get("max_turn") / 2
+            #     self.experience_replay_pool.append( (master_state_rep, self.master_action_index, temp_reward, next_master_state_rep, episode_over))
+            # else:
+            #     self.experience_replay_pool.append((master_state_rep, self.master_action_index, self.master_reward, next_master_state_rep, episode_over))
 
         # samples of lower agent.
         if agent_action is not None: # session is not over. Otherwise the agent_action is not one of the lower agent's actions.
@@ -272,9 +291,14 @@ class AgentWithGoal(object):
             # reward shaping for lower agent on intrinsic reward.
             shaping = self.reward_shaping(state, next_state)
             intrinsic_reward += alpha * shaping
-            self.lower_agent.experience_replay_pool.append((state_rep, agent_action, intrinsic_reward,
-                                                            next_state_rep, sub_task_terminal,
-                                                            self.master_action_index))
+            self.lower_agent.experience_replay_pool.append((state_rep, agent_action, intrinsic_reward, next_state_rep, sub_task_terminal, self.master_action_index))
+
+            # # repeated action
+            # if agent_action in self.worker_previous_actions:
+            #     temp_reward = -0.5
+            #     self.lower_agent.experience_replay_pool.append((state_rep, agent_action, temp_reward, next_state_rep, sub_task_terminal, self.master_action_index))
+            # else:
+            #     self.lower_agent.experience_replay_pool.append((state_rep, agent_action, intrinsic_reward, next_state_rep, sub_task_terminal, self.master_action_index))
 
             # 如果达到固定长度，同时去掉即将删除transition的计数。
             self.visitation_count[self.master_action_index, agent_action] += 1
@@ -291,35 +315,37 @@ class AgentWithGoal(object):
         self.internal_critic.critic.eval()
         # For the first turn.
         if master_action_index is None:
+            self.internal_critic.critic.train()
             return True, False, 0, 0
+
         sub_task_terminate = False
-        intrinsic_reward = 0
+        intrinsic_reward = -1
         inform_disease = False
 
         goal_list = [i for i in range(self.output_size)]
         state_batch = [state] * self.output_size
         similarity_score = self.internal_critic.get_similarity_state_dict(state_batch, goal_list)[master_action_index]
 
+        if similarity_score < 1e-1:
+            sub_task_terminate = True
+            # inform_disease = False
+            intrinsic_reward = self.parameter.get('reward_for_success') / 2
+
+        if self.sub_task_turn >= 4:
+            sub_task_terminate = True
+            intrinsic_reward = self.parameter.get('reward_for_fail') / 2
+
         disease_tag_for_terminating = self.parameter.get('disease_tag_for_terminating')
         if disease_tag_for_terminating is False:
             if similarity_score > 0.97:
                 sub_task_terminate = True
                 inform_disease = True
-                intrinsic_reward = 1
+                intrinsic_reward = self.parameter.get('reward_for_success') / 2
         else:
             if self.id2disease[self.master_action_index] == disease_tag:
                 inform_disease = True
                 sub_task_terminate = True
-                intrinsic_reward = 1
-
-        if similarity_score < 1e-1:
-            sub_task_terminate = True
-            inform_disease = False
-            intrinsic_reward = 1
-
-        if self.sub_task_turn >= 4:
-            sub_task_terminate = True
-            intrinsic_reward = -1
+                intrinsic_reward = self.parameter.get('reward_for_success') / 2
 
         self.internal_critic.critic.train()
         return sub_task_terminate, inform_disease, intrinsic_reward, similarity_score

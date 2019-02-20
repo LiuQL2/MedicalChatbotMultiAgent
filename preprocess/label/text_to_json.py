@@ -32,14 +32,14 @@ class normal_filter(object):
                         pass
                     else:
                         if slot[i] not in implicit_inform_slots.keys():
-                            if type1[i]=='1':
+                            if type1[i]=='0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN':
                                 implicit_inform_slots[slot[i]]=[True]
                             elif type1[i]=='2':
                                 implicit_inform_slots[slot[i]]=[False]
                             else:
                                 implicit_inform_slots[slot[i]]=['UNK']
                         else:
-                            if type1[i]=='1':
+                            if type1[i]=='0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN':
                                 implicit_inform_slots[slot[i]].append(True)
                             elif type1[i]=='2':
                                 implicit_inform_slots[slot[i]].append(False)
@@ -138,7 +138,7 @@ def read_csv(file):
 # def read_conversation(file):
 #     data = read_csv(file)
 #     if data[0][0][0] == '\ufeff':
-#         data[0][0] = data[0][0][1:]
+#         data[0][0] = data[0][0][0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN:]
 #     conversations = dict()
 #     conv = []
 #     key = 'null'
@@ -147,7 +147,7 @@ def read_csv(file):
 #             conv.append(d)
 #             continue
 #         else:
-#             if d[0].strip() and not ''.join(d[1:]):
+#             if d[0].strip() and not ''.join(d[0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN:]):
 #                 if key != 'null':
 #                     conversations[key] = conv
 #                 key = int(d[0])
@@ -163,7 +163,7 @@ def read_csv(file):
 #         for i in range(0,int(len(conv)/4)):
 #             sent = dict()
 #             sent['content'] = conv[i*4]     # 标注原文
-#             sent['tag'] = conv[i*4+1]       # BIO标记
+#             sent['tag'] = conv[i*4+0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN]       # BIO标记
 #             sent['type'] = conv[i*4+2]      # 症状是否出现 1肯定/2否定/3不确定
 #             sent['ner'] = conv[i*4+3]       # 归一化标记
 #             conversations[key][i] = sent

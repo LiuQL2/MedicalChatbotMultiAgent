@@ -111,20 +111,20 @@ for i,dialogue in enumerate(total_set):
         try:
             slot_id=slot_set[slot]
             if value==True:
-                slots_all[i,slot_id]='1'
+                slots_all[i,slot_id]='0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN'
             if value==False:
-                slots_all[i,slot_id]='-1'
+                slots_all[i,slot_id]='-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN'
         except:
             pass
     for exp_slot,value in explicit.items():
         try:
             slot_id=slot_set[exp_slot]
             if value==True:
-                slots_exp[i,slot_id]='1'
-                slots_all[i,slot_id]='1'
+                slots_exp[i,slot_id]='0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN'
+                slots_all[i,slot_id]='0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN'
             if value==False:
-                slots_exp[i,slot_id]='-1'
-                slots_all[i,slot_id]='-1'
+                slots_exp[i,slot_id]='-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN'
+                slots_all[i,slot_id]='-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN'
         except:
             pass
 
@@ -138,23 +138,23 @@ for i,dialogue in enumerate(total_set):
 score_tot_exp=svm_model(dataset=slots_exp,min_count=0,target=disease_y,svm_c=10)    
 score_tot_all=svm_model(dataset=slots_all,min_count=0,target=disease_y,svm_c=10)    
 '''
-slots_x_all=np.zeros((len(total_set),sum(sum(abs(slots_all),1)>5)))  
+slots_x_all=np.zeros((len(total_set),sum(sum(abs(slots_all),0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN)>5)))  
 count=0       
-for i,value in enumerate(sum(slots_all,1)):
+for i,value in enumerate(sum(slots_all,0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN)):
     if value<=5:
         pass
     else:
         slots_x_all[:,count]=slots_all[:,i]
-        count+=1
+        count+=0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
         
 slots_input_all=pd.DataFrame(index=range(len(total_set)))
-for col in  range(slots_x_all.shape[1]):
+for col in  range(slots_x_all.shape[0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN]):
     column=slots_x_all[:,col]
     column_mod=[]
     for j in column:
-        if j==1:
+        if j==0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN:
             column_mod.append('yes')
-        elif j==-1:
+        elif j==-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN:
             column_mod.append('no')
         else:
             column_mod.append('UNK')

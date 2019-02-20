@@ -81,7 +81,7 @@ class Corpus(object):
         :param data_file: 包含主诉内容的文件
         :return:
         """
-        assert (train*100+test*100==100), "train + test + validate not equals to 1.0."
+        assert (train*100+test*100==100), "train + test + validate not equals to 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.0."
         # Mapping disease to index and index to disease.
         print("disease to index...")
         data_reader = csv.reader(open(data_file, "r",encoding="utf-8"))

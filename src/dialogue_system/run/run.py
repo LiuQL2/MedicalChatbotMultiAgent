@@ -15,6 +15,7 @@ from src.dialogue_system.agent import AgentRule
 from src.dialogue_system.agent import AgentHRL
 from src.dialogue_system.agent import AgentWithGoalJoint
 from src.dialogue_system.agent import AgentWithGoal
+from src.dialogue_system.agent.agent_with_goal_2 import AgentWithGoal as AgentWithGoal2
 from src.dialogue_system.run.utils import verify_params
 
 from src.dialogue_system.run import RunningSteward
@@ -51,21 +52,21 @@ parser.add_argument("--train_mode", dest="train_mode", type=boolean_string, defa
 #  Save model, performance and dialogue content ? And what is the path if yes?
 parser.add_argument("--save_performance",dest="save_performance", type=boolean_string, default=False, help="save the performance? [True, False]")
 parser.add_argument("--save_model", dest="save_model", type=boolean_string, default=False,help="Save model during training? [True, False]")
+parser.add_argument("--saved_model", dest="saved_model", type=str, default="./../../model/DQN/checkpoint/0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN/model_d4_agentAgentWithGoal_s0.993_r41.658_t6.799_wd0.0_e-822.pkl")
 parser.add_argument("--save_dialogue", dest="save_dialogue", type=boolean_string, default=False, help="Save the dialogue? [True, False]")
-parser.add_argument("--saved_model", dest="saved_model", type=str, default="./../../model/DQN/checkpoint/0219224706_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.99_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs1.0_dataReal_World_RID1_DQN/model_d4_agentAgentWithGoal_s0.938_r37.368_t8.143_wd0.0_e-252.pkl")
 parser.add_argument("--dialogue_file", dest="dialogue_file", type=str, default="./../../data/dialogue_output/dialogue_file.txt", help="the file that used to save dialogue content.")
 
 parser.add_argument("--run_id", dest='run_id', type=int, default=0, help='the id of this running.')
 
 # user configuration.
-parser.add_argument("--allow_wrong_disease", dest="allow_wrong_disease", type=boolean_string, default=False, help="Allow the agent to inform wrong disease? 1:Yes, 0:No")
+parser.add_argument("--allow_wrong_disease", dest="allow_wrong_disease", type=boolean_string, default=False, help="Allow the agent to inform wrong disease? 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN:Yes, 0:No")
 
 # Learning rate for dqn.
 parser.add_argument("--dqn_learning_rate", dest="dqn_learning_rate", type=float, default=0.0001, help="the learning rate of dqn.")
 
 # the number condition of explicit symptoms and implicit symptoms in each user goal.
 parser.add_argument("--explicit_number", dest="explicit_number", type=int, default=0, help="the number of explicit symptoms of used sample")
-# parser.add_argument("--implicit_number", dest="implicit_number", type=int, default=1, help="the number of implicit symptoms of used sample")
+# parser.add_argument("--implicit_number", dest="implicit_number", type=int, default=0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN, help="the number of implicit symptoms of used sample")
 parser.add_argument("--implicit_number", dest="implicit_number", type=int, default=0, help="the number of implicit symptoms of used sample")
 
 # agent to use.
@@ -153,8 +154,10 @@ def run(parameter):
         agent = AgentWithGoalJoint(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=parameter)
     elif agent_id.lower() == 'agentwithgoal':
         agent = AgentWithGoal(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=parameter)
+    elif agent_id.lower() == 'agentwithgoal2':
+        agent = AgentWithGoal2(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=parameter)
     else:
-        raise ValueError('Agent id should be one of [AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentWithGoal, AgentWithGoalJoint].')
+        raise ValueError('Agent id should be one of [AgentRule, AgentDQN, AgentRandom, AgentHRL, AgentWithGoal, AgentWithGoal2, AgentWithGoalJoint].')
 
     steward.dialogue_manager.set_agent(agent=agent)
     if train_mode is True: # Train
@@ -167,7 +170,7 @@ def run(parameter):
 if __name__ == "__main__":
     params = verify_params(parameter)
     gpu_str = params["gpu"]
-    os.environ['CUDA_VISIBLE_DEVICES'] = gpu_str#  '0,1,2'
+    os.environ['CUDA_VISIBLE_DEVICES'] = gpu_str#  '0,0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN,2'
     torch.cuda.manual_seed(12345)
     torch.manual_seed(12345)
     print(params['run_info'])

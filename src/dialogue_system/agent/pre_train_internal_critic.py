@@ -85,11 +85,11 @@ def get_batches(goal_list):
         # # explicit
         # for symptom, value in goal["goal"]["explicit_inform_slots"].items():
         #     if value == True:
-        #         symptom_rep_ex[slot_set[symptom]] = 1
-        #         symptom_rep_ex_im[slot_set[symptom]] = 1
+        #         symptom_rep_ex[slot_set[symptom]] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
+        #         symptom_rep_ex_im[slot_set[symptom]] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
         #     elif value == False:
-        #         symptom_rep_ex[slot_set[symptom]] = -1
-        #         symptom_rep_ex_im[slot_set[symptom]] = -1
+        #         symptom_rep_ex[slot_set[symptom]] = -0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
+        #         symptom_rep_ex_im[slot_set[symptom]] = -0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
         #
         #     elif value == 'UNK':
         #         symptom_rep_ex[slot_set[symptom]] = 2
@@ -98,11 +98,11 @@ def get_batches(goal_list):
         # # implicit
         # for symptom, value in goal["goal"]["implicit_inform_slots"].items():
         #     if value == True:
-        #         symptom_rep_im[slot_set[symptom]] = 1
-        #         symptom_rep_ex_im[slot_set[symptom]] = 1
+        #         symptom_rep_im[slot_set[symptom]] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
+        #         symptom_rep_ex_im[slot_set[symptom]] = 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
         #     elif value == False:
-        #         symptom_rep_ex_im[slot_set[symptom]] = -1
-        #         symptom_rep_im[slot_set[symptom]] = -1
+        #         symptom_rep_ex_im[slot_set[symptom]] = -0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
+        #         symptom_rep_im[slot_set[symptom]] = -0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN
         #     elif value == 'UNK':
         #         symptom_rep_ex_im[slot_set[symptom]] = 2
         #         symptom_rep_im[slot_set[symptom]] = 2
@@ -115,14 +115,14 @@ def get_batches(goal_list):
         index_list = [i for i in range(4)]
         index_list.pop(disease_index)
         fake_label_list.append(index_list)
-    return data_im, data_ex, data_both, label_list, fake_label_list
+    return data_im, data_both, data_both, label_list, fake_label_list
 
 
 
 
 batch_size = 32
 lr = 0.001
-epoch_num = 1000
+epoch_num = 2000
 
 params = {}
 params['dqn_learning_rate'] = 0.001
@@ -161,7 +161,7 @@ for epoch_index in range(epoch_num):
     print(epoch_index, 'positive', total_loss_positive/batch_num, 'negative', total_loss_negative/batch_num)
 
 
-# model.restore_model('pre_trained_internal_critic_dropout_one_hot.pkl')
+# model.restore_model('pre_trained_internal_critic_dropout_both_one_hot.pkl')
 
 # model.critic.eval()
 print('validate')
@@ -179,7 +179,7 @@ for one_data in data_ex:
 
 res = confusion_matrix(label_list, predict)
 accu = accuracy_score(label_list, predict)
-print('validate')
+print('validate, train')
 print(res)
 print(accu)
 
@@ -195,10 +195,10 @@ for one_data in data_ex:
 
 res = confusion_matrix(label_list, predict)
 accu = accuracy_score(label_list, predict)
-print('validate')
+print('validate, eval')
 print(res)
 print(accu)
-model.save_model('pre_trained_internal_critic_dropout_one_hot.pkl')
+model.save_model('pre_trained_internal_critic_dropout_both_one_hot.pkl')
 
 
 
@@ -217,7 +217,7 @@ for one_data in data_ex:
 
 res = confusion_matrix(label_list, predict)
 accu = accuracy_score(label_list, predict)
-print('test')
+print('test ex, train')
 print(res)
 print(accu)
 
@@ -233,6 +233,44 @@ for one_data in data_ex:
 
 res = confusion_matrix(label_list, predict)
 accu = accuracy_score(label_list, predict)
-print('test')
+print('test ex, eval')
+print(res)
+print(accu)
+
+
+
+
+model.critic.train()
+data_im, data_ex, data_both, label_list, fake_label_list = get_batches(goal_set['test'])
+predict = []
+index = 0
+for one_data in data_both:
+    batch = [one_data] * 4
+    label = [0, 1,2,3]
+    # similarity = model.get_similarity(batch, label)[0]
+    similarity = model.get_similarity(batch, label)
+    # print(label_list[index], np.argmax(similarity), min(similarity), max(similarity), similarity)
+    predict.append(int(np.argmax(similarity)))
+    index += 1
+
+res = confusion_matrix(label_list, predict)
+accu = accuracy_score(label_list, predict)
+print('test both, train')
+print(res)
+print(accu)
+
+
+model.critic.eval()
+predict = []
+for one_data in data_both:
+    batch = [one_data] * 4
+    label = [0, 1,2,3]
+    # similarity = model.get_similarity(batch, label)[0]
+    similarity = model.get_similarity(batch, label)
+    predict.append(int(np.argmax(similarity)))
+
+res = confusion_matrix(label_list, predict)
+accu = accuracy_score(label_list, predict)
+print('test both, eval')
 print(res)
 print(accu)

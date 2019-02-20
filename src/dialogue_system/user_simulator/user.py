@@ -71,7 +71,7 @@ class User(object):
 
         # randomly select several slots from explicit symptoms.
         # if len(goal["explicit_inform_slots"].keys()) > 0:
-        #     first_inform_number = random.randint(1,len(goal["explicit_inform_slots"].keys()))
+        #     first_inform_number = random.randint(0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN,len(goal["explicit_inform_slots"].keys()))
         #     inform_slots = random.sample(list(goal["explicit_inform_slots"].keys()),k=first_inform_number)
         # else:
         #     inform_slots = []
