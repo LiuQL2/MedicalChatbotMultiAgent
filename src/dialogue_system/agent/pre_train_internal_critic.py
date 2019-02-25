@@ -198,7 +198,7 @@ accu = accuracy_score(label_list, predict)
 print('validate, eval')
 print(res)
 print(accu)
-model.save_model('pre_trained_internal_critic_dropout_both_one_hot.pkl')
+model.save_model2('pre_trained_internal_critic_dropout_both_one_hot.pkl')
 
 
 

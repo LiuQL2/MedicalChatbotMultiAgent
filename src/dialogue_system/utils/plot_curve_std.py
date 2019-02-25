@@ -80,24 +80,45 @@ class DrawCurve(object):
 
 
         no_key_word_list = ['.DS_Store','.pdf','RID9']
-        key_word_list = ['AgentWithGoal', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN', 'RFNCY-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','0218']
+        key_word_list = ['AgentDQN', '1999.p']
         mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
                                                key_word_list=key_word_list,
                                                no_key_word_list=no_key_word_list)
         min_len_list.append(min_len)
-        l1, = plt.plot(range(mean.shape[0]), mean, colors[0], label='HRL-Goal, one-hot critic', linewidth=linewidth,linestyle='-')
+        l1, = plt.plot(range(mean.shape[0]), mean, colors[0], label='Flat-DQN', linewidth=linewidth,linestyle='-')
         plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[0], alpha=0.2)
         ave_result['RL-agent'] = mean_point
 
         no_key_word_list = ['.DS_Store','.pdf','RID9']
-        key_word_list = ['AgentWithGoal', '1999.p', '021910']
+        key_word_list = ['AgentWithGoal2', '1999.p']
         mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
                                                key_word_list=key_word_list,
                                                no_key_word_list=no_key_word_list)
         min_len_list.append(min_len)
-        l2, = plt.plot(range(mean.shape[0]), mean, colors[1], label='HRL-Goal, non one hot critic', linewidth=linewidth,linestyle='--')
+        l2, = plt.plot(range(mean.shape[0]), mean, colors[1], label='HRL-Goal, ex', linewidth=linewidth,linestyle='-')
         plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[1], alpha=0.2)
         ave_result['HRL-agent(var0, wc0, sdai0)'] = mean_point
+
+        # no_key_word_list = ['.DS_Store','.pdf']
+        # key_word_list = ['AgentWithGoal2', '1999.p', 'RID9']
+        # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
+        #                                        key_word_list=key_word_list,
+        #                                        no_key_word_list=no_key_word_list)
+        # min_len_list.append(min_len)
+        # l2, = plt.plot(range(mean.shape[0]), mean, colors[2], label='HRL-Goal, ex&im', linewidth=linewidth,linestyle='-')
+        # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[2], alpha=0.2)
+        # ave_result['HRL-agent(var0, wc0, sdai0)'] = mean_point
+        #
+        no_key_word_list = ['.DS_Store','.pdf']
+        key_word_list = ['AgentWithGoal3', '1999.p']
+        mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
+                                               key_word_list=key_word_list,
+                                               no_key_word_list=no_key_word_list)
+        min_len_list.append(min_len)
+        l2, = plt.plot(range(mean.shape[0]), mean, colors[3], label='HRL-Goal, PG', linewidth=linewidth,linestyle='-')
+        plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[3], alpha=0.2)
+        ave_result['HRL-agent(var0, wc0, sdai0)'] = mean_point
+
         #
         # no_key_word_list = ['.DS_Store','.pdf']
         # key_word_list = ['AgentDQN', '1999.p', 'RFIRS-0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN','wfrs0.2' ]
@@ -241,19 +262,14 @@ class DrawCurve(object):
         # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[5], alpha=0.2)
         # ave_result['HRL-agent(var1, wc1, sdai0)'] = mean_point
 
-
-
-
-
-
-
-
         min_len = min(min_len_list)
-        # min_len = 1500
+        # min_len = 500
         plt.grid(True)
         plt.ylabel('Success Rate')
         plt.xlabel('Simulation Epoch')
+        plt.title('Simulation Size: 100')
         plt.xlim([0, min_len])
+        plt.ylim([0.3, 0.8])
         plt.legend(loc=4)
         # plt.savefig('learning_curve.png')
         # plt.show()
@@ -314,7 +330,7 @@ class DrawCurve(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--result_path', dest='result_path', type=str, default='/Users/qianlong/Desktop/performance/', help='the directory of the results.')
+    parser.add_argument('--result_path', dest='result_path', type=str, default='/Users/qianlong/Desktop/performance-ss100/', help='the directory of the results.')
 
     parser.add_argument('--metric', dest='metric', type=str, default='recall', help='the metric to show')
 

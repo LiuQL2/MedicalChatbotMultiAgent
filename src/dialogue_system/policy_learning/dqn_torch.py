@@ -31,6 +31,40 @@ class DQNModel(torch.nn.Module):
         q_values = self.policy_layer(x)
         return q_values
 
+class DQNModelWithRelational(torch.nn.Module):
+    """
+    DQN model with one fully connected layer, written in pytorch.
+    """
+    def __init__(self, input_size, hidden_size, output_size, parameter):
+        super(DQNModelWithRelational, self).__init__()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.params = parameter
+        # different layers. Two layers.
+        self.policy_layer = torch.nn.Sequential(
+            torch.nn.Linear(input_size, hidden_size, bias=True),
+            torch.nn.Dropout(0.5),
+            torch.nn.LeakyReLU(),
+            torch.nn.Linear(hidden_size, output_size, bias=True)
+        )
+
+        # Relational Refinement
+        self.relational_weights = torch.Tensor(output_size, output_size).to(self.device)
+        # one layer.
+        # self.policy_layer = torch.nn.Linear(input_size, output_size, bias=True)
+
+    def get_q_values(self, x):
+        q_1 = self.policy_layer(x)
+        # print(q_1.size())
+        q_2 = torch.mm(q_1, self.relational_weights)
+        return q_1 + q_2
+
+    def forward(self, x):
+        if torch.cuda.is_available():
+            x.cuda()
+        q_values = self.get_q_values(x)
+        return q_values
+
+
 
 class DQN(object):
     def __init__(self, input_size, hidden_size, output_size, parameter, named_tuple=('state', 'agent_action', 'reward', 'next_state', 'episode_over')):
@@ -38,8 +72,12 @@ class DQN(object):
         self.Transition = namedtuple('Transition', named_tuple)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.output_size = output_size
-        self.current_net = DQNModel(input_size, hidden_size, output_size, parameter).to(self.device)
-        self.target_net = DQNModel(input_size, hidden_size, output_size, parameter).to(self.device)
+        if self.params["is_relational_dqn"] is False:
+            self.current_net = DQNModel(input_size, hidden_size, output_size, parameter).to(self.device)
+            self.target_net = DQNModel(input_size, hidden_size, output_size, parameter).to(self.device)
+        else:
+            self.current_net = DQNModelWithRelational(input_size, hidden_size, output_size, parameter).to(self.device)
+            self.target_net = DQNModelWithRelational(input_size, hidden_size, output_size, parameter).to(self.device)
 
         print(self.current_net)
 

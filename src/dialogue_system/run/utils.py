@@ -43,6 +43,7 @@ def construct_info(params):
     gamma_worker = params.get('gamma_worker')
     epsilon = params.get("epsilon")
     data_set_name = params.get("goal_set").split("/")[-2]
+    params["data_set_name"] = data_set_name
     run_id = params.get('run_id')
     multi_gpu = params.get("multi_GPUs")
     dqn_type = params["dqn_type"]
@@ -52,10 +53,15 @@ def construct_info(params):
     symptom_dist_as_input = params["symptom_dist_as_input"]
     weight_for_reward_shaping = params["weight_for_reward_shaping"]
     disease_tag_for_terminating = params["disease_tag_for_terminating"]
+    simulation_size = params["simulation_size"]
+    is_relational_dqn = params["is_relational_dqn"]
+    upper_bound_critic = params["upper_bound_critic"]
+    lower_bound_critic = params["lower_bound_critic"]
     run_time = time.strftime('%m%d%H%M%S', time.localtime(time.time()))
     info = run_time + \
            "_" + agent_id + \
            "_T" + str(max_turn) + \
+           "_ss" + str(simulation_size) + \
            "_lr" + str(lr) + \
            "_RFS" + str(reward_for_success) + \
            "_RFF" + str(reward_for_fail) + \
@@ -73,9 +79,11 @@ def construct_info(params):
            "_sdai" + str(int(symptom_dist_as_input)) + \
            "_wfrs" + str(weight_for_reward_shaping) + \
            "_dtft" + str(int(disease_tag_for_terminating)) + \
+           "_ird" + str(int(is_relational_dqn)) + \
+           "_ubc" + str(upper_bound_critic) + \
+           "_lbc" + str(lower_bound_critic) + \
            "_data" + str(data_set_name.title()) + \
-           "_RID" + str(run_id) + \
-           "_" + dqn_type
+           "_RID" + str(run_id)
     params['run_info'] = info
 
     checkpoint_path = "./../../model/" + dqn_type + "/checkpoint/" + info
@@ -83,5 +91,8 @@ def construct_info(params):
 
     performance_save_path = "./../../model/" + dqn_type + "/performance/"
     params["performance_save_path"] = performance_save_path
+
+    visit_save_path = "./../../model/" + dqn_type + "/visit/"
+    params["visit_save_path"] = visit_save_path
 
     return params

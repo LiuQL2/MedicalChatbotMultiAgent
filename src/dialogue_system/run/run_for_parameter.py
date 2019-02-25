@@ -107,7 +107,7 @@ for wfrs in wfrs_list:
     # simulation configuration
     parser.add_argument("--simulate_epoch_number", dest="simulate_epoch_number", type=int, default=2000,
                         help="The number of simulate epoch.")
-    parser.add_argument("--epoch_size", dest="epoch_size", type=int, default=100,
+    parser.add_argument("--simulation_size", dest="simulation_size", type=int, default=100,
                         help="The number of simulated sessions in each simulated epoch.")
     parser.add_argument("--evaluate_session_number", dest="evaluate_session_number", type=int, default=1000,
                         help="the size of each simulate epoch when evaluation.")

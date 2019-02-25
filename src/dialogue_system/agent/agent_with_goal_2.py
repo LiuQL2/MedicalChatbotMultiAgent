@@ -2,12 +2,14 @@
 """
 Agent for hierarchical reinforcement learning. The master agent first generates a goal, and the goal will be inputted
 into the lower agent.
+这里terminate function是预先训练的一个模块，根据阈值来判断是否终止当前的sub-goal.
 """
 
 import numpy as np
 import copy
 import sys, os
 import random
+import math
 from collections import namedtuple
 from collections import deque
 sys.path.append(os.getcwd().replace("src/dialogue_system/agent",""))
@@ -29,7 +31,7 @@ class AgentWithGoal(object):
         #######################
         input_size = parameter.get("input_size_dqn")
         hidden_size = parameter.get("hidden_size_dqn", 100)
-        self.output_size = parameter.get('goal_dim', 8)
+        self.output_size = parameter.get('goal_dim', 2*len(self.disease_symptom))
         self.dqn = DQN(input_size=input_size + self.output_size,
                        hidden_size=hidden_size,
                        output_size=self.output_size,
@@ -139,9 +141,9 @@ class AgentWithGoal(object):
             pass
 
         # Inform disease.
-        if self.master_action_index > 3:
+        if self.master_action_index >= len(self.disease_symptom):
             self.action["turn"] = turn
-            self.action["inform_slots"] = {"disease": self.id2disease[self.master_action_index - 4]}
+            self.action["inform_slots"] = {"disease": self.id2disease[self.master_action_index - len(self.disease_symptom)]}
             self.action["speaker"] = 'agent'
             self.action["action_index"] = None
             return self.action, None
@@ -214,8 +216,8 @@ class AgentWithGoal(object):
         # Training of master agent
         cur_bellman_err = 0.0
         batch_size = self.parameter.get("batch_size",16)
-        for iter in range(int(len(self.experience_replay_pool) / (batch_size))):
-            batch = random.sample(self.experience_replay_pool, batch_size)
+        for iter in range(math.ceil(len(self.experience_replay_pool) / batch_size)):
+            batch = random.sample(self.experience_replay_pool, min(batch_size,len(self.experience_replay_pool)))
             loss = self.train(batch=batch)
             cur_bellman_err += loss["loss"]
         print("[Master agent] cur bellman err %.4f, experience replay pool %s" % (float(cur_bellman_err) / (len(self.experience_replay_pool) + 1e-10), len(self.experience_replay_pool)))
@@ -296,6 +298,9 @@ class AgentWithGoal(object):
             shaping = self.reward_shaping(state, next_state)
             intrinsic_reward += alpha * shaping
             self.lower_agent.experience_replay_pool.append((state_rep, agent_action, intrinsic_reward, next_state_rep, sub_task_terminal, self.master_action_index))
+            # visitation count.
+            self.lower_agent.action_visitation_count.setdefault(agent_action, 0)
+            self.lower_agent.action_visitation_count[agent_action] += 1
 
             # # repeated action
             # if agent_action in self.worker_previous_actions:
@@ -320,7 +325,7 @@ class AgentWithGoal(object):
         if master_action_index is None:
             return True, 0, 0
 
-        if master_action_index > 3:
+        if master_action_index >= len(self.disease_symptom):
             intrinsic_reward = self.parameter.get('reward_for_success') / 2
             return True, intrinsic_reward, 0
 
@@ -332,7 +337,7 @@ class AgentWithGoal(object):
         state_batch = [state] * len(self.disease_symptom)
         similarity_score = self.internal_critic.get_similarity_state_dict(state_batch, goal_list)[master_action_index]
 
-        if similarity_score < 1e-1:
+        if similarity_score < self.parameter.get("lower_bound_critic"):
             sub_task_terminate = True
             intrinsic_reward = self.parameter.get('reward_for_success') / 2
 
@@ -340,7 +345,7 @@ class AgentWithGoal(object):
             sub_task_terminate = True
             intrinsic_reward = self.parameter.get('reward_for_fail') / 2
 
-        elif similarity_score > 0.97:
+        elif similarity_score > self.parameter.get("upper_bound_critic"):
             sub_task_terminate = True
             intrinsic_reward = self.parameter.get('reward_for_success') / 2
 
@@ -386,3 +391,6 @@ class AgentWithGoal(object):
         self.dqn.current_net.eval()
         self.lower_agent.dqn.current_net.eval()
         self.internal_critic.critic.eval()
+
+    def save_visitation(self, epoch_index):
+        self.lower_agent.save_visitation(epoch_index)

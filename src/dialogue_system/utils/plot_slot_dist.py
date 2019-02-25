@@ -1,38 +1,10 @@
 # -*- coding:utf-8 -*-
+"""
+用来画症状的分布直方图。
+"""
 
 import matplotlib.pyplot as plt
 import pickle
-
-# name_list = ['Monday', 'Tuesday', 'Friday', 'Sunday']
-# num_list = [0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.5, 0.6, 7.8, 6]
-# num_list1 = [0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN, 2, 3, 0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN]
-# x = list(range(len(num_list)))
-# total_width, n = 0.8, 3
-# width = total_width / n
-#
-# plt.bar(x, num_list, width=width, label='boy', fc='y')
-# for i in range(len(x)):
-#     x[i] = x[i] + width
-# plt.bar(x, num_list1, width=width, label='girl', tick_label=name_list, fc='r')
-#
-# x = [i + width for i in x]
-# plt.bar(x, num_list, width=width, label='men', tick_label=name_list, fc='b')
-#
-# plt.legend()
-# plt.show()
-#
-#
-#
-# name_list = ['Monday','Tuesday','Friday','Sunday'] * 20
-# num_list = [0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN.5,0.6,7.8,6] * 20
-# num_list1 = [0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN,2,3,0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN] * 20
-# plt.bar(range(len(num_list)), num_list, label='boy',fc = 'y')
-# plt.bar(range(len(num_list)), num_list1, bottom=num_list, label='girl',tick_label = name_list,fc = 'r')
-# bottom = [num_list[i] + num_list1[i] for i in range(len(num_list))]
-# plt.bar(range(len(num_list)), num_list1, bottom=bottom, label='girl',tick_label = name_list,fc = 'b')
-# plt.legend()
-# plt.show()
-
 
 
 class DistributionPloter(object):
@@ -74,7 +46,7 @@ class DistributionPloter(object):
             print(key, v)
         return symptom2id, id2disease,  symptom_dist_by_disease
 
-    def plot(self):
+    def plot(self, save_file):
         colors = ['#2f79c0', '#278b18', '#ff5186', '#8660a4', '#D49E0F', '#a8d40f']
         print(self.symptom2id)
         bottom = [0]* len(self.symptom2id)
@@ -90,11 +62,12 @@ class DistributionPloter(object):
             # plt.bar(range(len(symptom_dist)), symptom_dist, bottom=bottom, label=disease, tick_label=self.symptom2id.keys(), fc=colors[index])
             bottom = [bottom[i] + symptom_dist[i] for i in range(len(self.symptom2id))]
         plt.legend()
-        plt.savefig('symptom_dist.pdf')
+        plt.savefig(save_file)
         plt.show()
 
 
 if __name__ == '__main__':
-    goal_set_file = './../../data/goal_set_2.p'
+    goal_set_file = './../../data/real_world/goal_set.p'
     ploter = DistributionPloter(goal_set_file)
-    ploter.plot()
+    save_file = './../../data/real_world/symptom_dist.pdf'
+    ploter.plot(save_file)

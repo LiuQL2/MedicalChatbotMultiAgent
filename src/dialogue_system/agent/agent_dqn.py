@@ -8,6 +8,8 @@ model will change if the user's answer is no in continual several times.
 
 import random
 import copy
+import pickle
+import math
 import numpy as np
 import sys, os
 sys.path.append(os.getcwd().replace("src/dialogue_system/agent",""))
@@ -35,6 +37,7 @@ class AgentDQN(Agent):
         hidden_size = parameter.get("hidden_size_dqn", 100)
         output_size = len(self.action_space)
         self.dqn = DQN(input_size=input_size, hidden_size=hidden_size,output_size=output_size, parameter=parameter)
+        self.action_visitation_count = {}
 
     def next(self, state, turn, greedy_strategy, **kwargs):
         """
@@ -58,7 +61,7 @@ class AgentDQN(Agent):
 
         # HRL with goal (not joint training one.)
         goal = kwargs.get('goal')
-        if self.agent_id.lower() in ['agentwithgoal', 'agentwithgoal2' ]:
+        if self.agent_id.lower() in ['agentwithgoal', 'agentwithgoal2', 'agentwithgoal3' ]:
             state_rep = np.concatenate((state_rep, goal),axis=0)
 
         if greedy_strategy is True:
@@ -101,8 +104,8 @@ class AgentDQN(Agent):
         """
         cur_bellman_err = 0.0
         batch_size = self.parameter.get("batch_size", 16)
-        for iter in range(int(len(self.experience_replay_pool) / (batch_size))):
-            batch = random.sample(self.experience_replay_pool, batch_size)
+        for iter in range(math.ceil(len(self.experience_replay_pool) / batch_size)):
+            batch = random.sample(self.experience_replay_pool, min(batch_size, len(self.experience_replay_pool)))
             loss = self.train(batch=batch)
             cur_bellman_err += loss["loss"]
         print("cur bellman err %.4f, experience replay pool %s" % (float(cur_bellman_err) / (len(self.experience_replay_pool) + 1e-10), len(self.experience_replay_pool)))
@@ -154,9 +157,18 @@ class AgentDQN(Agent):
         state_rep = state_to_representation_last(state=state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
         next_state_rep = state_to_representation_last(state=next_state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
         self.experience_replay_pool.append((state_rep, agent_action, reward, next_state_rep, episode_over))
+        self.action_visitation_count.setdefault(agent_action, 0)
+        self.action_visitation_count[agent_action] += 1
 
     def train_mode(self):
         self.dqn.current_net.train()
 
     def eval_mode(self):
         self.dqn.current_net.eval()
+
+    def save_visitation(self, epoch_index):
+        file_name = self.parameter["run_info"] + "_" + str(epoch_index) + ".p"
+        visit_save_path = self.parameter["visit_save_path"]
+        if os.path.isdir(visit_save_path) is False:
+            os.mkdir(visit_save_path)
+        pickle.dump(file=open(os.path.join(visit_save_path,file_name), "wb"), obj=self.action_visitation_count)

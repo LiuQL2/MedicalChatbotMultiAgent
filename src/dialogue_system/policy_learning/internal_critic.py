@@ -88,7 +88,7 @@ class CriticModel(torch.nn.Module):
 
 
 class InternalCritic(object):
-    def __init__(self, input_size, hidden_size, output_size, goal_num,goal_embedding_value, slot_set, parameter):
+    def __init__(self, input_size, hidden_size, output_size, goal_num, goal_embedding_value, slot_set, parameter):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.params = parameter
         self.critic = CriticModel(input_size, hidden_size, output_size, goal_num, goal_embedding_value)
@@ -120,7 +120,7 @@ class InternalCritic(object):
         self.optimizer.step()
         return {'total_loss': loss.item(), 'positive_similarity':positive_loss.item(), 'negative_similarity':negative_loss.item()}
 
-    def save_model(self, model_path):
+    def save_model2(self, model_path):
         torch.save(self.critic.state_dict(), model_path)
 
     def get_similarity(self, batch, goal):
@@ -162,6 +162,30 @@ class InternalCritic(object):
             goal: int, the action of master agent.
         """
         self.negative_sample_buffer.append((state_to_vec(self.slot_set, state_dict), goal))
+
+    def save_model(self, model_performance, episodes_index, checkpoint_path):
+        # """
+        # Saving the trained model.
+        #
+        # Args:
+        #     model_performance (dict): the test result of the model, which contains different metrics.
+        #     episodes_index (int): the current step of training. And this will be appended to the model name at the end.
+        #     checkpoint_path (str): the directory that the model is going to save to. Default None.
+        # """
+        # if os.path.isdir(checkpoint_path) == False:
+        #     # os.mkdir(checkpoint_path)
+        #     os.makedirs(checkpoint_path)
+        # agent_id = self.params.get("agent_id")
+        # disease_number = self.params.get("disease_number")
+        # success_rate = model_performance["success_rate"]
+        # average_reward = model_performance["average_reward"]
+        # average_turn = model_performance["average_turn"]
+        # average_wrong_disease = model_performance["average_wrong_disease"]
+        # model_file_name = os.path.join(checkpoint_path, "model_d" + str(disease_number) + "_agent" + str(agent_id) + "_s" + str(success_rate) + "_r" + str(average_reward) + "_t" + str(average_turn)\
+        #                   + "_wd" + str(average_wrong_disease) + "_e-" + str(episodes_index) + ".pkl")
+        #
+        # torch.save(self.critic.state_dict(), model_file_name)
+        pass
 
 
 

@@ -22,7 +22,7 @@ class RunningSteward(object):
     The steward of running the dialogue system.
     """
     def __init__(self, parameter, checkpoint_path):
-        self.epoch_size = parameter.get("epoch_size",100)
+        self.epoch_size = parameter.get("simulation_size",100)
         self.parameter = parameter
         self.checkpoint_path = checkpoint_path
         self.learning_curve = {}
@@ -51,6 +51,7 @@ class RunningSteward(object):
         # print('Initializing the count matrix for AgentWithGoal')
         # self.simulation_epoch(epoch_size=500, train_mode=train_mode)
         save_model = self.parameter.get("save_model")
+        save_performance = self.parameter.get("save_performance")
         # self.dialogue_manager.state_tracker.user.set_max_turn(max_turn=self.parameter.get('max_turn'))
         for index in range(0, epoch_number,1):
             # Training AgentDQN with experience replay
@@ -75,6 +76,8 @@ class RunningSteward(object):
         # The training is over and save the model of the last training epoch.
         if save_model is True and train_mode is True and epoch_number > 0:
             self.dialogue_manager.state_tracker.agent.save_model(model_performance=result, episodes_index=index, checkpoint_path=self.checkpoint_path)
+        if save_performance is True and train_mode is True and epoch_number > 0:
+            self.__dump_performance__(epoch_index=index)
 
     def simulation_epoch(self, epoch_size):
         """
@@ -151,7 +154,7 @@ class RunningSteward(object):
         self.learning_curve[index]["average_wrong_disease"]=average_wrong_disease
         if index % 10 ==0:
             print('[INFO]', self.parameter["run_info"])
-        if index % 100 == 99 and save_performance == True:
+        if index % 10000 == 9999 and save_performance == True:
             self.__dump_performance__(epoch_index=index)
         print("%3d simulation SR [%s], ABSR [%s], ave reward %s, ave turns %s, ave wrong disease %s" % (index,res['success_rate'], res["ab_success_rate"],res['average_reward'], res['average_turn'], res["average_wrong_disease"]))
         return res
@@ -180,6 +183,7 @@ class RunningSteward(object):
         """
         file_name = self.parameter["run_info"] + "_" + str(epoch_index) + ".p"
         performance_save_path = self.parameter["performance_save_path"]
-        if os.path.isdir(performance_save_path) == False:
+        if os.path.isdir(performance_save_path) is False:
             os.mkdir(performance_save_path)
         pickle.dump(file=open(os.path.join(performance_save_path,file_name), "wb"), obj=self.learning_curve)
+        self.dialogue_manager.state_tracker.agent.save_visitation(epoch_index)
