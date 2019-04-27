@@ -11,6 +11,7 @@ import numpy as np
 import pickle
 import sys, os
 sys.path.append(os.getcwd().replace('/src/utils',''))
+from src.dialogue_system.utils.utils import get_dir_list
 
 sns.set(style="darkgrid")
 sns.set(font_scale=1.4)
@@ -55,7 +56,7 @@ class DrawCurve(object):
         return success_rate_new, success_rate[399]
 
     def get_mean_var(self, path,key_word_list=None, no_key_word_list=None):
-        file_list = DrawCurve.get_dir_list(path=path, key_word_list=key_word_list, no_key_word_list=no_key_word_list)
+        file_list = get_dir_list(path=path, key_word_list=key_word_list, no_key_word_list=no_key_word_list)
         BBQ_datapoint = []
         data_point = []
         for file_name in file_list:
@@ -80,7 +81,7 @@ class DrawCurve(object):
 
 
         no_key_word_list = ['.DS_Store','.pdf','RID9']
-        key_word_list = ['AgentDQN', '1999.p']
+        key_word_list = ['AgentDQN', '49999.p']
         mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
                                                key_word_list=key_word_list,
                                                no_key_word_list=no_key_word_list)
@@ -90,12 +91,12 @@ class DrawCurve(object):
         ave_result['RL-agent'] = mean_point
 
         no_key_word_list = ['.DS_Store','.pdf','RID9']
-        key_word_list = ['AgentWithGoal2', '1999.p']
+        key_word_list = ['AgentWithGoal2', '49999.p']
         mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
                                                key_word_list=key_word_list,
                                                no_key_word_list=no_key_word_list)
         min_len_list.append(min_len)
-        l2, = plt.plot(range(mean.shape[0]), mean, colors[1], label='HRL-Goal, ex', linewidth=linewidth,linestyle='-')
+        l2, = plt.plot(range(mean.shape[0]), mean, colors[1], label='HRL', linewidth=linewidth,linestyle='-')
         plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[1], alpha=0.2)
         ave_result['HRL-agent(var0, wc0, sdai0)'] = mean_point
 
@@ -109,15 +110,15 @@ class DrawCurve(object):
         # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[2], alpha=0.2)
         # ave_result['HRL-agent(var0, wc0, sdai0)'] = mean_point
         #
-        no_key_word_list = ['.DS_Store','.pdf']
-        key_word_list = ['AgentWithGoal3', '1999.p']
-        mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
-                                               key_word_list=key_word_list,
-                                               no_key_word_list=no_key_word_list)
-        min_len_list.append(min_len)
-        l2, = plt.plot(range(mean.shape[0]), mean, colors[3], label='HRL-Goal, PG', linewidth=linewidth,linestyle='-')
-        plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[3], alpha=0.2)
-        ave_result['HRL-agent(var0, wc0, sdai0)'] = mean_point
+        # no_key_word_list = ['.DS_Store','.pdf']
+        # key_word_list = ['AgentWithGoal3', '1999.p']
+        # mean, var, min_len,mean_point = self.get_mean_var(path=self.params['result_path'],
+        #                                        key_word_list=key_word_list,
+        #                                        no_key_word_list=no_key_word_list)
+        # min_len_list.append(min_len)
+        # l2, = plt.plot(range(mean.shape[0]), mean, colors[3], label='HRL-Goal, PG', linewidth=linewidth,linestyle='-')
+        # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[3], alpha=0.2)
+        # ave_result['HRL-agent(var0, wc0, sdai0)'] = mean_point
 
         #
         # no_key_word_list = ['.DS_Store','.pdf']
@@ -262,75 +263,25 @@ class DrawCurve(object):
         # plt.fill_between(range(mean.shape[0]), mean + var / 2, mean - var / 2, facecolor=colors[5], alpha=0.2)
         # ave_result['HRL-agent(var1, wc1, sdai0)'] = mean_point
 
-        min_len = min(min_len_list)
-        # min_len = 500
+        # min_len = min(min_len_list)
+        min_len = 30000
         plt.grid(True)
         plt.ylabel('Success Rate')
-        plt.xlabel('Simulation Epoch')
-        plt.title('Simulation Size: 100')
+        plt.xlabel('Training Step')
+        # plt.title('Simulation Size: 1')
         plt.xlim([0, min_len])
-        plt.ylim([0.3, 0.8])
+        plt.ylim(ymin=0.3,ymax=0.8)
         plt.legend(loc=4)
         # plt.savefig('learning_curve.png')
         # plt.show()
         plt.savefig(os.path.join(self.params['result_path'] + 'learning_curve' + str(min_len) + '.pdf'))
         print(ave_result)
 
-    @staticmethod
-    def get_dir_list(path, key_word_list=None, no_key_word_list=None):
-        file_name_list = os.listdir(path)  # 获得原始json文件所在目录里面的所有文件名称
-        if key_word_list == None and no_key_word_list == None:
-            temp_file_list = file_name_list
-        elif key_word_list != None and no_key_word_list == None:
-            temp_file_list = []
-            for file_name in file_name_list:
-                have_key_words = True
-                for key_word in key_word_list:
-                    if key_word not in file_name:
-                        have_key_words = False
-                        break
-                    else:
-                        pass
-                if have_key_words == True:
-                    temp_file_list.append(file_name)
-        elif key_word_list == None and no_key_word_list != None:
-            temp_file_list = []
-            for file_name in file_name_list:
-                have_no_key_word = False
-                for no_key_word in no_key_word_list:
-                    if no_key_word in file_name:
-                        have_no_key_word = True
-                        break
-                if have_no_key_word == False:
-                    temp_file_list.append(file_name)
-        elif key_word_list != None and no_key_word_list != None:
-            temp_file_list = []
-            for file_name in file_name_list:
-                have_key_words = True
-                for key_word in key_word_list:
-                    if key_word not in file_name:
-                        have_key_words = False
-                        break
-                    else:
-                        pass
-                have_no_key_word = False
-                for no_key_word in no_key_word_list:
-                    if no_key_word in file_name:
-                        have_no_key_word = True
-                        break
-                    else:
-                        pass
-                if have_key_words == True and have_no_key_word == False:
-                    temp_file_list.append(file_name)
-        print(key_word_list, len(temp_file_list))
-        # time.sleep(2)
-        return temp_file_list
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--result_path', dest='result_path', type=str, default='/Users/qianlong/Desktop/performance-ss100/', help='the directory of the results.')
+    parser.add_argument('--result_path', dest='result_path', type=str, default='/Users/qianlong/Desktop/performance-ss1/', help='the directory of the results.')
 
     parser.add_argument('--metric', dest='metric', type=str, default='recall', help='the metric to show')
 

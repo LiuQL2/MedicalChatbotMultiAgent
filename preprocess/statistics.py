@@ -122,7 +122,7 @@ if __name__ == "__main__":
     # statics for the goal set, e.g., average number of explicit symptoms, average of number of implicit symptoms and the
     # number of user goal of each disease.
 
-    data_file = "./../src/data/real_world/goal_set_2.p"
+    data_file = "./../src/data/real_world/goal_set.p"
     save_file = "./../resources/goal_set_statistics.csv"
     save_file = "./../src/data/real_world/goal_set_statistics_simulated.csv"
 

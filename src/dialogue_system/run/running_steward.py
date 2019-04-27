@@ -121,6 +121,7 @@ class RunningSteward(object):
         """
         save_performance = self.parameter.get("save_performance")
         self.dialogue_manager.state_tracker.agent.eval_mode() # for testing
+        match_rate = 0
         success_count = 0
         absolute_success_count = 0
         total_reward = 0
@@ -130,28 +131,47 @@ class RunningSteward(object):
         for goal_index in range(0,evaluate_session_number, 1):
             self.dialogue_manager.initialize(dataset=dataset, goal_index=goal_index)
             episode_over = False
+            implicit_symptom_count = 0
             while episode_over == False:
+
                 reward, episode_over, dialogue_status = self.dialogue_manager.next(greedy_strategy=False, save_record=False)
                 total_reward += reward
+                if dialogue_status == dialogue_configuration.DIALOGUE_STATUS_INFORM_RIGHT_SYMPTOM:
+                    implicit_symptom_count += 1
+
             total_turns += self.dialogue_manager.state_tracker.turn
             inform_wrong_disease_count += self.dialogue_manager.inform_wrong_disease_count
             if dialogue_status == dialogue_configuration.DIALOGUE_STATUS_SUCCESS:
                 success_count += 1
                 if self.dialogue_manager.inform_wrong_disease_count == 0:
                     absolute_success_count += 1
+            if self.dialogue_manager.state_tracker.turn == 3: # 直接inform 疾病，没有request症状，所以当前session的rate=0
+                match_rate += 0.0
+            else: #多轮，但是最后两轮一个是inform疾病，一个是用户回应疾病，且中间用户、agent各一半，所以这样计算。
+                match_rate += float(implicit_symptom_count)/ (2* (self.dialogue_manager.state_tracker.turn - 2))
+
         success_rate = float("%.3f" % (float(success_count) / evaluate_session_number))
         absolute_success_rate = float("%.3f" % (float(absolute_success_count) / evaluate_session_number))
         average_reward = float("%.3f" % (float(total_reward) / evaluate_session_number))
         average_turn = float("%.3f" % (float(total_turns) / evaluate_session_number))
         average_wrong_disease = float("%.3f" % (float(inform_wrong_disease_count) / evaluate_session_number))
+        average_match_num = float("%.3f" % (float(match_rate) / evaluate_session_number))
 
         self.dialogue_manager.state_tracker.agent.train_mode() # for training.
-        res = {"success_rate":success_rate, "average_reward": average_reward, "average_turn": average_turn, "average_wrong_disease":average_wrong_disease,"ab_success_rate":absolute_success_rate}
+        res = {
+            "success_rate":success_rate,
+            "average_reward": average_reward,
+            "average_turn": average_turn,
+            "average_wrong_disease":average_wrong_disease,
+            "ab_success_rate":absolute_success_rate,
+            "average_match_rate":average_match_num
+        }
         self.learning_curve.setdefault(index, dict())
         self.learning_curve[index]["success_rate"]=success_rate
         self.learning_curve[index]["average_reward"]=average_reward
         self.learning_curve[index]["average_turn"] = average_turn
         self.learning_curve[index]["average_wrong_disease"]=average_wrong_disease
+        self.learning_curve[index]["average_match_rate"]=average_match_num
         if index % 10 ==0:
             print('[INFO]', self.parameter["run_info"])
         if index % 10000 == 9999 and save_performance == True:
