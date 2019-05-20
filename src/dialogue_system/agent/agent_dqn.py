@@ -37,7 +37,11 @@ class AgentDQN(Agent):
         hidden_size = parameter.get("hidden_size_dqn", 100)
         output_size = len(self.action_space)
         self.dqn = DQN(input_size=input_size, hidden_size=hidden_size,output_size=output_size, parameter=parameter)
-        self.action_visitation_count = {}
+        self.action_visitation_count = {} # 记录下每一个action被选中的次数, 这里为每一种疾病记录一个
+        self.action_visitation_count["disease"] = {}
+        self.action_visitation_count["total"] = {} #记录合在一起的结果
+        for i in range(len(disease_symptom)):
+            self.action_visitation_count["disease"].setdefault(i, dict())# 根据user那边的情况，为每种疾病计数
 
     def next(self, state, turn, greedy_strategy, **kwargs):
         """
@@ -47,7 +51,9 @@ class AgentDQN(Agent):
         :param turn: int, the time step of current dialogue session.
         :return: the agent action, a tuple consists of the selected agent action and action index.
         """
+        self.dialogue_turn = turn
         self.agent_action["turn"] = turn
+        self.disease_tag = kwargs.get("disease_tag")
         symptom_dist = kwargs.get('symptom_dist')
         state_rep = state_to_representation_last(state=state,
                                                  action_set=self.action_set,
@@ -145,6 +151,9 @@ class AgentDQN(Agent):
         return gamma * len(next_slot_dict) - len(slot_dict)
 
     def record_training_sample(self, state, agent_action, reward, next_state, episode_over, **kwargs):
+        """"
+        Appending one transition tuple to the replay buffer.
+        """
         shaping = self.reward_shaping(state, next_state)
         alpha = self.parameter.get("weight_for_reward_shaping")
         # if True:
@@ -157,8 +166,15 @@ class AgentDQN(Agent):
         state_rep = state_to_representation_last(state=state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
         next_state_rep = state_to_representation_last(state=next_state, action_set=self.action_set, slot_set=self.slot_set, disease_symptom=self.disease_symptom, max_turn=self.parameter["max_turn"])
         self.experience_replay_pool.append((state_rep, agent_action, reward, next_state_rep, episode_over))
-        self.action_visitation_count.setdefault(agent_action, 0)
-        self.action_visitation_count[agent_action] += 1
+
+        if self.dialogue_turn >= 0:
+            # 每种疾病的计数
+            self.action_visitation_count["disease"][self.disease_symptom[self.disease_tag]['index']].setdefault(
+                agent_action, 0)
+            self.action_visitation_count["disease"][self.disease_symptom[self.disease_tag]['index']][agent_action] += 1
+            # 所有的计数
+            self.action_visitation_count["total"].setdefault(agent_action, 0)
+            self.action_visitation_count["total"][agent_action] += 1
 
     def train_mode(self):
         self.dqn.current_net.train()

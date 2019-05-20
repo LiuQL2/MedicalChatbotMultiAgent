@@ -53,6 +53,7 @@ parser.add_argument("--train_mode", dest="train_mode", type=boolean_string, defa
 
 #  Save model, performance and dialogue content ? And what is the path if yes?
 parser.add_argument("--save_performance",dest="save_performance", type=boolean_string, default=False, help="save the performance? [True, False]")
+parser.add_argument("--save_performance_interval",dest="save_performance_interval", type=int, default=2000, help="performance interval (int)")
 parser.add_argument("--save_model", dest="save_model", type=boolean_string, default=False,help="Save model during training? [True, False]")
 parser.add_argument("--saved_model", dest="saved_model", type=str, default="./../../model/DQN/checkpoint/0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN/model_d4_agentAgentWithGoal_s0.993_r41.658_t6.799_wd0.0_e-822.pkl")
 parser.add_argument("--save_dialogue", dest="save_dialogue", type=boolean_string, default=False, help="Save the dialogue? [True, False]")
@@ -176,7 +177,7 @@ def run(parameter):
         steward.simulate(epoch_number=simulate_epoch_number, train_mode=train_mode)
     else: # test
         for index in range(simulate_epoch_number):
-            res = steward.evaluate_model(dataset='validate', index=index)
+            res = steward.evaluate_model(dataset='test', index=index)
         return res
 
 def list_to_dict(model_name_list):
@@ -195,16 +196,16 @@ if __name__ == "__main__":
     torch.cuda.manual_seed(12345)
     torch.manual_seed(12345)
 
-    checkpoint_path = '../../model/DQN/checkpoint'
+    checkpoint_path = '../../model/DQN-20190305/checkpoint'
     # Flat-DQN, ss1
     agent_id = 'AgentDQN'
     date_time_list = ['0224103326','0224103331','0224103335','0224103339']
-    result_file = './test_result/test_result_valid_dqn.txt'
+    result_file = './test_result/test_result_test_dqn.txt'
 
     # HRL, ss1
     # agent_id = 'AgentWithGoal2'
     # date_time_list = ['0224103344','0224103350','0224103356','0224103400']
-    # result_file = './test_result/test_result_valid_hrl.txt'
+    # result_file = './test_result/test_result_test_hrl.txt'
 
 
     FileIO.writeToFile('\n\n' + '**'*30, result_file)

@@ -3,7 +3,7 @@
 Agent for hierarchical reinforcement learning. The master agent first generates a goal, and the goal will be inputted
 into the lower agent.
 这里terminate function是想用policy gradient的方法进行训练，使用extrinsic reward来作为terminate function的reward来进行参数的更新，
-不过目前测试不太好。
+不过目前测试不太好。不是EMNLP论文使用的模型
 """
 
 import numpy as np
@@ -103,6 +103,10 @@ class AgentWithGoal(object):
         temp_parameter['saved_model'] = '/'.join(path_list)
         temp_parameter['gamma'] = temp_parameter['gamma_worker'] # discount factor for the lower agent.
         self.lower_agent = LowerAgent(action_set=action_set, slot_set=slot_set, disease_symptom=disease_symptom, parameter=temp_parameter,disease_as_action=False)
+        # 为每一个下层的action计数，原类里面定义了为每种disease计数，这里还要为每个goal计数
+        self.lower_agent.action_visitation_count["goal"] = {}
+        for i in range(len(disease_symptom)):
+            self.lower_agent.action_visitation_count["goal"].setdefault(i, dict())# 根据user那边的情况，为每个goal计数
         named_tuple = ('state', 'agent_action', 'reward', 'next_state', 'episode_over','goal')
         self.lower_agent.dqn.Transition = namedtuple('Transition', named_tuple)
         self.visitation_count = np.zeros(shape=(self.output_size, len(self.lower_agent.action_space))) # [goal_num, lower_action_num]
@@ -118,6 +122,7 @@ class AgentWithGoal(object):
         """
         # print('{} new session {}'.format('*'*20, '*'*20))
         # print('***' * 20)
+        self.dialogue_turn = 0
         self.master_reward = 0.
         self.sub_task_terminal = True
         self.inform_disease = False
@@ -150,6 +155,7 @@ class AgentWithGoal(object):
         :param turn: int, the time step of current dialogue session.
         :return: the agent action, a tuple consists of the selected agent action and action index.
         """
+        self.dialogue_turn = turn
         self.disease_tag = kwargs.get("disease_tag")
 
         # The current sub-task is terminated or the first turn of the session.
@@ -306,9 +312,17 @@ class AgentWithGoal(object):
             shaping = self.reward_shaping(state, next_state)
             self.intrinsic_reward += alpha * shaping
             self.lower_agent.experience_replay_pool.append((state_rep, agent_action, self.intrinsic_reward, next_state_rep, self.sub_task_terminal, self.master_action_index))
-            # visitation count.
-            self.lower_agent.action_visitation_count.setdefault(agent_action, 0)
-            self.lower_agent.action_visitation_count[agent_action] += 1
+            if self.dialogue_turn >=0:
+                # visitation count. 因为这里没有调用lower_agent的record training sample 函数，所以要在这里进行计数。
+                self.lower_agent.action_visitation_count["disease"][
+                    self.disease_symptom[self.disease_tag]['index']].setdefault(agent_action, 0)
+                self.lower_agent.action_visitation_count["disease"][self.disease_symptom[self.disease_tag]['index']][
+                    agent_action] += 1
+                self.lower_agent.action_visitation_count["goal"][self.master_action_index].setdefault(agent_action, 0)
+                self.lower_agent.action_visitation_count["goal"][self.master_action_index][agent_action] += 1
+                # 所有的计数
+                self.lower_agent.action_visitation_count["total"].setdefault(agent_action, 0)
+                self.lower_agent.action_visitation_count["total"][agent_action] += 1
 
     def flush_pool(self):
         self.experience_replay_pool = deque(maxlen=self.parameter.get("experience_replay_pool_size"))

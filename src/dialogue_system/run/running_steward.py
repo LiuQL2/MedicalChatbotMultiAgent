@@ -37,6 +37,7 @@ class RunningSteward(object):
         self.dialogue_manager = DialogueManager(user=user, agent=agent, parameter=parameter)
 
         self.best_result = {"success_rate":0.0, "average_reward": 0.0, "average_turn": 0,"average_wrong_disease":10}
+        self.performance_interval = self.parameter.get("save_performance_interval")
 
     def simulate(self, epoch_number, train_mode=False):
         """
@@ -128,8 +129,13 @@ class RunningSteward(object):
         total_turns = 0
         evaluate_session_number = len(self.dialogue_manager.state_tracker.user.goal_set[dataset])
         inform_wrong_disease_count = 0
+        count_by_disease = {} # 用于记录每种疾病的总数以及诊断正确的数量
+
         for goal_index in range(0,evaluate_session_number, 1):
             self.dialogue_manager.initialize(dataset=dataset, goal_index=goal_index)
+            disease_tag = self.dialogue_manager.state_tracker.user.goal["disease_tag"]
+            count_by_disease.setdefault(disease_tag, {"total":0.0,"success":0.0})
+            count_by_disease[disease_tag]["total"] += 1
             episode_over = False
             implicit_symptom_count = 0
             while episode_over == False:
@@ -143,6 +149,7 @@ class RunningSteward(object):
             inform_wrong_disease_count += self.dialogue_manager.inform_wrong_disease_count
             if dialogue_status == dialogue_configuration.DIALOGUE_STATUS_SUCCESS:
                 success_count += 1
+                count_by_disease[disease_tag]["success"] += 1
                 if self.dialogue_manager.inform_wrong_disease_count == 0:
                     absolute_success_count += 1
             if self.dialogue_manager.state_tracker.turn == 3: # 直接inform 疾病，没有request症状，所以当前session的rate=0
@@ -158,23 +165,24 @@ class RunningSteward(object):
         average_match_num = float("%.3f" % (float(match_rate) / evaluate_session_number))
 
         self.dialogue_manager.state_tracker.agent.train_mode() # for training.
+        success_by_disease = {}
+        for k, v in count_by_disease.items():
+            success_by_disease.setdefault(k,v["success"] / v["total"])
+
         res = {
             "success_rate":success_rate,
             "average_reward": average_reward,
             "average_turn": average_turn,
             "average_wrong_disease":average_wrong_disease,
             "ab_success_rate":absolute_success_rate,
-            "average_match_rate":average_match_num
+            "average_match_rate":average_match_num,
+            "success_rate_by_disease":success_by_disease
         }
-        self.learning_curve.setdefault(index, dict())
-        self.learning_curve[index]["success_rate"]=success_rate
-        self.learning_curve[index]["average_reward"]=average_reward
-        self.learning_curve[index]["average_turn"] = average_turn
-        self.learning_curve[index]["average_wrong_disease"]=average_wrong_disease
-        self.learning_curve[index]["average_match_rate"]=average_match_num
-        if index % 10 ==0:
+
+        self.learning_curve[index] = res # 保存中间结果
+        if index % 10 == 0:
             print('[INFO]', self.parameter["run_info"])
-        if index % 10000 == 9999 and save_performance == True:
+        if index % self.performance_interval == (self.performance_interval - 1) and save_performance == True:
             self.__dump_performance__(epoch_index=index)
         print("%3d simulation SR [%s], ABSR [%s], ave reward %s, ave turns %s, ave wrong disease %s" % (index,res['success_rate'], res["ab_success_rate"],res['average_reward'], res['average_turn'], res["average_wrong_disease"]))
         return res

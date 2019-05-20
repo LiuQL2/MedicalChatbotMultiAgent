@@ -49,6 +49,7 @@ class Agent(object):
         Initializing an dialogue session.
         :return: nothing to return.
         """
+        self.dialogue_turn = 0
         self.candidate_disease_list = []
         self.candidate_symptom_list = []
         self.agent_action = {

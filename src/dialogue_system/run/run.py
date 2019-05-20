@@ -51,6 +51,7 @@ parser.add_argument("--train_mode", dest="train_mode", type=boolean_string, defa
 
 #  Save model, performance and dialogue content ? And what is the path if yes?
 parser.add_argument("--save_performance",dest="save_performance", type=boolean_string, default=False, help="save the performance? [True, False]")
+parser.add_argument("--save_performance_interval",dest="save_performance_interval", type=int, default=2000, help="performance interval (int)")
 parser.add_argument("--save_model", dest="save_model", type=boolean_string, default=False,help="Save model during training? [True, False]")
 parser.add_argument("--saved_model", dest="saved_model", type=str, default="./../../model/DQN/checkpoint/0220173244_AgentWithGoal_T22_lr0.0001_RFS44_RFF-22_RFNCY-1_RFIRS-1_mls0_gamma0.95_gammaW0.95_epsilon0.1_awd0_crs0_hwg0_wc0_var0_sdai0_wfrs0.0_dtft1_dataReal_World_RID3_DQN/model_d4_agentAgentWithGoal_s0.993_r41.658_t6.799_wd0.0_e-822.pkl")
 parser.add_argument("--save_dialogue", dest="save_dialogue", type=boolean_string, default=False, help="Save the dialogue? [True, False]")
@@ -77,7 +78,8 @@ parser.add_argument("--agent_id", dest="agent_id", type=str, default='AgentWithG
 max_turn = 22
 parser.add_argument("--action_set", dest="action_set", type=str, default='./../../data/real_world/action_set.p',help='path and filename of the action set')
 parser.add_argument("--slot_set", dest="slot_set", type=str, default='./../../data/real_world/slot_set.p',help='path and filename of the slots set')
-parser.add_argument("--goal_set", dest="goal_set", type=str, default='./../../data/real_world/goal_set.p',help='path and filename of user goal')
+parser.add_argument("--goal_set", dest="goal_set", type=str, default='./../../data/real_world/goal_set_two.p',help='path and filename of user goal')
+# parser.add_argument("--goal_set", dest="goal_set", type=str, default='./../../data/real_world/goal_set.p',help='path and filename of user goal')
 parser.add_argument("--disease_symptom", dest="disease_symptom", type=str,default="./../../data/real_world/disease_symptom.p",help="path and filename of the disease_symptom file")
 parser.add_argument("--max_turn", dest="max_turn", type=int, default=max_turn, help="the max turn in one episode.")
 parser.add_argument("--input_size_dqn", dest="input_size_dqn", type=int, default=max_turn + 477, help="the input_size of DQN.")
@@ -184,3 +186,13 @@ if __name__ == "__main__":
     torch.manual_seed(12345)
     print(params['run_info'])
     run(parameter=parameter)
+
+
+"""
+下面是运行程序的一些命令：
+
+python run.py --save_performance=True --save_model=True --save_performance_interval=2000 --agent_id=AgentWithGoal2 --simulation_size=1 --simulate_epoch_number=100000 --dqn_learning_rate=0.0001 --run_id=0 --gpu=0
+
+python run.py --save_performance=True --save_model=True --save_performance_interval=2000 --agent_id=AgentDQN --simulation_size=1 --simulate_epoch_number=100000 --dqn_learning_rate=0.0001 --run_id=0 --gpu=0
+
+"""
